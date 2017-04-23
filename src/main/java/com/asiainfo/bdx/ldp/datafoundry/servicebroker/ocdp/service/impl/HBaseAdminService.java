@@ -168,6 +168,19 @@ public class HBaseAdminService implements OCDPAdminService{
         };
     }
 
+    @Override
+    public Map<String, String> getCredentialsInfo(String serviceInstanceId, String accountName){
+        return new HashMap<String, String>(){
+            {
+                put("username", accountName);
+                put("uri", "http://" + clusterConfig.getHbaseMaster() + ":" + clusterConfig.getHbaseRestPort());
+                put("host", clusterConfig.getHbaseMaster());
+                put("port", clusterConfig.getHbaseRestPort());
+                put("resource", serviceInstanceId.replaceAll("-", ""));
+            }
+        };
+    }
+
     private boolean updateUserForResourcePermission(String policyId, String groupName, String accountName, boolean isAppend){
         String currentPolicy = this.rc.getV2Policy(policyId);
         if (currentPolicy == null)

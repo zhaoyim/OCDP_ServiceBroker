@@ -11,7 +11,7 @@ import com.asiainfo.bdx.ldp.datafoundry.servicebroker.ocdp.client.etcdClient;
 import com.asiainfo.bdx.ldp.datafoundry.servicebroker.ocdp.config.ClusterConfig;
 import com.asiainfo.bdx.ldp.datafoundry.servicebroker.ocdp.utils.BrokerUtil;
 import org.springframework.cloud.servicebroker.model.CreateServiceInstanceRequest;
-import org.springframework.cloud.servicebroker.model.CreateServiceInstanceResponse;
+import com.asiainfo.bdx.ldp.datafoundry.servicebroker.ocdp.model.OCDPCreateServiceInstanceResponse;
 import org.springframework.cloud.servicebroker.model.DeleteServiceInstanceRequest;
 import org.springframework.cloud.servicebroker.model.DeleteServiceInstanceResponse;
 import org.slf4j.Logger;
@@ -67,13 +67,13 @@ public class OCDPServiceInstanceLifecycleService {
     }
 
     @Async
-    public Future<CreateServiceInstanceResponse> doCreateServiceInstanceAsync(CreateServiceInstanceRequest request) throws OCDPServiceException {
-        return new AsyncResult<CreateServiceInstanceResponse>(
+    public Future<OCDPCreateServiceInstanceResponse> doCreateServiceInstanceAsync(CreateServiceInstanceRequest request) throws OCDPServiceException {
+        return new AsyncResult<OCDPCreateServiceInstanceResponse>(
                 doCreateServiceInstance(request)
         );
     }
 
-	public CreateServiceInstanceResponse doCreateServiceInstance(CreateServiceInstanceRequest request) throws OCDPServiceException {
+	public OCDPCreateServiceInstanceResponse doCreateServiceInstance(CreateServiceInstanceRequest request) throws OCDPServiceException {
         String serviceDefinitionId = request.getServiceDefinitionId();
         String serviceInstanceId = request.getServiceInstanceId();
         String planId = request.getPlanId();
@@ -191,7 +191,9 @@ public class OCDPServiceInstanceLifecycleService {
          For details, please refer to https://github.com/asiainfoLDP/datafoundry_servicebroker_ocdp/issues/2
         **/
 
-        CreateServiceInstanceResponse response = new CreateServiceInstanceResponse().withAsync(false);
+        OCDPCreateServiceInstanceResponse response = new OCDPCreateServiceInstanceResponse()
+                .withCredential(credentials)
+                .withAsync(false);
         return response;
 	}
 
@@ -236,6 +238,11 @@ public class OCDPServiceInstanceLifecycleService {
     public String getOCDPServiceDashboard(String serviceDefinitionId){
         OCDPAdminService ocdp = getOCDPAdminService(serviceDefinitionId);
         return ocdp.getDashboardUrl();
+    }
+
+    public Map<String, String> getOCDPServiceCredential(String serviceDefinitionId, String serviceInstanceId, String accountName){
+        OCDPAdminService ocdp = getOCDPAdminService(serviceDefinitionId);
+        return ocdp.getCredentialsInfo(serviceInstanceId, accountName);
     }
 
     private OCDPAdminService getOCDPAdminService(String serviceDefinitionId){

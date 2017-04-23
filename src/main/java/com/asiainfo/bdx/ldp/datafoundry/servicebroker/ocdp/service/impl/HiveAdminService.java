@@ -54,7 +54,7 @@ public class HiveAdminService implements OCDPAdminService {
         if(dbName != null){
             hdfsAdminService.setQuota("/apps/hive/warehouse/" + dbName + ".db", new Long("1000"), new Long(quota.get("hiveStorageQuota")) * 1000000000);
         }
-        String queueName = yarnCommonService.createQueue(quota.get("yarnQueueQuota"));
+        String queueName = yarnCommonService.createQueue(quota.get("yarnQueueQuota"), serviceInstanceId);
         return dbName + ":" + queueName;
     }
 
@@ -138,6 +138,21 @@ public class HiveAdminService implements OCDPAdminService {
                 put("port", clusterConfig.getHivePort());
                 put("name", resources[0]);
                 put("rangerPolicyId", rangerPolicyId);
+            }
+        };
+    }
+
+    @Override
+    public Map<String, String> getCredentialsInfo(String serviceInstanceId, String accountName){
+        String dbName = serviceInstanceId.replaceAll("_", "");
+        return new HashMap<String, String>(){
+            {
+                put("username", accountName);
+                put("uri", "jdbc:hive2://" + clusterConfig.getHiveHost() + ":" +
+                        clusterConfig.getHivePort() + "/" + dbName + ";principal=" + accountName );
+                put("host", clusterConfig.getHiveHost());
+                put("port", clusterConfig.getHivePort());
+                put("resource", dbName);
             }
         };
     }

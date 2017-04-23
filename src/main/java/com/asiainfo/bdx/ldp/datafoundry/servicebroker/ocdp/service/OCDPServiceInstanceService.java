@@ -31,7 +31,7 @@ public class OCDPServiceInstanceService implements ServiceInstanceService {
     private OCDPServiceInstanceRepository repository;
 
     // Operation response cache
-    private Map<String, Future<CreateServiceInstanceResponse>> instanceProvisionStateMap;
+    private Map<String, Future<OCDPCreateServiceInstanceResponse>> instanceProvisionStateMap;
 
     private Map<String, Future<DeleteServiceInstanceResponse>> instanceDeleteStateMap;
 
@@ -41,10 +41,11 @@ public class OCDPServiceInstanceService implements ServiceInstanceService {
     }
 
     @Override
-    public CreateServiceInstanceResponse createServiceInstance(CreateServiceInstanceRequest request) throws OCDPServiceException {
+    public OCDPCreateServiceInstanceResponse createServiceInstance(CreateServiceInstanceRequest request) throws OCDPServiceException {
         String serviceDefinitionId = request.getServiceDefinitionId();
         String serviceInstanceId = request.getServiceInstanceId();
         String planId = request.getPlanId();
+        String accountName = request.getSpaceGuid();
         ServiceInstance instance = repository.findOne(serviceInstanceId);
         // Check service instance and planid
         if (instance != null) {
@@ -52,10 +53,10 @@ public class OCDPServiceInstanceService implements ServiceInstanceService {
         }else if(! planId.equals(OCDPAdminServiceMapper.getOCDPServicePlan(serviceDefinitionId))){
             throw new ServiceBrokerInvalidParametersException("Unknown plan id: " + planId);
         }
-        CreateServiceInstanceResponse response;
+        OCDPCreateServiceInstanceResponse response;
         OCDPServiceInstanceLifecycleService service = getOCDPServiceInstanceLifecycleService();
         if(request.isAsyncAccepted()){
-            Future<CreateServiceInstanceResponse> responseFuture = service.doCreateServiceInstanceAsync(request);
+            Future<OCDPCreateServiceInstanceResponse> responseFuture = service.doCreateServiceInstanceAsync(request);
             this.instanceProvisionStateMap.put(request.getServiceInstanceId(), responseFuture);
             /**
             response = new CreateServiceInstanceResponse()
@@ -64,7 +65,12 @@ public class OCDPServiceInstanceService implements ServiceInstanceService {
              Do not return OCDP components dashboard to DF, due to current Hadoop component dashboard not support multi-tenant function.
              For details, please refer to https://github.com/asiainfoLDP/datafoundry_servicebroker_ocdp/issues/2
              **/
-            response = new CreateServiceInstanceResponse().withAsync(true);
+            //CITIC case: return service credential info in provision response body
+            Map<String, String> credential = service.getOCDPServiceCredential(
+                    serviceDefinitionId, serviceInstanceId, accountName);
+            response = new OCDPCreateServiceInstanceResponse()
+                    .withCredential(credential)
+                    .withAsync(true);
         } else {
             response = service.doCreateServiceInstance(request);
         }
@@ -82,7 +88,7 @@ public class OCDPServiceInstanceService implements ServiceInstanceService {
         // Get Last operation response object from cache
         boolean is_operation_done = false;
         if( operationType == OperationType.PROVISION){
-            Future<CreateServiceInstanceResponse> responseFuture = this.instanceProvisionStateMap.get(serviceInstanceId);
+            Future<OCDPCreateServiceInstanceResponse> responseFuture = this.instanceProvisionStateMap.get(serviceInstanceId);
             is_operation_done = responseFuture.isDone();
         } else if( operationType == OperationType.DELETE){
             Future<DeleteServiceInstanceResponse> responseFuture = this.instanceDeleteStateMap.get(serviceInstanceId);

@@ -41,7 +41,7 @@ public class YarnCapacityCaculater {
      * A Method to apply queue with capacity quota
      * @param quota
      */
-    public String applyQueue(Long quota){
+    public String applyQueue(Long quota, String newQueue){
 
         String emptyQueue = null;
         String targetQueueCapacity = String.valueOf((100*quota)/(totalMemory/1024));
@@ -58,7 +58,8 @@ public class YarnCapacityCaculater {
             properties.replace("yarn.scheduler.capacity.root."+emptyQueue+".maximum-capacity","0",targetQueueCapacity);
         }
         else {
-            String newQueue = UUID.randomUUID().toString();
+            //String newQueue = UUID.randomUUID().toString();
+            // Use queue name passed by adminServices, e.g. service instance id
             emptyQueue = newQueue;
             properties.replace("yarn.scheduler.capacity.root.queues",allQueues,allQueues+","+newQueue);
             properties.put("yarn.scheduler.capacity.root."+newQueue+".capacity",targetQueueCapacity);

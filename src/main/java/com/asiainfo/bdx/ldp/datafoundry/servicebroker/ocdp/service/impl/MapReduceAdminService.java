@@ -47,7 +47,7 @@ public class MapReduceAdminService implements OCDPAdminService{
     public String provisionResources(String serviceDefinitionId, String planId, String serviceInstanceId,
                                      String bindingId, String accountName) throws Exception {
         Map<String, String> quota = this.getQuotaFromPlan(serviceDefinitionId, planId);
-        String queueName = this.yarnCommonService.createQueue(quota.get("yarnQueueQuota"));
+        String queueName = this.yarnCommonService.createQueue(quota.get("yarnQueueQuota"), serviceInstanceId.replaceAll("-", ""));
         //Append random user name after username passed from DF, due to broker use space_guid as username for every provision request now
         String dirName = "/user/" + accountName + "_" + BrokerUtil.generateAccountName();
         this.hdfsAdminService.createHDFSDir(dirName, new Long(quota.get("nameSpaceQuota")), new Long(quota.get("storageSpaceQuota")) * 1000000000);
@@ -137,6 +137,19 @@ public class MapReduceAdminService implements OCDPAdminService{
                 put("port", clusterConfig.getYarnRMPort());
                 put("name", serviceInstanceResource);
                 put("rangerPolicyId", rangerPolicyId);
+            }
+        };
+    }
+
+    @Override
+    public Map<String, String> getCredentialsInfo(String serviceInstanceId, String accountName){
+        return new HashMap<String, String>(){
+            {
+                put("username", accountName);
+                put("uri", clusterConfig.getYarnRMUrl());
+                put("host", clusterConfig.getYarnRMHost());
+                put("port", clusterConfig.getYarnRMPort());
+                put("resource", serviceInstanceId.replaceAll("-", ""));
             }
         };
     }

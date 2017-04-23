@@ -190,6 +190,19 @@ public class HDFSAdminService implements OCDPAdminService{
         };
     }
 
+    @Override
+    public Map<String, String> getCredentialsInfo(String serviceInstanceId, String accountName){
+        return new HashMap<String, String>(){
+            {
+                put("username", accountName);
+                put("uri", webHdfsUrl + "/servicebroker/" + serviceInstanceId);
+                put("host", clusterConfig.getHdfsNameNode());
+                put("port", clusterConfig.getHdfsPort());
+                put("resource", "/servicebroker/" + serviceInstanceId);
+            }
+        };
+    }
+
     private boolean updateUserForResourcePermission(String policyId, String groupName, String accountName, boolean isAppend){
         String currentPolicy = this.rc.getV2Policy(policyId);
         if (currentPolicy == null)

@@ -52,7 +52,7 @@ public class YarnCommonService {
         this.yClient = clusterConfig.getYarnClient();
     }
 
-    public synchronized String createQueue(String quota){
+    public synchronized String createQueue(String quota, String queueName){
         String csConfig;
         String clusterTotalMemory;
         String provisionedQueue;
@@ -63,7 +63,7 @@ public class YarnCommonService {
             yClient.getClusterMetrics();
             clusterTotalMemory = yClient.getTotalMemory();
             YarnCapacityCaculater capacityCaculater = new YarnCapacityCaculater(clusterTotalMemory,csActualConfig);
-            provisionedQueue = capacityCaculater.applyQueue(new Long(quota));
+            provisionedQueue = capacityCaculater.applyQueue(new Long(quota), queueName);
             if(provisionedQueue == null)
                 throw new OCDPServiceException("Not Enough Capacity to apply!");
             queuePath = "root."+provisionedQueue;
