@@ -176,7 +176,7 @@ public class HBaseAdminService implements OCDPAdminService{
                 put("uri", "http://" + clusterConfig.getHbaseMaster() + ":" + clusterConfig.getHbaseRestPort());
                 put("host", clusterConfig.getHbaseMaster());
                 put("port", clusterConfig.getHbaseRestPort());
-                put("resource", serviceInstanceId.replaceAll("-", ""));
+                put("HBase NameSpace", serviceInstanceId.replaceAll("-", ""));
             }
         };
     }
