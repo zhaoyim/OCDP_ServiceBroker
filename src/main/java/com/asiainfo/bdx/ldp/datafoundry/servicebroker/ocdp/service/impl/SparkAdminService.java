@@ -143,10 +143,11 @@ public class SparkAdminService implements OCDPAdminService {
     }
 
     @Override
-    public Map<String, String> getCredentialsInfo(String serviceInstanceId, String accountName){
+    public Map<String, String> getCredentialsInfo(String serviceInstanceId, String accountName, String password){
         return new HashMap<String, String>(){
             {
                 put("username", accountName);
+                put("password", password);
                 put("uri", clusterConfig.getYarnRMUrl());
                 put("host", clusterConfig.getYarnRMHost());
                 put("port", clusterConfig.getYarnRMPort());

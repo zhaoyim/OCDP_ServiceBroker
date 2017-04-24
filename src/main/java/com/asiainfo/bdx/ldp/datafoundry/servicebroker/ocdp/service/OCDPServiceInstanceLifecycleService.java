@@ -66,14 +66,17 @@ public class OCDPServiceInstanceLifecycleService {
         this.etcdClient = clusterConfig.getEtcdClient();
     }
 
+    //For citic case, should pass 'password' string as parameter into create service instance function
     @Async
-    public Future<OCDPCreateServiceInstanceResponse> doCreateServiceInstanceAsync(CreateServiceInstanceRequest request) throws OCDPServiceException {
+    public Future<OCDPCreateServiceInstanceResponse> doCreateServiceInstanceAsync(
+            CreateServiceInstanceRequest request, String password) throws OCDPServiceException {
         return new AsyncResult<OCDPCreateServiceInstanceResponse>(
-                doCreateServiceInstance(request)
+                doCreateServiceInstance(request, password)
         );
     }
 
-	public OCDPCreateServiceInstanceResponse doCreateServiceInstance(CreateServiceInstanceRequest request) throws OCDPServiceException {
+	public OCDPCreateServiceInstanceResponse doCreateServiceInstance(
+            CreateServiceInstanceRequest request, String password) throws OCDPServiceException {
         String serviceDefinitionId = request.getServiceDefinitionId();
         String serviceInstanceId = request.getServiceInstanceId();
         String planId = request.getPlanId();
@@ -102,12 +105,13 @@ public class OCDPServiceInstanceLifecycleService {
 
         //Create new kerberos principal/keytab for new LDAP user
         String pn = accountName + "@" + krbRealm;
-        String pwd;
+        // For citic case, use password parameter here
+        String pwd = password;
         String keyTabString = "";
         if (newCreatedLDAPUser){
             logger.info("create new kerberos principal.");
             // Generate krb password and store it to etcd
-            pwd = UUID.randomUUID().toString();
+            //pwd = UUID.randomUUID().toString();
             etcdClient.write("/servicebroker/ocdp/user/krb/" + pn, pwd);
             try{
                 this.kc.createPrincipal(pn, pwd);
@@ -123,10 +127,10 @@ public class OCDPServiceInstanceLifecycleService {
                 }
                 throw new OCDPServiceException("Kerberos principal create fail due to: " + e.getLocalizedMessage());
             }
-        } else {
+        } //else {
             // Get krb principal's password from etcd
-            pwd = etcdClient.readToString("/servicebroker/ocdp/user/krb/" + pn);
-        }
+          //  pwd = etcdClient.readToString("/servicebroker/ocdp/user/krb/" + pn);
+        //}
 
         // Create Hadoop resource like hdfs folder, hbase table ...
         String serviceInstanceResource;
@@ -240,9 +244,10 @@ public class OCDPServiceInstanceLifecycleService {
         return ocdp.getDashboardUrl();
     }
 
-    public Map<String, String> getOCDPServiceCredential(String serviceDefinitionId, String serviceInstanceId, String accountName){
+    public Map<String, String> getOCDPServiceCredential(
+            String serviceDefinitionId, String serviceInstanceId, String accountName, String password){
         OCDPAdminService ocdp = getOCDPAdminService(serviceDefinitionId);
-        return ocdp.getCredentialsInfo(serviceInstanceId, accountName);
+        return ocdp.getCredentialsInfo(serviceInstanceId, accountName, password);
     }
 
     private OCDPAdminService getOCDPAdminService(String serviceDefinitionId){

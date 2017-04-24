@@ -29,5 +29,5 @@ public interface OCDPAdminService {
     Map<String, Object> generateCredentialsInfo(String accountName, String accountPwd, String accountKeytab,
                                                 String serviceInstanceResource, String rangerPolicyId);
 
-    Map<String, String> getCredentialsInfo(String serviceInstanceId, String accountName);
+    Map<String, String> getCredentialsInfo(String serviceInstanceId, String accountName, String password);
 }
