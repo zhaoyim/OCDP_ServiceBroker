@@ -22,7 +22,8 @@ public class OCDPCreateServiceInstanceResponse extends CreateServiceInstanceResp
         return this;
     }
 
-    public OCDPCreateServiceInstanceResponse withAsync(boolean async){
-        return this.withAsync(async);
+    public OCDPCreateServiceInstanceResponse withAsync(final boolean async) {
+        this.async = async;
+        return this;
     }
 }
