@@ -17,6 +17,7 @@ RUN rm -rf datafoundry_servicebroker_ocdp/
 
 RUN git clone https://github.com/asiainfoLDP/datafoundry_servicebroker_ocdp.git && \
     cd datafoundry_servicebroker_ocdp && \
+    git checkout citic && \
     ./gradlew build
 
 RUN cp datafoundry_servicebroker_ocdp/build/libs/datafoundry-ocdp-service-broker.jar app.jar
