@@ -11,7 +11,7 @@ import com.asiainfo.bdx.ldp.datafoundry.servicebroker.ocdp.client.etcdClient;
 import com.asiainfo.bdx.ldp.datafoundry.servicebroker.ocdp.config.ClusterConfig;
 import com.asiainfo.bdx.ldp.datafoundry.servicebroker.ocdp.utils.BrokerUtil;
 import org.springframework.cloud.servicebroker.model.CreateServiceInstanceRequest;
-import org.springframework.cloud.servicebroker.model.CreateServiceInstanceResponse;
+import com.asiainfo.bdx.ldp.datafoundry.servicebroker.ocdp.model.OCDPCreateServiceInstanceResponse;
 import org.springframework.cloud.servicebroker.model.DeleteServiceInstanceRequest;
 import org.springframework.cloud.servicebroker.model.DeleteServiceInstanceResponse;
 import org.slf4j.Logger;
@@ -66,14 +66,17 @@ public class OCDPServiceInstanceLifecycleService {
         this.etcdClient = clusterConfig.getEtcdClient();
     }
 
+    //For citic case, should pass 'password' string as parameter into create service instance function
     @Async
-    public Future<CreateServiceInstanceResponse> doCreateServiceInstanceAsync(CreateServiceInstanceRequest request) throws OCDPServiceException {
-        return new AsyncResult<CreateServiceInstanceResponse>(
-                doCreateServiceInstance(request)
+    public Future<OCDPCreateServiceInstanceResponse> doCreateServiceInstanceAsync(
+            CreateServiceInstanceRequest request, String password) throws OCDPServiceException {
+        return new AsyncResult<OCDPCreateServiceInstanceResponse>(
+                doCreateServiceInstance(request, password)
         );
     }
 
-	public CreateServiceInstanceResponse doCreateServiceInstance(CreateServiceInstanceRequest request) throws OCDPServiceException {
+	public OCDPCreateServiceInstanceResponse doCreateServiceInstance(
+            CreateServiceInstanceRequest request, String password) throws OCDPServiceException {
         String serviceDefinitionId = request.getServiceDefinitionId();
         String serviceInstanceId = request.getServiceInstanceId();
         String planId = request.getPlanId();
@@ -102,12 +105,13 @@ public class OCDPServiceInstanceLifecycleService {
 
         //Create new kerberos principal/keytab for new LDAP user
         String pn = accountName + "@" + krbRealm;
-        String pwd;
+        // For citic case, use password parameter here
+        String pwd = password;
         String keyTabString = "";
         if (newCreatedLDAPUser){
             logger.info("create new kerberos principal.");
             // Generate krb password and store it to etcd
-            pwd = UUID.randomUUID().toString();
+            //pwd = UUID.randomUUID().toString();
             etcdClient.write("/servicebroker/ocdp/user/krb/" + pn, pwd);
             try{
                 this.kc.createPrincipal(pn, pwd);
@@ -123,10 +127,10 @@ public class OCDPServiceInstanceLifecycleService {
                 }
                 throw new OCDPServiceException("Kerberos principal create fail due to: " + e.getLocalizedMessage());
             }
-        } else {
+        } //else {
             // Get krb principal's password from etcd
-            pwd = etcdClient.readToString("/servicebroker/ocdp/user/krb/" + pn);
-        }
+          //  pwd = etcdClient.readToString("/servicebroker/ocdp/user/krb/" + pn);
+        //}
 
         // Create Hadoop resource like hdfs folder, hbase table ...
         String serviceInstanceResource;
@@ -191,7 +195,9 @@ public class OCDPServiceInstanceLifecycleService {
          For details, please refer to https://github.com/asiainfoLDP/datafoundry_servicebroker_ocdp/issues/2
         **/
 
-        CreateServiceInstanceResponse response = new CreateServiceInstanceResponse().withAsync(false);
+        OCDPCreateServiceInstanceResponse response = new OCDPCreateServiceInstanceResponse()
+                .withCredential(credentials)
+                .withAsync(false);
         return response;
 	}
 
@@ -236,6 +242,12 @@ public class OCDPServiceInstanceLifecycleService {
     public String getOCDPServiceDashboard(String serviceDefinitionId){
         OCDPAdminService ocdp = getOCDPAdminService(serviceDefinitionId);
         return ocdp.getDashboardUrl();
+    }
+
+    public Map<String, String> getOCDPServiceCredential(
+            String serviceDefinitionId, String serviceInstanceId, String accountName, String password){
+        OCDPAdminService ocdp = getOCDPAdminService(serviceDefinitionId);
+        return ocdp.getCredentialsInfo(serviceInstanceId, accountName, password);
     }
 
     private OCDPAdminService getOCDPAdminService(String serviceDefinitionId){

@@ -50,7 +50,7 @@ public class SparkAdminService implements OCDPAdminService {
         Map<String, String> quota = this.getQuotaFromPlan(serviceDefinitionId, planId);
         String queueName = yarnCommonService.createQueue(quota.get("yarnQueueQuota"));
         //Append random user name after username passed from DF, due to broker use space_guid as username for every provision request now
-        String dirName = "/user/" + accountName + "_" + BrokerUtil.generateAccountName();
+        String dirName = "/user/" + accountName + "_" + BrokerUtil.generateAccountName(8);
         this.hdfsAdminService.createHDFSDir(dirName, new Long(quota.get("nameSpaceQuota")), new Long(quota.get("storageSpaceQuota")) * 1000000000);
         // return yarn queue name and hdfs folder, because spark need both resources
         return queueName + ":" + dirName;
@@ -138,6 +138,19 @@ public class SparkAdminService implements OCDPAdminService {
                 put("port", clusterConfig.getYarnRMPort());
                 put("name", serviceInstanceResource);
                 put("rangerPolicyId", rangerPolicyId);
+            }
+        };
+    }
+
+    @Override
+    public Map<String, String> getCredentialsInfo(String serviceInstanceId, String accountName, String password){
+        return new HashMap<String, String>(){
+            {
+                put("username", accountName);
+                put("password", password);
+                put("uri", clusterConfig.getYarnRMUrl());
+                put("host", clusterConfig.getYarnRMHost());
+                put("port", clusterConfig.getYarnRMPort());
             }
         };
     }

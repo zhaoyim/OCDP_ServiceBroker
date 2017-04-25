@@ -120,7 +120,7 @@ public class rangerClient {
     private String createV2Policy(RangerV2Policy policy){
         String newPolicyString = null;
         String policyDef = gson.toJson(policy);
-        logger.debug(policyDef);
+        logger.info("DEBUG info:" + policyDef);
         URI uri = buildPolicyUri("service/public/v2/api/policy", "", "");
         HttpPost request = new HttpPost(uri);
         StringEntity entity = new StringEntity(policyDef, HTTP.UTF_8);

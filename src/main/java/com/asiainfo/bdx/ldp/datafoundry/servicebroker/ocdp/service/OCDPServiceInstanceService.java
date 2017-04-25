@@ -1,8 +1,11 @@
 package com.asiainfo.bdx.ldp.datafoundry.servicebroker.ocdp.service;
 
+import com.asiainfo.bdx.ldp.datafoundry.servicebroker.ocdp.config.ClusterConfig;
+import com.asiainfo.bdx.ldp.datafoundry.servicebroker.ocdp.client.etcdClient;
 import com.asiainfo.bdx.ldp.datafoundry.servicebroker.ocdp.exception.OCDPServiceException;
 import com.asiainfo.bdx.ldp.datafoundry.servicebroker.ocdp.model.*;
 import com.asiainfo.bdx.ldp.datafoundry.servicebroker.ocdp.repository.OCDPServiceInstanceRepository;
+import com.asiainfo.bdx.ldp.datafoundry.servicebroker.ocdp.utils.BrokerUtil;
 import com.asiainfo.bdx.ldp.datafoundry.servicebroker.ocdp.utils.OCDPAdminServiceMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cloud.servicebroker.exception.ServiceBrokerInvalidParametersException;
@@ -12,10 +15,12 @@ import org.springframework.cloud.servicebroker.model.*;
 import com.asiainfo.bdx.ldp.datafoundry.servicebroker.ocdp.model.ServiceInstance;
 import org.springframework.cloud.servicebroker.service.ServiceInstanceService;
 import org.springframework.context.ApplicationContext;
+import org.springframework.ldap.core.LdapTemplate;
 import org.springframework.stereotype.Service;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.UUID;
 import java.util.concurrent.Future;
 
 /**
@@ -30,21 +35,40 @@ public class OCDPServiceInstanceService implements ServiceInstanceService {
     @Autowired
     private OCDPServiceInstanceRepository repository;
 
+    private ClusterConfig clusterConfig;
+
     // Operation response cache
-    private Map<String, Future<CreateServiceInstanceResponse>> instanceProvisionStateMap;
+    private Map<String, Future<OCDPCreateServiceInstanceResponse>> instanceProvisionStateMap;
 
     private Map<String, Future<DeleteServiceInstanceResponse>> instanceDeleteStateMap;
 
-    public OCDPServiceInstanceService() {
+    private LdapTemplate ldap;
+
+    private etcdClient etcdClient;
+
+    @Autowired
+    public OCDPServiceInstanceService(ClusterConfig clusterConfig) {
+        this.clusterConfig = clusterConfig;
+        this.ldap = clusterConfig.getLdapTemplate();
+        this.etcdClient = clusterConfig.getEtcdClient();
         this.instanceProvisionStateMap = new HashMap<>();
         this.instanceDeleteStateMap = new HashMap<>();
     }
 
     @Override
-    public CreateServiceInstanceResponse createServiceInstance(CreateServiceInstanceRequest request) throws OCDPServiceException {
+    public OCDPCreateServiceInstanceResponse createServiceInstance(CreateServiceInstanceRequest request) throws OCDPServiceException {
         String serviceDefinitionId = request.getServiceDefinitionId();
         String serviceInstanceId = request.getServiceInstanceId();
         String planId = request.getPlanId();
+        String accountName = request.getSpaceGuid();
+        // For citic case: provision response should return connection info
+        String password;
+        if(! BrokerUtil.isLDAPUserExist(this.ldap, accountName)){
+            password = UUID.randomUUID().toString();
+        }else {
+            password = etcdClient.readToString("/servicebroker/ocdp/user/krb/" + accountName + "@" + clusterConfig.getKrbRealm());
+        }
+
         ServiceInstance instance = repository.findOne(serviceInstanceId);
         // Check service instance and planid
         if (instance != null) {
@@ -52,10 +76,10 @@ public class OCDPServiceInstanceService implements ServiceInstanceService {
         }else if(! planId.equals(OCDPAdminServiceMapper.getOCDPServicePlan(serviceDefinitionId))){
             throw new ServiceBrokerInvalidParametersException("Unknown plan id: " + planId);
         }
-        CreateServiceInstanceResponse response;
+        OCDPCreateServiceInstanceResponse response;
         OCDPServiceInstanceLifecycleService service = getOCDPServiceInstanceLifecycleService();
         if(request.isAsyncAccepted()){
-            Future<CreateServiceInstanceResponse> responseFuture = service.doCreateServiceInstanceAsync(request);
+            Future<OCDPCreateServiceInstanceResponse> responseFuture = service.doCreateServiceInstanceAsync(request, password);
             this.instanceProvisionStateMap.put(request.getServiceInstanceId(), responseFuture);
             /**
             response = new CreateServiceInstanceResponse()
@@ -64,9 +88,14 @@ public class OCDPServiceInstanceService implements ServiceInstanceService {
              Do not return OCDP components dashboard to DF, due to current Hadoop component dashboard not support multi-tenant function.
              For details, please refer to https://github.com/asiainfoLDP/datafoundry_servicebroker_ocdp/issues/2
              **/
-            response = new CreateServiceInstanceResponse().withAsync(true);
+            //CITIC case: return service credential info in provision response body
+            Map<String, String> credential = service.getOCDPServiceCredential(
+                    serviceDefinitionId, serviceInstanceId, accountName, password);
+            response = new OCDPCreateServiceInstanceResponse()
+                    .withCredential(credential)
+                    .withAsync(true);
         } else {
-            response = service.doCreateServiceInstance(request);
+            response = service.doCreateServiceInstance(request, password);
         }
         return response;
     }
@@ -82,7 +111,7 @@ public class OCDPServiceInstanceService implements ServiceInstanceService {
         // Get Last operation response object from cache
         boolean is_operation_done = false;
         if( operationType == OperationType.PROVISION){
-            Future<CreateServiceInstanceResponse> responseFuture = this.instanceProvisionStateMap.get(serviceInstanceId);
+            Future<OCDPCreateServiceInstanceResponse> responseFuture = this.instanceProvisionStateMap.get(serviceInstanceId);
             is_operation_done = responseFuture.isDone();
         } else if( operationType == OperationType.DELETE){
             Future<DeleteServiceInstanceResponse> responseFuture = this.instanceDeleteStateMap.get(serviceInstanceId);

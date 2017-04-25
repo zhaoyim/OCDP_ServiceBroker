@@ -142,6 +142,22 @@ public class HiveAdminService implements OCDPAdminService {
         };
     }
 
+    @Override
+    public Map<String, String> getCredentialsInfo(String serviceInstanceId, String accountName, String password){
+        String dbName = serviceInstanceId.replaceAll("_", "");
+        return new HashMap<String, String>(){
+            {
+                put("username", accountName);
+                put("password", password);
+                put("uri", "jdbc:hive2://" + clusterConfig.getHiveHost() + ":" +
+                        clusterConfig.getHivePort() + "/" + dbName + ";principal=" + accountName );
+                put("host", clusterConfig.getHiveHost());
+                put("port", clusterConfig.getHivePort());
+                put("Hive database", dbName);
+            }
+        };
+    }
+
     private Map<String, String> getQuotaFromPlan(String serviceDefinitionId, String planId){
         CatalogConfig catalogConfig = (CatalogConfig) this.context.getBean("catalogConfig");
         Plan plan = catalogConfig.getServicePlan(serviceDefinitionId, planId);

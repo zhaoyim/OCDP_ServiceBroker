@@ -146,7 +146,7 @@ public class OCDPServiceInstanceBindingService implements ServiceInstanceBinding
         OCDPAdminService ocdp = getOCDPAdminService(serviceDefinitionId);
         // Create LDAP user for OCDP service instance binding
         logger.info("create service binding ldap user.");
-        String accountName = "binding_" + BrokerUtil.generateAccountName();
+        String accountName = "binding_" + BrokerUtil.generateAccountName(10);
         try{
             BrokerUtil.createLDAPUser(this.ldap, this.etcdClient, accountName, ldapGroupName, ldapGroupId);
         }catch (Exception e){
