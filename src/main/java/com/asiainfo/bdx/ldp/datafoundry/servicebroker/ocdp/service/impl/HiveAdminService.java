@@ -2,6 +2,8 @@ package com.asiainfo.bdx.ldp.datafoundry.servicebroker.ocdp.service.impl;
 
 import com.asiainfo.bdx.ldp.datafoundry.servicebroker.ocdp.config.CatalogConfig;
 import com.asiainfo.bdx.ldp.datafoundry.servicebroker.ocdp.config.ClusterConfig;
+import com.asiainfo.bdx.ldp.datafoundry.servicebroker.ocdp.model.CustomizeQuotaItem;
+import com.asiainfo.bdx.ldp.datafoundry.servicebroker.ocdp.model.PlanMetadata;
 import com.asiainfo.bdx.ldp.datafoundry.servicebroker.ocdp.service.common.HiveCommonService;
 import com.asiainfo.bdx.ldp.datafoundry.servicebroker.ocdp.service.common.YarnCommonService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -47,8 +49,8 @@ public class HiveAdminService implements OCDPAdminService {
 
     @Override
     public String provisionResources(String serviceDefinitionId, String planId, String serviceInstanceId, String bindingId,
-                                     String accountName) throws Exception{
-        Map<String, String> quota = this.getQuotaFromPlan(serviceDefinitionId, planId);
+                                     String accountName, Map<String, Object> cuzQuota) throws Exception{
+        Map<String, String> quota = this.getQuotaFromPlan(serviceDefinitionId, planId, cuzQuota);
         String dbName = hiveCommonService.createDatabase(serviceInstanceId);
         // Set database storage quota
         if(dbName != null){
@@ -158,7 +160,7 @@ public class HiveAdminService implements OCDPAdminService {
         };
     }
 
-    private Map<String, String> getQuotaFromPlan(String serviceDefinitionId, String planId){
+    private Map<String, String> getQuotaFromPlan2(String serviceDefinitionId, String planId){
         CatalogConfig catalogConfig = (CatalogConfig) this.context.getBean("catalogConfig");
         Plan plan = catalogConfig.getServicePlan(serviceDefinitionId, planId);
         Map<String, Object> metadata = plan.getMetadata();
@@ -171,6 +173,54 @@ public class HiveAdminService implements OCDPAdminService {
                 put("yarnQueueQuota", yarnQueueQuota[1]);
             }
         };
+    }
+
+    private Map<String, String> getQuotaFromPlan(String serviceDefinitionId, String planId, Map<String, Object> cuzQuota){
+        CatalogConfig catalogConfig = (CatalogConfig) this.context.getBean("catalogConfig");
+        Plan plan = catalogConfig.getServicePlan(serviceDefinitionId, planId);
+        //  Map<String, Object> metadata = plan.getMetadata();
+        PlanMetadata planMetadata = (PlanMetadata)plan.getMetadata();
+        // Object customize = metadata.get("customize");
+        Map<String, CustomizeQuotaItem> customize = planMetadata.getCustomize();
+        String hiveStorageQuota, yarnQueueQuota;
+        if(customize != null){
+            // Customize quota case
+            //  Map<String, Object> customizeMap = (HashMap<String,Object>)customize;
+            CustomizeQuotaItem hiveStorageQuotaItem = customize.get("hiveStorageQuota");
+            String defaultHiveStorageQuota = hiveStorageQuotaItem.getDefaults();
+            String maxHiveStorageQuota = hiveStorageQuotaItem.getMax();
+
+            CustomizeQuotaItem yarnQueueQuotaItem = customize.get("yarnQueueQuota");
+            String defaultYarnQueueQuota = yarnQueueQuotaItem.getDefaults();
+            String maxYarnQueueQuota = yarnQueueQuotaItem.getMax();
+
+            if (cuzQuota.get("hiveStorageQuota") != null && cuzQuota.get("yarnQueueQuota") != null){
+                // customize quota have input value
+                hiveStorageQuota = (String)cuzQuota.get("hiveStorageQuota");
+                yarnQueueQuota = (String)cuzQuota.get("yarnQueueQuota");
+                // If customize quota exceeds plan limitation, use default value
+                if (Long.parseLong(hiveStorageQuota) > Long.parseLong(maxHiveStorageQuota)){
+                    hiveStorageQuota = defaultHiveStorageQuota;
+                }
+                if(Long.parseLong(yarnQueueQuota) > Long.parseLong(maxYarnQueueQuota)){
+                    yarnQueueQuota = defaultYarnQueueQuota;
+                }
+
+            }else {
+                // customize quota have not input value, use default value
+                hiveStorageQuota = defaultHiveStorageQuota;
+                yarnQueueQuota = defaultYarnQueueQuota;
+            }
+        }else{
+            // Non customize quota case, use plan.metadata.bullets
+            List<String> bullets = planMetadata.getBullets();
+            hiveStorageQuota = bullets.get(0).split(":")[1];
+            yarnQueueQuota = bullets.get(1).split(":")[1];
+        }
+        Map<String, String> quota = new HashMap<>();
+        quota.put("hiveStorageQuota", hiveStorageQuota);
+        quota.put("yarnQueueQuota", yarnQueueQuota);
+        return quota;
     }
 
 }

@@ -91,6 +91,7 @@ public class CatalogConfig {
                 {
                     put("costs", planMetadataObj.getCosts());
                     put("bullets", planMetadataObj.getBullets());
+                    put("customize", planMetadataObj.getCustomize());
                 }
             };
             Plan plan = new Plan(planId, planName, planDescription, planMetadataMap, Boolean.getBoolean(planFree));

@@ -2,12 +2,9 @@ package com.asiainfo.bdx.ldp.datafoundry.servicebroker.ocdp.service.impl;
 
 import com.asiainfo.bdx.ldp.datafoundry.servicebroker.ocdp.config.CatalogConfig;
 import com.asiainfo.bdx.ldp.datafoundry.servicebroker.ocdp.config.ClusterConfig;
-import com.asiainfo.bdx.ldp.datafoundry.servicebroker.ocdp.model.PlanMetadata;
-import com.asiainfo.bdx.ldp.datafoundry.servicebroker.ocdp.service.common.HiveCommonService;
 import com.asiainfo.bdx.ldp.datafoundry.servicebroker.ocdp.service.OCDPAdminService;
 import com.asiainfo.bdx.ldp.datafoundry.servicebroker.ocdp.service.common.YarnCommonService;
 import com.asiainfo.bdx.ldp.datafoundry.servicebroker.ocdp.utils.BrokerUtil;
-import com.google.gson.internal.LinkedTreeMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -46,8 +43,8 @@ public class SparkAdminService implements OCDPAdminService {
 
     @Override
     public String provisionResources(String serviceDefinitionId, String planId, String serviceInstanceId,
-                                     String bindingId, String accountName) throws Exception {
-        Map<String, String> quota = this.getQuotaFromPlan(serviceDefinitionId, planId);
+                                     String bindingId, String accountName, Map<String, Object> cuzQuota) throws Exception {
+        Map<String, String> quota = this.yarnCommonService.getQuotaFromPlan(serviceDefinitionId, planId, cuzQuota);
         String queueName = yarnCommonService.createQueue(quota.get("yarnQueueQuota"));
         //Append random user name after username passed from DF, due to broker use space_guid as username for every provision request now
         String dirName = "/user/" + accountName + "_" + BrokerUtil.generateAccountName(8);
@@ -155,20 +152,4 @@ public class SparkAdminService implements OCDPAdminService {
         };
     }
 
-    private Map<String, String> getQuotaFromPlan(String serviceDefinitionId, String planId){
-        CatalogConfig catalogConfig = (CatalogConfig) this.context.getBean("catalogConfig");
-        Plan plan = catalogConfig.getServicePlan(serviceDefinitionId, planId);
-        Map<String, Object> metadata = plan.getMetadata();
-        List<String> bullets = (ArrayList)metadata.get("bullets");
-        String[] yarnQueueQuota = (bullets.get(0)).split(":");
-        String[] nameSpaceQuota = (bullets.get(2)).split(":");
-        String[] storageSpaceQuota = (bullets.get(3)).split(":");
-        return new HashMap<String, String>(){
-            {
-                put("yarnQueueQuota", yarnQueueQuota[1]);
-                put("nameSpaceQuota", nameSpaceQuota[1]);
-                put("storageSpaceQuota", storageSpaceQuota[1]);
-            }
-        };
-    }
 }

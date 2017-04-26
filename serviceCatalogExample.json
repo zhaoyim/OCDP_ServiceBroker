@@ -10,7 +10,25 @@
         "description":"This is a default hdfs plan.  All services are created equally.",
         "metadata":{
           "costs":[{"amount":{"usd":0.0},"unit":"MONTHLY"}],
-          "bullets":["Name Space Quota:1000", "Storage Space Quota:20"]
+          "bullets":["Name Space Quota:1000", "Storage Space Quota:20"],
+          "customize": {
+            "nameSpaceQuota": {
+              "default": 1000,
+              "max": 100000,
+              "price": 10,
+              "unit": "",
+              "step": 10,
+              "desc": "HDFS目录允许创建的最大文件数目"
+            },
+            "storageSpaceQuota": {
+              "default": 1024,
+              "max": 102400,
+              "price": 10,
+              "unit": "GB",
+              "step": 10,
+              "desc": "HDFS目录的最大存储容量"
+            }
+          }
         },
         "free":false
       }],
@@ -34,7 +52,26 @@
         "description":"This is a default hbase plan.  All services are created equally.",
         "metadata":{
           "costs":[{"amount":{"usd":0.0},"unit":"MONTHLY"}],
-          "bullets":["HBase Maximun Tables:10","HBase Maximun Regions:10"]},
+          "bullets":["HBase Maximum Tables:10","HBase Maximun Regions:10"],
+          "customize": {
+            "maximumTablesQuota": {
+              "default": 10,
+              "max": 100,
+              "price": 10,
+              "unit": "",
+              "step": 10,
+              "desc": "HBase命名空间允许的最大的表数目"
+            },
+            "maximumRegionsQuota": {
+              "default": 100,
+              "max": 1000,
+              "price": 10,
+              "unit": "",
+              "step": 10,
+              "desc": "HBase命名空间允许的最大region数目"
+            }
+          }
+        },
         "free":false}],
     "tags":["hbase","document"],
     "metadata":{
@@ -56,7 +93,26 @@
         "description":"This is a default hive plan.  All services are created equally.",
         "metadata":{
           "costs":[{"amount":{"usd":0.0},"unit":"MONTHLY"}],
-          "bullets":["Shared hive instance:20 GB Storage (not enforced)"]},
+          "bullets":["Shared hive instance:20 GB Storage (not enforced)"],
+          "customize": {
+            "hiveStorageQuota": {
+              "default": 1024,
+              "max": 102400,
+              "price": 10,
+              "unit": "GB",
+              "step": 10,
+              "desc": "Hive数据库的最大存储容量"
+            },
+            "yarnQueueQuota": {
+              "default": 10,
+              "max": 100,
+              "price": 10,
+              "unit": "GB",
+              "step": 10,
+              "desc": "Yarn队列的最大容量"
+            }
+          }
+        },
         "free":false}],
     "tags":["hive","document"],
     "metadata":{
@@ -74,11 +130,38 @@
     "plan_updateable":false,
     "plans":[
       {"id":"6524c793-0ea5-4456-9a60-ca70271decdc",
-        "name":"Default hive Plan",
+        "name":"Default MapReduce Plan",
         "description":"This is a default mapreduce plan.  All services are created equally.",
         "metadata":{
           "costs":[{"amount":{"usd":0.0},"unit":"MONTHLY"}],
-          "bullets":["Yarn Queue Quota (GB):1"]},
+          "bullets":["Yarn Queue Quota (GB):1"],
+          "customize": {
+            "yarnQueueQuota": {
+              "default": 10,
+              "max": 100,
+              "price": 10,
+              "unit": "GB",
+              "step": 10,
+              "desc": "Yarn队列的最大容量"
+            },
+            "nameSpaceQuota": {
+              "default": 1000,
+              "max": 100000,
+              "price": 10,
+              "unit": "",
+              "step": 10,
+              "desc": "HDFS目录允许创建的最大文件数目"
+            },
+            "storageSpaceQuota": {
+              "default": 1024,
+              "max": 102400,
+              "price": 10,
+              "unit": "GB",
+              "step": 10,
+              "desc": "HDFS目录的最大存储容量"
+            }
+          }
+        },
         "free":false}],
     "tags":["mapreduce","document"],
     "metadata":{
@@ -100,7 +183,34 @@
         "description":"This is a default spark plan.  All services are created equally.",
         "metadata":{
           "costs":[{"amount":{"usd":0.0},"unit":"MONTHLY"}],
-          "bullets":["Yarn Queue Quota (GB):1","Hive Database:1"]},
+          "bullets":["Yarn Queue Quota (GB):1"],
+          "customize": {
+            "yarnQueueQuota": {
+              "default": 10,
+              "max": 100,
+              "price": 10,
+              "unit": "GB",
+              "step": 10,
+              "desc": "Yarn队列的最大容量"
+            },
+            "nameSpaceQuota": {
+              "default": 1000,
+              "max": 100000,
+              "price": 10,
+              "unit": "",
+              "step": 10,
+              "desc": "HDFS目录允许创建的最大文件数目"
+            },
+            "StorageSpaceQuota": {
+              "default": 1024,
+              "max": 102400,
+              "price": 10,
+              "unit": "GB",
+              "step": 10,
+              "desc": "HDFS目录的最大存储容量"
+            }
+          }
+        },
         "free":false}],
     "tags":["Spark","document"],
     "metadata":{
