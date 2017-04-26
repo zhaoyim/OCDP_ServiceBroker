@@ -195,9 +195,8 @@ public class OCDPServiceInstanceLifecycleService {
          For details, please refer to https://github.com/asiainfoLDP/datafoundry_servicebroker_ocdp/issues/2
         **/
 
-        OCDPCreateServiceInstanceResponse response = new OCDPCreateServiceInstanceResponse()
-                .withCredential(credentials)
-                .withAsync(false);
+        OCDPCreateServiceInstanceResponse response = new OCDPCreateServiceInstanceResponse().withCredential(credentials);
+               // .withAsync(false);
         return response;
 	}
 
