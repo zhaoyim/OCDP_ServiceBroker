@@ -9,7 +9,9 @@ import java.net.URI;
 
 import com.asiainfo.bdx.ldp.datafoundry.servicebroker.ocdp.config.CatalogConfig;
 import com.asiainfo.bdx.ldp.datafoundry.servicebroker.ocdp.config.ClusterConfig;
+import com.asiainfo.bdx.ldp.datafoundry.servicebroker.ocdp.model.PlanMetadata;
 import com.asiainfo.bdx.ldp.datafoundry.servicebroker.ocdp.model.RangerV2Policy;
+import com.asiainfo.bdx.ldp.datafoundry.servicebroker.ocdp.model.CustomizeQuotaItem;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import org.springframework.cloud.servicebroker.model.Plan;
@@ -80,9 +82,9 @@ public class HDFSAdminService implements OCDPAdminService{
 
     @Override
     public String provisionResources(String serviceDefinitionId, String planId, String serviceInstanceId,
-                                     String bindingId, String accountName) throws Exception{
+                                     String bindingId, String accountName, Map<String, Object> cuzQuota) throws Exception{
         String pathName = "/servicebroker/" + serviceInstanceId;
-        Map<String, Long> quota = this.getQuotaFromPlan(serviceDefinitionId, planId);
+        Map<String, Long> quota = this.getQuotaFromPlan(serviceDefinitionId, planId, cuzQuota);
         this.createHDFSDir(pathName, quota.get("nameSpaceQuota"), quota.get("storageSpaceQuota"));
         return pathName;
     }
@@ -216,17 +218,54 @@ public class HDFSAdminService implements OCDPAdminService{
         return this.rc.updateV2Policy(policyId, gson.toJson(rp));
     }
 
-    private Map<String, Long> getQuotaFromPlan(String serviceDefinitionId, String planId){
+    private Map<String, Long> getQuotaFromPlan(String serviceDefinitionId, String planId, Map<String, Object> cuzQuota){
         CatalogConfig catalogConfig = (CatalogConfig) this.context.getBean("catalogConfig");
         Plan plan = catalogConfig.getServicePlan(serviceDefinitionId, planId);
-        Map<String, Object> metadata = plan.getMetadata();
-        List<String> bullets = (ArrayList)metadata.get("bullets");
-        String[] nameSpaceQuota = (bullets.get(0)).split(":");
-        String[] storageSpaceQuota = (bullets.get(1)).split(":");
+      //  Map<String, Object> metadata = plan.getMetadata();
+        PlanMetadata planMetadata = (PlanMetadata)plan.getMetadata();
+       // Object customize = metadata.get("customize");
+        Map<String, CustomizeQuotaItem> customize = planMetadata.getCustomize();
+        String nameSpaceQuota, storageSpaceQuota;
+        if(customize != null){
+            // Customize quota case
+          //  Map<String, Object> customizeMap = (HashMap<String,Object>)customize;
+            CustomizeQuotaItem nameSpaceQuotaItem = customize.get("nameSpaceQuota");
+            String defaultNameSpaceQuota = nameSpaceQuotaItem.getDefaults();
+            String maxNameSpaceQuota = nameSpaceQuotaItem.getMax();
+
+            CustomizeQuotaItem storageSpaceQuotaItem = customize.get("storageSpaceQuota");
+            String defaultStorageSpaceQuota = storageSpaceQuotaItem.getDefaults();
+            String maxStorageSpaceQuota = storageSpaceQuotaItem.getMax();
+
+            if (cuzQuota.get("nameSpaceQuota") != null && cuzQuota.get("storageSpaceQuota") != null){
+                // customize quota have input value
+                nameSpaceQuota = (String)cuzQuota.get("nameSpaceQuota");
+                storageSpaceQuota = (String)cuzQuota.get("storageSpaceQuota");
+                // If customize quota exceeds plan limitation, use default value
+                if (Long.parseLong(nameSpaceQuota) > Long.parseLong(maxNameSpaceQuota)){
+                    nameSpaceQuota = defaultNameSpaceQuota;
+                }
+                if(Long.parseLong(storageSpaceQuota) > Long.parseLong(maxStorageSpaceQuota)){
+                    storageSpaceQuota = defaultStorageSpaceQuota;
+                }
+
+            }else {
+                // customize quota have not input value, use default value
+                nameSpaceQuota = defaultNameSpaceQuota;
+                storageSpaceQuota = defaultStorageSpaceQuota;
+            }
+        }else{
+            // Non customize quota case, use plan.metadata.bullets
+            List<String> bullets = planMetadata.getBullets();
+            nameSpaceQuota = bullets.get(0).split(":")[1];
+            storageSpaceQuota = bullets.get(1).split(":")[1];
+        }
+        final Long longNameSpaceQuota = new Long(nameSpaceQuota);
+        final Long longStorageSpaceQuota = new Long(storageSpaceQuota);
         return new HashMap<String, Long>(){
             {
-                put("nameSpaceQuota", new Long(nameSpaceQuota[1]));
-                put("storageSpaceQuota", new Long(storageSpaceQuota[1]) * 1000000000);
+                put("nameSpaceQuota", longNameSpaceQuota);
+                put("storageSpaceQuota", longStorageSpaceQuota * 1000000000);
             }
         };
     }

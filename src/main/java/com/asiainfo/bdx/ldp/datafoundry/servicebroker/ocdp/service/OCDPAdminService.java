@@ -11,8 +11,9 @@ import java.util.Map;
  */
 public interface OCDPAdminService {
 
+    // For Citic case, append customize quota in parameters
 	String provisionResources(String serviceDefinitionId, String planId, String serviceInstanceId,
-                              String bindingId, String accountName) throws Exception;
+                              String bindingId, String accountName, Map<String, Object> cuzQuota) throws Exception;
 
     String assignPermissionToResources(String policyName, List<String> resources, String accountName, String groupName);
 

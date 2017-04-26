@@ -20,6 +20,10 @@ public class PlanMetadata {
     @JsonProperty("bullets")
     List<String> bullets;
 
+    @JsonSerialize
+    @JsonProperty("customize")
+    Map<String, CustomizeQuotaItem> customize;
+
     @JsonAutoDetect(getterVisibility = JsonAutoDetect.Visibility.NONE)
     class Costs{
         @JsonSerialize
@@ -33,4 +37,5 @@ public class PlanMetadata {
 
     public List<Costs> getCosts(){ return this.costs; }
     public List<String> getBullets() { return this.bullets; }
+    public Map<String, CustomizeQuotaItem> getCustomize() { return this.customize; }
 }

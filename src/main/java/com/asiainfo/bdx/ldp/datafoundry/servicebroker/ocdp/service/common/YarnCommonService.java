@@ -3,9 +3,12 @@ package com.asiainfo.bdx.ldp.datafoundry.servicebroker.ocdp.service.common;
 import com.asiainfo.bdx.ldp.datafoundry.servicebroker.ocdp.client.ambariClient;
 import com.asiainfo.bdx.ldp.datafoundry.servicebroker.ocdp.client.rangerClient;
 import com.asiainfo.bdx.ldp.datafoundry.servicebroker.ocdp.client.yarnClient;
+import com.asiainfo.bdx.ldp.datafoundry.servicebroker.ocdp.config.CatalogConfig;
 import com.asiainfo.bdx.ldp.datafoundry.servicebroker.ocdp.config.ClusterConfig;
 import com.asiainfo.bdx.ldp.datafoundry.servicebroker.ocdp.exception.OCDPServiceException;
 import com.asiainfo.bdx.ldp.datafoundry.servicebroker.ocdp.model.CapacitySchedulerConfig;
+import com.asiainfo.bdx.ldp.datafoundry.servicebroker.ocdp.model.CustomizeQuotaItem;
+import com.asiainfo.bdx.ldp.datafoundry.servicebroker.ocdp.model.PlanMetadata;
 import com.asiainfo.bdx.ldp.datafoundry.servicebroker.ocdp.model.RangerV2Policy;
 import com.asiainfo.bdx.ldp.datafoundry.servicebroker.ocdp.utils.YarnCapacityCaculater;
 import com.google.gson.Gson;
@@ -13,10 +16,14 @@ import com.google.gson.GsonBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cloud.servicebroker.model.Plan;
 import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Created by baikai on 8/5/16.
@@ -157,6 +164,66 @@ public class YarnCommonService {
             }
         }
         return updateStatus;
+    }
+
+    public Map<String, String> getQuotaFromPlan(String serviceDefinitionId, String planId, Map<String, Object> cuzQuota){
+        CatalogConfig catalogConfig = (CatalogConfig) this.context.getBean("catalogConfig");
+        Plan plan = catalogConfig.getServicePlan(serviceDefinitionId, planId);
+        //  Map<String, Object> metadata = plan.getMetadata();
+        PlanMetadata planMetadata = (PlanMetadata)plan.getMetadata();
+        // Object customize = metadata.get("customize");
+        Map<String, CustomizeQuotaItem> customize = planMetadata.getCustomize();
+        String yarnQueueQuota, nameSpaceQuota, storageSpaceQuota;
+        if(customize != null){
+            // Customize quota case
+            //  Map<String, Object> customizeMap = (HashMap<String,Object>)customize;
+            CustomizeQuotaItem yarnQueueQuotaItem = customize.get("yarnQueueQuota");
+            String defaultYarnQueueQuota = yarnQueueQuotaItem.getDefaults();
+            String maxYarnQueueQuota = yarnQueueQuotaItem.getMax();
+
+            CustomizeQuotaItem nameSpaceQuotaItem = customize.get("nameSpaceQuota");
+            String defaultNameSpaceQuota = nameSpaceQuotaItem.getDefaults();
+            String maxNameSpaceQuota = nameSpaceQuotaItem.getMax();
+
+            CustomizeQuotaItem storageSpaceQuotaItem = customize.get("storageSpaceQuota");
+            String defaultStorageSpaceQuota = storageSpaceQuotaItem.getDefaults();
+            String maxStorageSpaceQuota = storageSpaceQuotaItem.getMax();
+
+            if (cuzQuota.get("yarnQueueQuota") != null && cuzQuota.get("nameSpaceQuota") != null &&
+                    cuzQuota.get("storageSpaceQuota") != null){
+                // customize quota have input value
+                yarnQueueQuota = (String)cuzQuota.get("yarnQueueQuota");
+                nameSpaceQuota = (String)cuzQuota.get("nameSpaceQuota");
+                storageSpaceQuota = (String)cuzQuota.get("storageSpaceQuota");
+                // If customize quota exceeds plan limitation, use default value
+                if (Long.parseLong(yarnQueueQuota) > Long.parseLong(maxYarnQueueQuota)){
+                    yarnQueueQuota = defaultYarnQueueQuota;
+                }
+                if (Long.parseLong(nameSpaceQuota) > Long.parseLong(maxNameSpaceQuota)){
+                    nameSpaceQuota = defaultNameSpaceQuota;
+                }
+                if(Long.parseLong(storageSpaceQuota) > Long.parseLong(maxStorageSpaceQuota)){
+                    storageSpaceQuota = defaultStorageSpaceQuota;
+                }
+
+            }else {
+                // customize quota have not input value, use default value
+                yarnQueueQuota = defaultYarnQueueQuota;
+                nameSpaceQuota = defaultNameSpaceQuota;
+                storageSpaceQuota = defaultStorageSpaceQuota;
+            }
+        }else{
+            // Non customize quota case, use plan.metadata.bullets
+            List<String> bullets = planMetadata.getBullets();
+            yarnQueueQuota = bullets.get(0).split(":")[1];
+            nameSpaceQuota = bullets.get(1).split(":")[1];
+            storageSpaceQuota = bullets.get(2).split(":")[1];
+        }
+        Map<String, String> quota = new HashMap<>();
+        quota.put("yarnQueueQuota", yarnQueueQuota);
+        quota.put("nameSpaceQuotaa", nameSpaceQuota);
+        quota.put("storageSpaceQuota", storageSpaceQuota);
+        return quota;
     }
 
 }

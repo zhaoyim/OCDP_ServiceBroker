@@ -3,6 +3,8 @@ package com.asiainfo.bdx.ldp.datafoundry.servicebroker.ocdp.service.impl;
 import com.asiainfo.bdx.ldp.datafoundry.servicebroker.ocdp.client.rangerClient;
 import com.asiainfo.bdx.ldp.datafoundry.servicebroker.ocdp.config.CatalogConfig;
 import com.asiainfo.bdx.ldp.datafoundry.servicebroker.ocdp.config.ClusterConfig;
+import com.asiainfo.bdx.ldp.datafoundry.servicebroker.ocdp.model.CustomizeQuotaItem;
+import com.asiainfo.bdx.ldp.datafoundry.servicebroker.ocdp.model.PlanMetadata;
 import com.asiainfo.bdx.ldp.datafoundry.servicebroker.ocdp.model.RangerV2Policy;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -68,9 +70,9 @@ public class HBaseAdminService implements OCDPAdminService{
 
     @Override
     public String provisionResources(String serviceDefinitionId, String planId, String serviceInstanceId,
-                                     String bindingId, String accountName) throws Exception{
+                                     String bindingId, String accountName, Map<String, Object> cuzQuota) throws Exception{
         String nsName = serviceInstanceId.replaceAll("-", "");
-        Map<String, String> quota = this.getQuotaFromPlan(serviceDefinitionId, planId);
+        Map<String, String> quota = this.getQuotaFromPlan(serviceDefinitionId, planId, cuzQuota);
         try{
             BrokerUtil.authentication(
                     this.conf, this.clusterConfig.getHbaseMasterPrincipal(), this.clusterConfig.getHbaseMasterUserKeytab());
@@ -194,18 +196,51 @@ public class HBaseAdminService implements OCDPAdminService{
         return this.rc.updateV2Policy(policyId, gson.toJson(rp));
     }
 
-    private Map<String, String> getQuotaFromPlan(String serviceDefinitionId, String planId){
+    private Map<String, String> getQuotaFromPlan(String serviceDefinitionId, String planId, Map<String, Object> cuzQuota){
         CatalogConfig catalogConfig = (CatalogConfig) this.context.getBean("catalogConfig");
         Plan plan = catalogConfig.getServicePlan(serviceDefinitionId, planId);
-        Map<String, Object> metadata = plan.getMetadata();
-        List<String> bullets = (ArrayList)metadata.get("bullets");
-        String[] maximumTableQuota = (bullets.get(0)).split(":");
-        String[] maximunRegionQuota = (bullets.get(1)).split(":");
-        return new HashMap<String, String>(){
-            {
-                put("maximumTableQuota", maximumTableQuota[1]);
-                put("maximunRegionQuota", maximunRegionQuota[1]);
+        //  Map<String, Object> metadata = plan.getMetadata();
+        PlanMetadata planMetadata = (PlanMetadata)plan.getMetadata();
+        // Object customize = metadata.get("customize");
+        Map<String, CustomizeQuotaItem> customize = planMetadata.getCustomize();
+        String maximumTableQuota, maximumRegionQuota;
+        if(customize != null){
+            // Customize quota case
+            //  Map<String, Object> customizeMap = (HashMap<String,Object>)customize;
+            CustomizeQuotaItem maximumTableQuotaItem = customize.get("maximumTableQuota");
+            String defaultMaximumTableQuota= maximumTableQuotaItem.getDefaults();
+            String maxMaximumTableQuota = maximumTableQuotaItem.getMax();
+
+            CustomizeQuotaItem maximumRegionQuotaItem = customize.get("maximunRegionQuota");
+            String defaultMaximumRegionQuota = maximumRegionQuotaItem.getDefaults();
+            String maxMaximumRegionQuota = maximumRegionQuotaItem.getMax();
+
+            if (cuzQuota.get("maximumTableQuota") != null && cuzQuota.get("maximunRegionQuota") != null){
+                // customize quota have input value
+                maximumTableQuota = (String)cuzQuota.get("maximumTableQuota");
+                maximumRegionQuota = (String)cuzQuota.get("maximunRegionQuota");
+                // If customize quota exceeds plan limitation, use default value
+                if (Long.parseLong(maximumTableQuota) > Long.parseLong(maxMaximumTableQuota)){
+                    maximumTableQuota = defaultMaximumTableQuota;
+                }
+                if(Long.parseLong(maximumRegionQuota) > Long.parseLong(maxMaximumRegionQuota)){
+                    maximumRegionQuota = defaultMaximumRegionQuota;
+                }
+
+            }else {
+                // customize quota have not input value, use default value
+                maximumTableQuota = defaultMaximumTableQuota;
+                maximumRegionQuota = defaultMaximumRegionQuota;
             }
-        };
+        }else{
+            // Non customize quota case, use plan.metadata.bullets
+            List<String> bullets = planMetadata.getBullets();
+            maximumTableQuota = bullets.get(0).split(":")[1];
+            maximumRegionQuota = bullets.get(1).split(":")[1];
+        }
+        Map<String, String> quota = new HashMap<>();
+        quota.put("maximumTableQuota", maximumTableQuota);
+        quota.put("maximunRegionQuota", maximumRegionQuota);
+        return quota;
     }
 }
