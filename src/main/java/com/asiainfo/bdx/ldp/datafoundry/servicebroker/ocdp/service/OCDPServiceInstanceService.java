@@ -91,9 +91,8 @@ public class OCDPServiceInstanceService implements ServiceInstanceService {
             //CITIC case: return service credential info in provision response body
             Map<String, String> credential = service.getOCDPServiceCredential(
                     serviceDefinitionId, serviceInstanceId, accountName, password);
-            response = new OCDPCreateServiceInstanceResponse()
-                    .withCredential(credential)
-                    .withAsync(true);
+            response = new OCDPCreateServiceInstanceResponse().withCredential(credential);
+                    //.withAsync(true);
         } else {
             response = service.doCreateServiceInstance(request, password);
         }
