@@ -199,19 +199,18 @@ public class HBaseAdminService implements OCDPAdminService{
     private Map<String, String> getQuotaFromPlan(String serviceDefinitionId, String planId, Map<String, Object> cuzQuota){
         CatalogConfig catalogConfig = (CatalogConfig) this.context.getBean("catalogConfig");
         Plan plan = catalogConfig.getServicePlan(serviceDefinitionId, planId);
-        //  Map<String, Object> metadata = plan.getMetadata();
-        PlanMetadata planMetadata = (PlanMetadata)plan.getMetadata();
-        // Object customize = metadata.get("customize");
-        Map<String, CustomizeQuotaItem> customize = planMetadata.getCustomize();
+        Map<String, Object> metadata = plan.getMetadata();
+        Object customize = metadata.get("customize");
         String maximumTableQuota, maximumRegionQuota;
         if(customize != null){
             // Customize quota case
-            //  Map<String, Object> customizeMap = (HashMap<String,Object>)customize;
-            CustomizeQuotaItem maximumTableQuotaItem = customize.get("maximumTableQuota");
+            Map<String, Object> customizeMap = (HashMap<String,Object>)customize;
+
+            CustomizeQuotaItem maximumTableQuotaItem = (CustomizeQuotaItem)customizeMap.get("maximumTableQuota");
             String defaultMaximumTableQuota= maximumTableQuotaItem.getDefault();
             String maxMaximumTableQuota = maximumTableQuotaItem.getMax();
 
-            CustomizeQuotaItem maximumRegionQuotaItem = customize.get("maximunRegionQuota");
+            CustomizeQuotaItem maximumRegionQuotaItem = (CustomizeQuotaItem)customizeMap.get("maximunRegionQuota");
             String defaultMaximumRegionQuota = maximumRegionQuotaItem.getDefault();
             String maxMaximumRegionQuota = maximumRegionQuotaItem.getMax();
 
@@ -234,7 +233,7 @@ public class HBaseAdminService implements OCDPAdminService{
             }
         }else{
             // Non customize quota case, use plan.metadata.bullets
-            List<String> bullets = planMetadata.getBullets();
+            List<String> bullets = (ArrayList)metadata.get("bullets");
             maximumTableQuota = bullets.get(0).split(":")[1];
             maximumRegionQuota = bullets.get(1).split(":")[1];
         }

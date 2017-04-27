@@ -28,6 +28,7 @@ import org.springframework.ldap.core.LdapTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.AsyncResult;
+import org.springframework.cloud.servicebroker.model.CreateServiceInstanceResponse;
 
 /**
  * OCDP impl to manage hadoop service instances.  Creating a service does the following:
@@ -68,14 +69,14 @@ public class OCDPServiceInstanceLifecycleService {
 
     //For citic case, should pass 'password' string as parameter into create service instance function
     @Async
-    public Future<OCDPCreateServiceInstanceResponse> doCreateServiceInstanceAsync(
+    public Future<CreateServiceInstanceResponse> doCreateServiceInstanceAsync(
             CreateServiceInstanceRequest request, String password) throws OCDPServiceException {
-        return new AsyncResult<OCDPCreateServiceInstanceResponse>(
+        return new AsyncResult<CreateServiceInstanceResponse>(
                 doCreateServiceInstance(request, password)
         );
     }
 
-	public OCDPCreateServiceInstanceResponse doCreateServiceInstance(
+	public CreateServiceInstanceResponse doCreateServiceInstance(
             CreateServiceInstanceRequest request, String password) throws OCDPServiceException {
         String serviceDefinitionId = request.getServiceDefinitionId();
         String serviceInstanceId = request.getServiceInstanceId();
@@ -197,8 +198,9 @@ public class OCDPServiceInstanceLifecycleService {
          For details, please refer to https://github.com/asiainfoLDP/datafoundry_servicebroker_ocdp/issues/2
         **/
 
-        OCDPCreateServiceInstanceResponse response = new OCDPCreateServiceInstanceResponse().withCredential(credentials);
-               // .withAsync(false);
+        CreateServiceInstanceResponse response = new OCDPCreateServiceInstanceResponse()
+                .withCredential(credentials)
+                .withAsync(false);
         return response;
 	}
 
