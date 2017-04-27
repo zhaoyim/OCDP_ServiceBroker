@@ -169,23 +169,22 @@ public class YarnCommonService {
     public Map<String, String> getQuotaFromPlan(String serviceDefinitionId, String planId, Map<String, Object> cuzQuota){
         CatalogConfig catalogConfig = (CatalogConfig) this.context.getBean("catalogConfig");
         Plan plan = catalogConfig.getServicePlan(serviceDefinitionId, planId);
-        //  Map<String, Object> metadata = plan.getMetadata();
-        PlanMetadata planMetadata = (PlanMetadata)plan.getMetadata();
-        // Object customize = metadata.get("customize");
-        Map<String, CustomizeQuotaItem> customize = planMetadata.getCustomize();
+        Map<String, Object> metadata = plan.getMetadata();
+        Object customize = metadata.get("customize");
         String yarnQueueQuota, nameSpaceQuota, storageSpaceQuota;
         if(customize != null){
             // Customize quota case
-            //  Map<String, Object> customizeMap = (HashMap<String,Object>)customize;
-            CustomizeQuotaItem yarnQueueQuotaItem = customize.get("yarnQueueQuota");
+            Map<String, Object> customizeMap = (HashMap<String,Object>)customize;
+
+            CustomizeQuotaItem yarnQueueQuotaItem = (CustomizeQuotaItem) customizeMap.get("yarnQueueQuota");
             String defaultYarnQueueQuota = yarnQueueQuotaItem.getDefault();
             String maxYarnQueueQuota = yarnQueueQuotaItem.getMax();
 
-            CustomizeQuotaItem nameSpaceQuotaItem = customize.get("nameSpaceQuota");
+            CustomizeQuotaItem nameSpaceQuotaItem = (CustomizeQuotaItem) customizeMap.get("nameSpaceQuota");
             String defaultNameSpaceQuota = nameSpaceQuotaItem.getDefault();
             String maxNameSpaceQuota = nameSpaceQuotaItem.getMax();
 
-            CustomizeQuotaItem storageSpaceQuotaItem = customize.get("storageSpaceQuota");
+            CustomizeQuotaItem storageSpaceQuotaItem = (CustomizeQuotaItem) customizeMap.get("storageSpaceQuota");
             String defaultStorageSpaceQuota = storageSpaceQuotaItem.getDefault();
             String maxStorageSpaceQuota = storageSpaceQuotaItem.getMax();
 
@@ -214,7 +213,7 @@ public class YarnCommonService {
             }
         }else{
             // Non customize quota case, use plan.metadata.bullets
-            List<String> bullets = planMetadata.getBullets();
+            List<String> bullets = (ArrayList)metadata.get("bullets");
             yarnQueueQuota = bullets.get(0).split(":")[1];
             nameSpaceQuota = bullets.get(1).split(":")[1];
             storageSpaceQuota = bullets.get(2).split(":")[1];

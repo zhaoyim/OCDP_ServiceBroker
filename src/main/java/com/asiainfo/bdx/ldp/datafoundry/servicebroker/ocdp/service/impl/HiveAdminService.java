@@ -178,19 +178,18 @@ public class HiveAdminService implements OCDPAdminService {
     private Map<String, String> getQuotaFromPlan(String serviceDefinitionId, String planId, Map<String, Object> cuzQuota){
         CatalogConfig catalogConfig = (CatalogConfig) this.context.getBean("catalogConfig");
         Plan plan = catalogConfig.getServicePlan(serviceDefinitionId, planId);
-        //  Map<String, Object> metadata = plan.getMetadata();
-        PlanMetadata planMetadata = (PlanMetadata)plan.getMetadata();
-        // Object customize = metadata.get("customize");
-        Map<String, CustomizeQuotaItem> customize = planMetadata.getCustomize();
+        Map<String, Object> metadata = plan.getMetadata();
+        Object customize = metadata.get("customize");
         String hiveStorageQuota, yarnQueueQuota;
         if(customize != null){
             // Customize quota case
-            //  Map<String, Object> customizeMap = (HashMap<String,Object>)customize;
-            CustomizeQuotaItem hiveStorageQuotaItem = customize.get("hiveStorageQuota");
+            Map<String, Object> customizeMap = (HashMap<String,Object>)customize;
+
+            CustomizeQuotaItem hiveStorageQuotaItem = (CustomizeQuotaItem) customizeMap.get("hiveStorageQuota");
             String defaultHiveStorageQuota = hiveStorageQuotaItem.getDefault();
             String maxHiveStorageQuota = hiveStorageQuotaItem.getMax();
 
-            CustomizeQuotaItem yarnQueueQuotaItem = customize.get("yarnQueueQuota");
+            CustomizeQuotaItem yarnQueueQuotaItem = (CustomizeQuotaItem) customizeMap.get("yarnQueueQuota");
             String defaultYarnQueueQuota = yarnQueueQuotaItem.getDefault();
             String maxYarnQueueQuota = yarnQueueQuotaItem.getMax();
 
@@ -213,7 +212,7 @@ public class HiveAdminService implements OCDPAdminService {
             }
         }else{
             // Non customize quota case, use plan.metadata.bullets
-            List<String> bullets = planMetadata.getBullets();
+            List<String> bullets = (ArrayList)metadata.get("bullets");
             hiveStorageQuota = bullets.get(0).split(":")[1];
             yarnQueueQuota = bullets.get(1).split(":")[1];
         }

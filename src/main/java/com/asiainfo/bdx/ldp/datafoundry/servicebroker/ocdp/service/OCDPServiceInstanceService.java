@@ -38,7 +38,7 @@ public class OCDPServiceInstanceService implements ServiceInstanceService {
     private ClusterConfig clusterConfig;
 
     // Operation response cache
-    private Map<String, Future<OCDPCreateServiceInstanceResponse>> instanceProvisionStateMap;
+    private Map<String, Future<CreateServiceInstanceResponse>> instanceProvisionStateMap;
 
     private Map<String, Future<DeleteServiceInstanceResponse>> instanceDeleteStateMap;
 
@@ -56,7 +56,7 @@ public class OCDPServiceInstanceService implements ServiceInstanceService {
     }
 
     @Override
-    public OCDPCreateServiceInstanceResponse createServiceInstance(CreateServiceInstanceRequest request) throws OCDPServiceException {
+    public CreateServiceInstanceResponse createServiceInstance(CreateServiceInstanceRequest request) throws OCDPServiceException {
         String serviceDefinitionId = request.getServiceDefinitionId();
         String serviceInstanceId = request.getServiceInstanceId();
         String planId = request.getPlanId();
@@ -76,10 +76,10 @@ public class OCDPServiceInstanceService implements ServiceInstanceService {
         }else if(! planId.equals(OCDPAdminServiceMapper.getOCDPServicePlan(serviceDefinitionId))){
             throw new ServiceBrokerInvalidParametersException("Unknown plan id: " + planId);
         }
-        OCDPCreateServiceInstanceResponse response;
+        CreateServiceInstanceResponse response;
         OCDPServiceInstanceLifecycleService service = getOCDPServiceInstanceLifecycleService();
         if(request.isAsyncAccepted()){
-            Future<OCDPCreateServiceInstanceResponse> responseFuture = service.doCreateServiceInstanceAsync(request, password);
+            Future<CreateServiceInstanceResponse> responseFuture = service.doCreateServiceInstanceAsync(request, password);
             this.instanceProvisionStateMap.put(request.getServiceInstanceId(), responseFuture);
             /**
             response = new CreateServiceInstanceResponse()
@@ -91,8 +91,7 @@ public class OCDPServiceInstanceService implements ServiceInstanceService {
             //CITIC case: return service credential info in provision response body
             Map<String, String> credential = service.getOCDPServiceCredential(
                     serviceDefinitionId, serviceInstanceId, accountName, password);
-            response = new OCDPCreateServiceInstanceResponse().withCredential(credential);
-                    //.withAsync(true);
+            response = new OCDPCreateServiceInstanceResponse().withCredential(credential).withAsync(true);
         } else {
             response = service.doCreateServiceInstance(request, password);
         }
@@ -110,7 +109,7 @@ public class OCDPServiceInstanceService implements ServiceInstanceService {
         // Get Last operation response object from cache
         boolean is_operation_done = false;
         if( operationType == OperationType.PROVISION){
-            Future<OCDPCreateServiceInstanceResponse> responseFuture = this.instanceProvisionStateMap.get(serviceInstanceId);
+            Future<CreateServiceInstanceResponse> responseFuture = this.instanceProvisionStateMap.get(serviceInstanceId);
             is_operation_done = responseFuture.isDone();
         } else if( operationType == OperationType.DELETE){
             Future<DeleteServiceInstanceResponse> responseFuture = this.instanceDeleteStateMap.get(serviceInstanceId);
