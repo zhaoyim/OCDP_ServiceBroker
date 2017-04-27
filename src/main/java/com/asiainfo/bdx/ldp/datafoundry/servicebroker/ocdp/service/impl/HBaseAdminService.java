@@ -208,11 +208,11 @@ public class HBaseAdminService implements OCDPAdminService{
             // Customize quota case
             //  Map<String, Object> customizeMap = (HashMap<String,Object>)customize;
             CustomizeQuotaItem maximumTableQuotaItem = customize.get("maximumTableQuota");
-            String defaultMaximumTableQuota= maximumTableQuotaItem.getDefaults();
+            String defaultMaximumTableQuota= maximumTableQuotaItem.getDefault();
             String maxMaximumTableQuota = maximumTableQuotaItem.getMax();
 
             CustomizeQuotaItem maximumRegionQuotaItem = customize.get("maximunRegionQuota");
-            String defaultMaximumRegionQuota = maximumRegionQuotaItem.getDefaults();
+            String defaultMaximumRegionQuota = maximumRegionQuotaItem.getDefault();
             String maxMaximumRegionQuota = maximumRegionQuotaItem.getMax();
 
             if (cuzQuota.get("maximumTableQuota") != null && cuzQuota.get("maximunRegionQuota") != null){

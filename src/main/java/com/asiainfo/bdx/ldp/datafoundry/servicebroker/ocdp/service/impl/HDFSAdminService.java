@@ -230,11 +230,11 @@ public class HDFSAdminService implements OCDPAdminService{
             // Customize quota case
           //  Map<String, Object> customizeMap = (HashMap<String,Object>)customize;
             CustomizeQuotaItem nameSpaceQuotaItem = customize.get("nameSpaceQuota");
-            String defaultNameSpaceQuota = nameSpaceQuotaItem.getDefaults();
+            String defaultNameSpaceQuota = nameSpaceQuotaItem.getDefault();
             String maxNameSpaceQuota = nameSpaceQuotaItem.getMax();
 
             CustomizeQuotaItem storageSpaceQuotaItem = customize.get("storageSpaceQuota");
-            String defaultStorageSpaceQuota = storageSpaceQuotaItem.getDefaults();
+            String defaultStorageSpaceQuota = storageSpaceQuotaItem.getDefault();
             String maxStorageSpaceQuota = storageSpaceQuotaItem.getMax();
 
             if (cuzQuota.get("nameSpaceQuota") != null && cuzQuota.get("storageSpaceQuota") != null){
