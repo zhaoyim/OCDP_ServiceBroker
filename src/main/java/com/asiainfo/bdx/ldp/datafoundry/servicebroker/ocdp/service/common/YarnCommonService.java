@@ -178,15 +178,15 @@ public class YarnCommonService {
             // Customize quota case
             //  Map<String, Object> customizeMap = (HashMap<String,Object>)customize;
             CustomizeQuotaItem yarnQueueQuotaItem = customize.get("yarnQueueQuota");
-            String defaultYarnQueueQuota = yarnQueueQuotaItem.getDefaults();
+            String defaultYarnQueueQuota = yarnQueueQuotaItem.getDefault();
             String maxYarnQueueQuota = yarnQueueQuotaItem.getMax();
 
             CustomizeQuotaItem nameSpaceQuotaItem = customize.get("nameSpaceQuota");
-            String defaultNameSpaceQuota = nameSpaceQuotaItem.getDefaults();
+            String defaultNameSpaceQuota = nameSpaceQuotaItem.getDefault();
             String maxNameSpaceQuota = nameSpaceQuotaItem.getMax();
 
             CustomizeQuotaItem storageSpaceQuotaItem = customize.get("storageSpaceQuota");
-            String defaultStorageSpaceQuota = storageSpaceQuotaItem.getDefaults();
+            String defaultStorageSpaceQuota = storageSpaceQuotaItem.getDefault();
             String maxStorageSpaceQuota = storageSpaceQuotaItem.getMax();
 
             if (cuzQuota.get("yarnQueueQuota") != null && cuzQuota.get("nameSpaceQuota") != null &&
