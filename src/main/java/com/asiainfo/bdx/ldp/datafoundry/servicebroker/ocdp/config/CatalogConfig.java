@@ -86,6 +86,8 @@ public class CatalogConfig {
             planDescription = new String(planDescription.getBytes(Charset.forName("ISO-8859-1")), Charset.forName("UTF-8"));
             String planFree = etcdClient.readToString("/servicebroker/ocdp/catalog/" + id + "/plan/" + planId + "/free");
             String planMetadata = etcdClient.readToString("/servicebroker/ocdp/catalog/" + id + "/plan/" + planId + "/metadata");
+            // Encoding for Chinese description in plan metadata
+            planMetadata = new String(planMetadata.getBytes(Charset.forName("ISO-8859-1")), Charset.forName("UTF-8"));
             PlanMetadata planMetadataObj = gson.fromJson(planMetadata, PlanMetadata.class);
             Map<String, Object> planMetadataMap = new HashMap<String, Object>() {
                 {
