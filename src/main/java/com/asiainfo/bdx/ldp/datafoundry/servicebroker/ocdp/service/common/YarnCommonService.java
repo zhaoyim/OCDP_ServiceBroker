@@ -174,7 +174,7 @@ public class YarnCommonService {
         String yarnQueueQuota, nameSpaceQuota, storageSpaceQuota;
         if(customize != null){
             // Customize quota case
-            Map<String, Object> customizeMap = (HashMap<String,Object>)customize;
+            Map<String, Object> customizeMap = (Map<String,Object>)customize;
 
             CustomizeQuotaItem yarnQueueQuotaItem = (CustomizeQuotaItem) customizeMap.get("yarnQueueQuota");
             String defaultYarnQueueQuota = yarnQueueQuotaItem.getDefault();
