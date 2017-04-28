@@ -183,7 +183,7 @@ public class HiveAdminService implements OCDPAdminService {
         String hiveStorageQuota, yarnQueueQuota;
         if(customize != null){
             // Customize quota case
-            Map<String, Object> customizeMap = (HashMap<String,Object>)customize;
+            Map<String, Object> customizeMap = (Map<String,Object>)customize;
 
             CustomizeQuotaItem hiveStorageQuotaItem = (CustomizeQuotaItem) customizeMap.get("hiveStorageQuota");
             String defaultHiveStorageQuota = hiveStorageQuotaItem.getDefault();
