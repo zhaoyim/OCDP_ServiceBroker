@@ -204,20 +204,20 @@ public class HBaseAdminService implements OCDPAdminService{
         String maximumTableQuota, maximumRegionQuota;
         if(customize != null){
             // Customize quota case
-            Map<String, Object> customizeMap = (HashMap<String,Object>)customize;
+            Map<String, Object> customizeMap = (Map<String,Object>)customize;
 
-            CustomizeQuotaItem maximumTableQuotaItem = (CustomizeQuotaItem)customizeMap.get("maximumTableQuota");
+            CustomizeQuotaItem maximumTableQuotaItem = (CustomizeQuotaItem)customizeMap.get("maximumTablesQuota");
             String defaultMaximumTableQuota= maximumTableQuotaItem.getDefault();
             String maxMaximumTableQuota = maximumTableQuotaItem.getMax();
 
-            CustomizeQuotaItem maximumRegionQuotaItem = (CustomizeQuotaItem)customizeMap.get("maximunRegionQuota");
+            CustomizeQuotaItem maximumRegionQuotaItem = (CustomizeQuotaItem)customizeMap.get("maximumRegionsQuota");
             String defaultMaximumRegionQuota = maximumRegionQuotaItem.getDefault();
             String maxMaximumRegionQuota = maximumRegionQuotaItem.getMax();
 
-            if (cuzQuota.get("maximumTableQuota") != null && cuzQuota.get("maximunRegionQuota") != null){
+            if (cuzQuota.get("maximumTablesQuota") != null && cuzQuota.get("maximumRegionsQuota") != null){
                 // customize quota have input value
-                maximumTableQuota = (String)cuzQuota.get("maximumTableQuota");
-                maximumRegionQuota = (String)cuzQuota.get("maximunRegionQuota");
+                maximumTableQuota = (String)cuzQuota.get("maximumTablesQuota");
+                maximumRegionQuota = (String)cuzQuota.get("maximumRegionsQuota");
                 // If customize quota exceeds plan limitation, use default value
                 if (Long.parseLong(maximumTableQuota) > Long.parseLong(maxMaximumTableQuota)){
                     maximumTableQuota = defaultMaximumTableQuota;
@@ -238,8 +238,8 @@ public class HBaseAdminService implements OCDPAdminService{
             maximumRegionQuota = bullets.get(1).split(":")[1];
         }
         Map<String, String> quota = new HashMap<>();
-        quota.put("maximumTableQuota", maximumTableQuota);
-        quota.put("maximunRegionQuota", maximumRegionQuota);
+        quota.put("maximumTablesQuota", maximumTableQuota);
+        quota.put("maximumRegionsQuota", maximumRegionQuota);
         return quota;
     }
 }
