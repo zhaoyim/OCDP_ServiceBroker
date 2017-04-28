@@ -97,7 +97,7 @@ public class OCDPServiceInstanceLifecycleService {
             if(! BrokerUtil.isLDAPUserExist(this.ldap, accountName)){
                 logger.info("create new ldap user.");
                 newCreatedLDAPUser = true;
-        //        BrokerUtil.createLDAPUser(this.ldap, this.etcdClient, accountName, ldapGroupName, ldapGroupId);
+                BrokerUtil.createLDAPUser(this.ldap, this.etcdClient, accountName, ldapGroupName, ldapGroupId);
             }
         }catch (Exception e){
             logger.error("LDAP user create fail due to: " + e.getLocalizedMessage());
