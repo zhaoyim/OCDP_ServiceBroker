@@ -207,29 +207,29 @@ public class HBaseAdminService implements OCDPAdminService{
             Map<String, Object> customizeMap = (Map<String,Object>)customize;
 
             CustomizeQuotaItem maximumTableQuotaItem = (CustomizeQuotaItem)customizeMap.get("maximumTablesQuota");
-            String defaultMaximumTableQuota= maximumTableQuotaItem.getDefault();
-            String maxMaximumTableQuota = maximumTableQuotaItem.getMax();
+            long defaultMaximumTableQuota= maximumTableQuotaItem.getDefault();
+            long maxMaximumTableQuota = maximumTableQuotaItem.getMax();
 
             CustomizeQuotaItem maximumRegionQuotaItem = (CustomizeQuotaItem)customizeMap.get("maximumRegionsQuota");
-            String defaultMaximumRegionQuota = maximumRegionQuotaItem.getDefault();
-            String maxMaximumRegionQuota = maximumRegionQuotaItem.getMax();
+            long defaultMaximumRegionQuota = maximumRegionQuotaItem.getDefault();
+            long maxMaximumRegionQuota = maximumRegionQuotaItem.getMax();
 
             if (cuzQuota.get("maximumTablesQuota") != null && cuzQuota.get("maximumRegionsQuota") != null){
                 // customize quota have input value
                 maximumTableQuota = (String)cuzQuota.get("maximumTablesQuota");
                 maximumRegionQuota = (String)cuzQuota.get("maximumRegionsQuota");
                 // If customize quota exceeds plan limitation, use default value
-                if (Long.parseLong(maximumTableQuota) > Long.parseLong(maxMaximumTableQuota)){
-                    maximumTableQuota = defaultMaximumTableQuota;
+                if (Long.parseLong(maximumTableQuota) > maxMaximumTableQuota){
+                    maximumTableQuota = Long.toString(defaultMaximumTableQuota);
                 }
-                if(Long.parseLong(maximumRegionQuota) > Long.parseLong(maxMaximumRegionQuota)){
-                    maximumRegionQuota = defaultMaximumRegionQuota;
+                if(Long.parseLong(maximumRegionQuota) > maxMaximumRegionQuota){
+                    maximumRegionQuota = Long.toString(defaultMaximumRegionQuota);
                 }
 
             }else {
                 // customize quota have not input value, use default value
-                maximumTableQuota = defaultMaximumTableQuota;
-                maximumRegionQuota = defaultMaximumRegionQuota;
+                maximumTableQuota =  Long.toString(defaultMaximumTableQuota);
+                maximumRegionQuota =  Long.toString(defaultMaximumRegionQuota);
             }
         }else{
             // Non customize quota case, use plan.metadata.bullets

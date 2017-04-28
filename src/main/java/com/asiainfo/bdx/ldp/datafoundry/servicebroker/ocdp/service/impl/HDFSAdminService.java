@@ -223,31 +223,30 @@ public class HDFSAdminService implements OCDPAdminService{
         Plan plan = catalogConfig.getServicePlan(serviceDefinitionId, planId);
         Map<String, Object> metadata = plan.getMetadata();
         Object customize = metadata.get("customize");
-        String nameSpaceQuota, storageSpaceQuota;
+        long nameSpaceQuota, storageSpaceQuota;
         if(customize != null){
             // Customize quota case
             Map<String, Object> customizeMap = (Map<String,Object>)customize;
 
             CustomizeQuotaItem nameSpaceQuotaItem = (CustomizeQuotaItem)customizeMap.get("nameSpaceQuota");
-            String defaultNameSpaceQuota = nameSpaceQuotaItem.getDefault();
-            String maxNameSpaceQuota = nameSpaceQuotaItem.getMax();
+            long defaultNameSpaceQuota = nameSpaceQuotaItem.getDefault();
+            long maxNameSpaceQuota = nameSpaceQuotaItem.getMax();
 
             CustomizeQuotaItem storageSpaceQuotaItem = (CustomizeQuotaItem)customizeMap.get("storageSpaceQuota");
-            String defaultStorageSpaceQuota = storageSpaceQuotaItem.getDefault();
-            String maxStorageSpaceQuota = storageSpaceQuotaItem.getMax();
+            long defaultStorageSpaceQuota = storageSpaceQuotaItem.getDefault();
+            long maxStorageSpaceQuota = storageSpaceQuotaItem.getMax();
 
             if (cuzQuota.get("nameSpaceQuota") != null && cuzQuota.get("storageSpaceQuota") != null){
                 // customize quota have input value
-                nameSpaceQuota = (String)cuzQuota.get("nameSpaceQuota");
-                storageSpaceQuota = (String)cuzQuota.get("storageSpaceQuota");
+                nameSpaceQuota = Long.parseLong((String)cuzQuota.get("nameSpaceQuota"));
+                storageSpaceQuota =  Long.parseLong((String)cuzQuota.get("storageSpaceQuota"));
                 // If customize quota exceeds plan limitation, use default value
-                if (Long.parseLong(nameSpaceQuota) > Long.parseLong(maxNameSpaceQuota)){
+                if(nameSpaceQuota > maxNameSpaceQuota){
                     nameSpaceQuota = defaultNameSpaceQuota;
                 }
-                if(Long.parseLong(storageSpaceQuota) > Long.parseLong(maxStorageSpaceQuota)){
+                if(storageSpaceQuota > maxStorageSpaceQuota){
                     storageSpaceQuota = defaultStorageSpaceQuota;
                 }
-
             }else {
                 // customize quota have not input value, use default value
                 nameSpaceQuota = defaultNameSpaceQuota;
@@ -256,16 +255,12 @@ public class HDFSAdminService implements OCDPAdminService{
         }else{
             // Non customize quota case, use plan.metadata.bullets
             List<String> bullets = (ArrayList)metadata.get("bullets");
-            nameSpaceQuota = bullets.get(0).split(":")[1];
-            storageSpaceQuota = bullets.get(1).split(":")[1];
+            nameSpaceQuota = new Long(bullets.get(0).split(":")[1]);
+            storageSpaceQuota = new Long(bullets.get(1).split(":")[1]);
         }
-        final Long longNameSpaceQuota = new Long(nameSpaceQuota);
-        final Long longStorageSpaceQuota = new Long(storageSpaceQuota);
-        return new HashMap<String, Long>(){
-            {
-                put("nameSpaceQuota", longNameSpaceQuota);
-                put("storageSpaceQuota", longStorageSpaceQuota * 1000000000);
-            }
-        };
+        Map<String, Long> quota = new HashMap<>();
+        quota.put("nameSpaceQuota", nameSpaceQuota);
+        quota.put("storageSpaceQuota", storageSpaceQuota * 1000000000);
+        return quota;
     }
 }

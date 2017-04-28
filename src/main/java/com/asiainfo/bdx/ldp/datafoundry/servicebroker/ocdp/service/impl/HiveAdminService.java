@@ -186,29 +186,29 @@ public class HiveAdminService implements OCDPAdminService {
             Map<String, Object> customizeMap = (Map<String,Object>)customize;
 
             CustomizeQuotaItem hiveStorageQuotaItem = (CustomizeQuotaItem) customizeMap.get("hiveStorageQuota");
-            String defaultHiveStorageQuota = hiveStorageQuotaItem.getDefault();
-            String maxHiveStorageQuota = hiveStorageQuotaItem.getMax();
+            long defaultHiveStorageQuota = hiveStorageQuotaItem.getDefault();
+            long maxHiveStorageQuota = hiveStorageQuotaItem.getMax();
 
             CustomizeQuotaItem yarnQueueQuotaItem = (CustomizeQuotaItem) customizeMap.get("yarnQueueQuota");
-            String defaultYarnQueueQuota = yarnQueueQuotaItem.getDefault();
-            String maxYarnQueueQuota = yarnQueueQuotaItem.getMax();
+            long defaultYarnQueueQuota = yarnQueueQuotaItem.getDefault();
+            long maxYarnQueueQuota = yarnQueueQuotaItem.getMax();
 
             if (cuzQuota.get("hiveStorageQuota") != null && cuzQuota.get("yarnQueueQuota") != null){
                 // customize quota have input value
                 hiveStorageQuota = (String)cuzQuota.get("hiveStorageQuota");
                 yarnQueueQuota = (String)cuzQuota.get("yarnQueueQuota");
                 // If customize quota exceeds plan limitation, use default value
-                if (Long.parseLong(hiveStorageQuota) > Long.parseLong(maxHiveStorageQuota)){
-                    hiveStorageQuota = defaultHiveStorageQuota;
+                if (Long.parseLong(hiveStorageQuota) > maxHiveStorageQuota){
+                    hiveStorageQuota = Long.toString(defaultHiveStorageQuota);
                 }
-                if(Long.parseLong(yarnQueueQuota) > Long.parseLong(maxYarnQueueQuota)){
-                    yarnQueueQuota = defaultYarnQueueQuota;
+                if(Long.parseLong(yarnQueueQuota) > maxYarnQueueQuota){
+                    yarnQueueQuota = Long.toString(defaultYarnQueueQuota);
                 }
 
             }else {
                 // customize quota have not input value, use default value
-                hiveStorageQuota = defaultHiveStorageQuota;
-                yarnQueueQuota = defaultYarnQueueQuota;
+                hiveStorageQuota = Long.toString(defaultHiveStorageQuota);
+                yarnQueueQuota = Long.toString(defaultYarnQueueQuota);
             }
         }else{
             // Non customize quota case, use plan.metadata.bullets
