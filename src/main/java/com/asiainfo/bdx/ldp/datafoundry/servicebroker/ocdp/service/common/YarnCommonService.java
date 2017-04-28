@@ -220,7 +220,7 @@ public class YarnCommonService {
         }
         Map<String, String> quota = new HashMap<>();
         quota.put("yarnQueueQuota", yarnQueueQuota);
-        quota.put("nameSpaceQuotaa", nameSpaceQuota);
+        quota.put("nameSpaceQuota", nameSpaceQuota);
         quota.put("storageSpaceQuota", storageSpaceQuota);
         return quota;
     }

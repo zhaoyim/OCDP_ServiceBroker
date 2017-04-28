@@ -236,6 +236,8 @@ public class HDFSAdminService implements OCDPAdminService{
             long defaultStorageSpaceQuota = storageSpaceQuotaItem.getDefault();
             long maxStorageSpaceQuota = storageSpaceQuotaItem.getMax();
 
+            logger.info(cuzQuota.toString());
+            logger.info((String) cuzQuota.get("nameSpaceQuota") + " " + (String) cuzQuota.get("storageSpaceQuota") );
             if (cuzQuota.get("nameSpaceQuota") != null && cuzQuota.get("storageSpaceQuota") != null){
                 // customize quota have input value
                 nameSpaceQuota = Long.parseLong((String)cuzQuota.get("nameSpaceQuota"));
