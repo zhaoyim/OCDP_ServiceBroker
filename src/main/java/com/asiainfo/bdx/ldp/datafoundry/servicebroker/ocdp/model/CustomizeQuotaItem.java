@@ -7,27 +7,27 @@ import com.google.gson.annotations.SerializedName;
 public class CustomizeQuotaItem{
 
     @SerializedName("default")
-    String _default;
+    long _default;
 
     @SerializedName("max")
-    String max;
+    long max;
 
     @SerializedName("price")
-    String price;
+    long price;
 
     @SerializedName("unit")
     String unit;
 
     @SerializedName("step")
-    String step;
+    long step;
 
     @SerializedName("desc")
     String desc;
 
-    public String getDefault(){ return _default;}
-    public String getMax() { return max; }
-    public String getPrice() { return price; }
+    public long getDefault(){ return _default;}
+    public long getMax() { return max; }
+    public long getPrice() { return price; }
     public String getUnit() { return unit; }
-    public String getStep() { return step; }
+    public long getStep() { return step; }
     public String getDesc() { return desc; }
 }

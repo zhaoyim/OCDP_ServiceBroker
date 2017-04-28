@@ -177,16 +177,16 @@ public class YarnCommonService {
             Map<String, Object> customizeMap = (Map<String,Object>)customize;
 
             CustomizeQuotaItem yarnQueueQuotaItem = (CustomizeQuotaItem) customizeMap.get("yarnQueueQuota");
-            String defaultYarnQueueQuota = yarnQueueQuotaItem.getDefault();
-            String maxYarnQueueQuota = yarnQueueQuotaItem.getMax();
+            long defaultYarnQueueQuota = yarnQueueQuotaItem.getDefault();
+            long maxYarnQueueQuota = yarnQueueQuotaItem.getMax();
 
             CustomizeQuotaItem nameSpaceQuotaItem = (CustomizeQuotaItem) customizeMap.get("nameSpaceQuota");
-            String defaultNameSpaceQuota = nameSpaceQuotaItem.getDefault();
-            String maxNameSpaceQuota = nameSpaceQuotaItem.getMax();
+            long defaultNameSpaceQuota = nameSpaceQuotaItem.getDefault();
+            long maxNameSpaceQuota = nameSpaceQuotaItem.getMax();
 
             CustomizeQuotaItem storageSpaceQuotaItem = (CustomizeQuotaItem) customizeMap.get("storageSpaceQuota");
-            String defaultStorageSpaceQuota = storageSpaceQuotaItem.getDefault();
-            String maxStorageSpaceQuota = storageSpaceQuotaItem.getMax();
+            long defaultStorageSpaceQuota = storageSpaceQuotaItem.getDefault();
+            long maxStorageSpaceQuota = storageSpaceQuotaItem.getMax();
 
             if (cuzQuota.get("yarnQueueQuota") != null && cuzQuota.get("nameSpaceQuota") != null &&
                     cuzQuota.get("storageSpaceQuota") != null){
@@ -195,21 +195,21 @@ public class YarnCommonService {
                 nameSpaceQuota = (String)cuzQuota.get("nameSpaceQuota");
                 storageSpaceQuota = (String)cuzQuota.get("storageSpaceQuota");
                 // If customize quota exceeds plan limitation, use default value
-                if (Long.parseLong(yarnQueueQuota) > Long.parseLong(maxYarnQueueQuota)){
-                    yarnQueueQuota = defaultYarnQueueQuota;
+                if (Long.parseLong(yarnQueueQuota) > maxYarnQueueQuota){
+                    yarnQueueQuota = Long.toString(defaultYarnQueueQuota);
                 }
-                if (Long.parseLong(nameSpaceQuota) > Long.parseLong(maxNameSpaceQuota)){
-                    nameSpaceQuota = defaultNameSpaceQuota;
+                if (Long.parseLong(nameSpaceQuota) > maxNameSpaceQuota){
+                    nameSpaceQuota = Long.toString(defaultNameSpaceQuota);
                 }
-                if(Long.parseLong(storageSpaceQuota) > Long.parseLong(maxStorageSpaceQuota)){
-                    storageSpaceQuota = defaultStorageSpaceQuota;
+                if(Long.parseLong(storageSpaceQuota) > maxStorageSpaceQuota){
+                    storageSpaceQuota = Long.toString(defaultStorageSpaceQuota);
                 }
 
             }else {
                 // customize quota have not input value, use default value
-                yarnQueueQuota = defaultYarnQueueQuota;
-                nameSpaceQuota = defaultNameSpaceQuota;
-                storageSpaceQuota = defaultStorageSpaceQuota;
+                yarnQueueQuota =  Long.toString(defaultYarnQueueQuota);
+                nameSpaceQuota = Long.toString(defaultNameSpaceQuota);
+                storageSpaceQuota = Long.toString(defaultStorageSpaceQuota);
             }
         }else{
             // Non customize quota case, use plan.metadata.bullets
