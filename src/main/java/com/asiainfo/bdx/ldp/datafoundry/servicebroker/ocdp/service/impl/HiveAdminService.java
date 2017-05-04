@@ -146,7 +146,7 @@ public class HiveAdminService implements OCDPAdminService {
 
     @Override
     public Map<String, String> getCredentialsInfo(String serviceInstanceId, String accountName, String password){
-        String dbName = serviceInstanceId.replaceAll("_", "");
+        String dbName = serviceInstanceId.replaceAll("-", "");
         return new HashMap<String, String>(){
             {
                 put("username", accountName);
@@ -156,21 +156,6 @@ public class HiveAdminService implements OCDPAdminService {
                 put("host", clusterConfig.getHiveHost());
                 put("port", clusterConfig.getHivePort());
                 put("Hive database", dbName);
-            }
-        };
-    }
-
-    private Map<String, String> getQuotaFromPlan2(String serviceDefinitionId, String planId){
-        CatalogConfig catalogConfig = (CatalogConfig) this.context.getBean("catalogConfig");
-        Plan plan = catalogConfig.getServicePlan(serviceDefinitionId, planId);
-        Map<String, Object> metadata = plan.getMetadata();
-        List<String> bullets = (ArrayList)metadata.get("bullets");
-        String[] hiveStorageQuota = (bullets.get(0)).split(":");
-        String[] yarnQueueQuota = (bullets.get(1)).split(":");
-        return new HashMap<String, String>(){
-            {
-                put("hiveStorageQuota", hiveStorageQuota[1]);
-                put("yarnQueueQuota", yarnQueueQuota[1]);
             }
         };
     }
