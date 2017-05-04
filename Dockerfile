@@ -1,4 +1,4 @@
-FROM registry.dataos.io/ocdp_service_brokers/service_brokers:pdt
+FROM registry.dataos.io/ocdp_service_brokers/service_brokers:citic
 RUN rm -rf datafoundry_servicebroker_ocdp/
 #EXPOSE 8080
 
