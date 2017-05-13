@@ -64,6 +64,7 @@ public class SparkAdminService implements OCDPAdminService {
         List <String> hdfsFolderForJobExec = new ArrayList<String>(){
             {
                 add("/user/" + accountName);
+                add("/spark-history");
             }
         };
         if (this.hdfsAdminService.assignPermissionToResources(accountName + "_" + policyName, hdfsFolderForJobExec, accountName, groupName) != null){

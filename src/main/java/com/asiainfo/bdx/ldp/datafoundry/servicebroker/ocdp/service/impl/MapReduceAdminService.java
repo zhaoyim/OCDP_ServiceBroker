@@ -66,6 +66,7 @@ public class MapReduceAdminService implements OCDPAdminService{
         List <String> hdfsFolderForJobExec = new ArrayList<String>(){
             {
                 add("/user/" + accountName);
+                add("/mr-history");
             }
         };
         if (this.hdfsAdminService.assignPermissionToResources(accountName + "_" + policyName, hdfsFolderForJobExec, accountName, groupName) != null){
