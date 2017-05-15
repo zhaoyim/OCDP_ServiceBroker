@@ -81,7 +81,8 @@ public class RangerV2Policy{
         PolicyItem pi = new PolicyItem();
         pi.delegateAdmin = delegateAdmin;
         pi.users.addAll(users);
-        pi.groups.addAll(groups);
+        //Temp fix for citic case, do not pass group when create policy
+        //pi.groups.addAll(groups);
         pi.conditions.addAll(conditions);
         pi.accesses = pi.getAccesses(types);
 
@@ -90,8 +91,9 @@ public class RangerV2Policy{
 
     public void updatePolicy(String groupName, String accountName, List<String> accessTypes, boolean isAppend){
 
-        this.policyItems.get(0).groups.clear();
-        this.policyItems.get(0).groups.add(groupName);
+        //Temp fix for citic case, do not pass group when create policy
+        //this.policyItems.get(0).groups.clear();
+        //this.policyItems.get(0).groups.add(groupName);
 
         if(isAppend){
             this.policyItems.get(0).users.add(accountName);
@@ -109,9 +111,12 @@ public class RangerV2Policy{
     public List<String> getUserList(){
         return this.policyItems.get(0).getUsers();
     }
+    //Temp fix for citic case, do not pass group when create policy
+    /**
     public List<String> getGroupList(){
         return this.policyItems.get(0).getGroups();
     }
+     **/
     public List<String> getResourceValues(){
         return this.resources.get("queue").values;
     }
@@ -127,7 +132,7 @@ public class RangerV2Policy{
 
     class PolicyItem{
         List<String> users = new ArrayList<String>();
-        List<String> groups = new ArrayList<String>();
+        //List<String> groups = new ArrayList<String>();
         boolean delegateAdmin;
         List<RangerAccess> accesses = new ArrayList<RangerAccess>();
         List<String> conditions = new ArrayList<String>();
@@ -157,9 +162,12 @@ public class RangerV2Policy{
             return users;
         }
 
+        //Temp fix for citic case, do not pass group when create policy
+        /**
         public List<String> getGroups(){
             return groups;
         }
+         **/
     }
 
 }
