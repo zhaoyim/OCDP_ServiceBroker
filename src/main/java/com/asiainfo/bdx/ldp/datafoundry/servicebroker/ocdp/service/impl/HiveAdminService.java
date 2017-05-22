@@ -133,7 +133,7 @@ public class HiveAdminService implements OCDPAdminService {
                 put("uri", "jdbc:hive2://" + clusterConfig.getHiveHost() + ":" +
                                 clusterConfig.getHivePort() + "/" + resources[0] +
                                 ";principal=" + clusterConfig.getHiveSuperUser());
-                put("username", accountName);
+                put("username", accountName + "@" + clusterConfig.getKrbRealm());
                 put("password", accountPwd);
                 put("keytab", accountKeytab);
                 put("host", clusterConfig.getHiveHost());
@@ -149,7 +149,7 @@ public class HiveAdminService implements OCDPAdminService {
         String dbName = serviceInstanceId.replaceAll("-", "");
         return new HashMap<String, String>(){
             {
-                put("username", accountName);
+                put("username", accountName + "@" + clusterConfig.getKrbRealm());
                 put("password", password);
                 put("uri", "jdbc:hive2://" + clusterConfig.getHiveHost() + ":" +
                         clusterConfig.getHivePort() + "/" + dbName + ";principal=" + clusterConfig.getHiveSuperUser());

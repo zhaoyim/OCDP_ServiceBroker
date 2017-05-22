@@ -131,7 +131,7 @@ public class MapReduceAdminService implements OCDPAdminService{
         return new HashMap<String, Object>(){
             {
                 put("uri", clusterConfig.getYarnRMUrl());
-                put("username", accountName);
+                put("username", accountName + "@" + clusterConfig.getKrbRealm());
                 put("password", accountPwd);
                 put("keytab", accountKeytab);
                 put("host", clusterConfig.getYarnRMHost());
@@ -146,7 +146,7 @@ public class MapReduceAdminService implements OCDPAdminService{
     public Map<String, String> getCredentialsInfo(String serviceInstanceId, String accountName, String password){
         return new HashMap<String, String>(){
             {
-                put("username", accountName);
+                put("username", accountName + "@" + clusterConfig.getKrbRealm());
                 put("password", password);
                 put("uri", clusterConfig.getYarnRMUrl());
                 put("host", clusterConfig.getYarnRMHost());

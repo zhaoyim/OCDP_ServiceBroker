@@ -181,7 +181,7 @@ public class HDFSAdminService implements OCDPAdminService{
         return new HashMap<String, Object>(){
             {
                 put("uri", webHdfsUrl + serviceInstanceResource);
-                put("username", accountName);
+                put("username", accountName + "@" + clusterConfig.getKrbRealm());
                 put("password", accountPwd);
                 put("keytab", accountKeytab);
                 put("host", clusterConfig.getHdfsNameNode());
@@ -196,7 +196,7 @@ public class HDFSAdminService implements OCDPAdminService{
     public Map<String, String> getCredentialsInfo(String serviceInstanceId, String accountName, String password){
         return new HashMap<String, String>(){
             {
-                put("username", accountName);
+                put("username", accountName + "@" + clusterConfig.getKrbRealm());
                 put("password", password);
                 put("uri", webHdfsUrl + "/servicebroker/" + serviceInstanceId);
                 put("host", clusterConfig.getHdfsNameNode());

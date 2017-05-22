@@ -159,7 +159,7 @@ public class HBaseAdminService implements OCDPAdminService{
         return new HashMap<String, Object>(){
             {
                 put("uri", "http://" + clusterConfig.getHbaseMaster() + ":" + clusterConfig.getHbaseRestPort());
-                put("username", accountName);
+                put("username", accountName + "@" + clusterConfig.getKrbRealm());
                 put("password", accountPwd);
                 put("keytab", accountKeytab);
                 put("host", clusterConfig.getHbaseMaster());
@@ -174,7 +174,7 @@ public class HBaseAdminService implements OCDPAdminService{
     public Map<String, String> getCredentialsInfo(String serviceInstanceId, String accountName, String password){
         return new HashMap<String, String>(){
             {
-                put("username", accountName);
+                put("username", accountName + "@" + clusterConfig.getKrbRealm());
                 put("password", password);
                 put("uri", "http://" + clusterConfig.getHbaseMaster() + ":" + clusterConfig.getHbaseRestPort());
                 put("host", clusterConfig.getHbaseMaster());
