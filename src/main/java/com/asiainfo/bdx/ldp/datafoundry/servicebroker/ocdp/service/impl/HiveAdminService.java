@@ -132,7 +132,7 @@ public class HiveAdminService implements OCDPAdminService {
             {
                 put("uri", "jdbc:hive2://" + clusterConfig.getHiveHost() + ":" +
                                 clusterConfig.getHivePort() + "/" + resources[0] +
-                                ";principal=" + accountName );
+                                ";principal=" + clusterConfig.getHiveSuperUser());
                 put("username", accountName);
                 put("password", accountPwd);
                 put("keytab", accountKeytab);
@@ -152,7 +152,7 @@ public class HiveAdminService implements OCDPAdminService {
                 put("username", accountName);
                 put("password", password);
                 put("uri", "jdbc:hive2://" + clusterConfig.getHiveHost() + ":" +
-                        clusterConfig.getHivePort() + "/" + dbName + ";principal=" + accountName );
+                        clusterConfig.getHivePort() + "/" + dbName + ";principal=" + clusterConfig.getHiveSuperUser());
                 put("host", clusterConfig.getHiveHost());
                 put("port", clusterConfig.getHivePort());
                 put("Hive database", dbName);
