@@ -121,11 +121,6 @@ public class MapReduceAdminService implements OCDPAdminService{
     }
 
     @Override
-    public String getDashboardUrl() {
-        return this.clusterConfig.getMRHistoryURL();
-    }
-
-    @Override
     public Map<String, Object> generateCredentialsInfo(String accountName, String accountPwd, String accountKeytab,
                                                        String serviceInstanceResource, String rangerPolicyId){
         return new HashMap<String, Object>(){

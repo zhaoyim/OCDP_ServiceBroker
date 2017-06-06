@@ -109,7 +109,7 @@ public class RangerV2Policy{
     public String getPolicyId(){return id;}
     public List<PolicyItem> getPolicyItems(){return policyItems;}
     public List<String> getUserList(){
-        return this.policyItems.get(0).getUsers();
+        return policyItems.get(0).getUsers();
     }
     //Temp fix for citic case, do not pass group when create policy
     /**
@@ -118,7 +118,7 @@ public class RangerV2Policy{
     }
      **/
     public List<String> getResourceValues(){
-        return this.resources.get("queue").values;
+        return resources.get("queue").values;
     }
 
     class RangerResource2 extends RangerResource{

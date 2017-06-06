@@ -176,75 +176,75 @@ public class ClusterConfig implements EnvironmentAware{
         this.spark_history_url = env.getProperty("SPARK_HISTORY_URL");
     }
 
-    public String getEtcdHost() { return this.etcd_host; }
-    public String getEtcdPort() { return this.etcd_port; }
-    public String getEtcdUser() { return this.etcd_user; }
-    public String getEtcd_pwd() { return this.etcd_pwd; }
+    public String getEtcdHost() { return etcd_host; }
+    public String getEtcdPort() { return etcd_port; }
+    public String getEtcdUser() { return etcd_user; }
+    public String getEtcd_pwd() { return etcd_pwd; }
 
-    public String getLdapUrl() { return this.ldap_url; }
-    public String getLdapUserDN() { return this.ldap_userDN; }
-    public String getLdapPassword() { return this.ldap_password; }
-    public String getLdapBase() { return this.ldap_base; }
-    public String getLdapGroup() { return this.ldap_group; }
-    public String getLdapGroupId() { return this.ldap_group_id; }
+    public String getLdapUrl() { return ldap_url; }
+    public String getLdapUserDN() { return ldap_userDN; }
+    public String getLdapPassword() { return ldap_password; }
+    public String getLdapBase() { return ldap_base; }
+    public String getLdapGroup() { return ldap_group; }
+    public String getLdapGroupId() { return ldap_group_id; }
 
-    public String getKrbKdcHost() { return this.krb_kdcHost; }
-    public String getKrbUserPrincipal() { return this.krb_userPrincipal; }
-    public String getKrbKeytabLocation() { return this.krb_keytabLocation; }
-    public String getKrbAdminPwd() { return this.krb_adminPwd; }
-    public String getKrbRealm() { return this.krb_realm; }
-    public String getKrb5FilePath() { return this.krb_krb5FilePath; }
+    public String getKrbKdcHost() { return krb_kdcHost; }
+    public String getKrbUserPrincipal() { return krb_userPrincipal; }
+    public String getKrbKeytabLocation() { return krb_keytabLocation; }
+    public String getKrbAdminPwd() { return krb_adminPwd; }
+    public String getKrbRealm() { return krb_realm; }
+    public String getKrb5FilePath() { return krb_krb5FilePath; }
 
-    public String getClusterName() { return this.cluster_name; }
-    public String getRangerUrl() { return this.ranger_url; }
-    public String getRangerUser() { return this.ranger_user; }
-    public String getRangerPwd() { return this.ranger_pwd; }
+    public String getClusterName() { return cluster_name; }
+    public String getRangerUrl() { return ranger_url; }
+    public String getRangerUser() { return ranger_user; }
+    public String getRangerPwd() { return ranger_pwd; }
 
-    public String getHdfsNameNode() { return this.hdfs_nameNode;}
-    public String getHdfsRpcPort() { return this.hdfs_rpcPort; }
-    public String getHdfsPort() { return this.hdfs_port; }
-    public String getHdfsSuperUser() { return this.hdfs_superUser; }
-    public String getHdfsUserKeytab() { return this.hdfs_userKeytab; }
+    public String getHdfsNameNode() { return hdfs_nameNode;}
+    public String getHdfsRpcPort() { return hdfs_rpcPort; }
+    public String getHdfsPort() { return hdfs_port; }
+    public String getHdfsSuperUser() { return hdfs_superUser; }
+    public String getHdfsUserKeytab() { return hdfs_userKeytab; }
 
-    public String getHbaseMasterUrl() { return this.hbase_masterUrl; }
-    public String getHbaseMasterPrincipal() { return this.hbase_masterPrincipal; }
-    public String getHbaseMasterUserKeytab() { return this.hbase_masterUserKeytab; }
-    public String getHbaseZookeeperQuorum() { return this.hbase_zookeeper_quorum; }
-    public String getHbaseZookeeperClientPort() { return this.hbase_zookeeper_clientPort; }
-    public String getHbaseZookeeperZnodeParent() { return this.hbase_zookeeper_znodeParent; }
-    public String getHbaseMaster() { return this.hbase_master; }
-    public String getHbaseRestPort() { return this.hbase_restPort; }
+    public String getHbaseMasterUrl() { return hbase_masterUrl; }
+    public String getHbaseMasterPrincipal() { return hbase_masterPrincipal; }
+    public String getHbaseMasterUserKeytab() { return hbase_masterUserKeytab; }
+    public String getHbaseZookeeperQuorum() { return hbase_zookeeper_quorum; }
+    public String getHbaseZookeeperClientPort() { return hbase_zookeeper_clientPort; }
+    public String getHbaseZookeeperZnodeParent() { return hbase_zookeeper_znodeParent; }
+    public String getHbaseMaster() { return hbase_master; }
+    public String getHbaseRestPort() { return hbase_restPort; }
 
-    public String getHiveHost() { return this.hive_host; }
-    public String getHivePort() { return this.hive_port; }
-    public String getHiveSuperUser() { return this.hive_superUser; }
-    public String getHiveSuperUserKeytab() { return this.hive_superUserKeytab; }
+    public String getHiveHost() { return hive_host; }
+    public String getHivePort() { return hive_port; }
+    public String getHiveSuperUser() { return hive_superUser; }
+    public String getHiveSuperUserKeytab() { return hive_superUserKeytab; }
 
-    public String getAmbari_host(){return this.ambari_host;}
-    public String getAmbari_adminUser(){return this.ambari_adminUser;}
-    public String getAmbari_adminPwd(){return this.ambari_adminPwd;}
+    public String getAmbari_host(){return ambari_host;}
+    public String getAmbari_adminUser(){return ambari_adminUser;}
+    public String getAmbari_adminPwd(){return ambari_adminPwd;}
 
-    public String getYarnRMHost(){return this.yarn_rm_host;}
-    public String getYarnRMPort() { return this.yarn_rm_port; }
-    public String getYarnRMUrl(){return this.yarn_rm_url;}
-    public String getYarnSuperUser(){return this.yarn_superUser;}
-    public String getYarnSuperUserKeytab(){return this.yarn_superUserKeytab;}
+    public String getYarnRMHost(){return yarn_rm_host;}
+    public String getYarnRMPort() { return yarn_rm_port; }
+    public String getYarnRMUrl(){return yarn_rm_url;}
+    public String getYarnSuperUser(){return yarn_superUser;}
+    public String getYarnSuperUserKeytab(){return yarn_superUserKeytab;}
 
-    public String getMRHistoryURL() { return this.mr_history_url; }
+    public String getMRHistoryURL() { return mr_history_url; }
 
-    public String getSparkHistoryURL() { return this.spark_history_url; }
+    public String getSparkHistoryURL() { return spark_history_url; }
 
     public etcdClient getEtcdClient(){
-        return new etcdClient(this.etcd_host, this.etcd_port, this.etcd_user, this.etcd_pwd);
+        return new etcdClient(etcd_host, etcd_port, etcd_user, etcd_pwd);
     }
 
     @Bean
     public LdapContextSource getLdapContextSource(){
         LdapContextSource contextSource = new LdapContextSource();
-        contextSource.setUrl(this.ldap_url);
-        contextSource.setUserDn(this.ldap_userDN);
-        contextSource.setPassword(this.ldap_password);
-        contextSource.setBase(this.ldap_base);
+        contextSource.setUrl(ldap_url);
+        contextSource.setUserDn(ldap_userDN);
+        contextSource.setPassword(ldap_password);
+        contextSource.setBase(ldap_base);
         return contextSource;
     }
 
@@ -255,17 +255,17 @@ public class ClusterConfig implements EnvironmentAware{
 
     @Bean
     public rangerClient getRangerClient(){
-        return new rangerClient(this.ranger_url, this.ranger_user, this.ranger_pwd);
+        return new rangerClient(ranger_url, ranger_user, ranger_pwd);
     }
 
     @Bean
     public ambariClient getAmbariClient(){
-        return new ambariClient(this.ambari_host,this.ambari_adminUser,this.ambari_adminPwd);
+        return new ambariClient(ambari_host,ambari_adminUser,ambari_adminPwd);
     }
 
     @Bean
     public yarnClient getYarnClient(){
-        return new yarnClient(this.yarn_rm_url);
+        return new yarnClient(yarn_rm_url);
     }
 
 }

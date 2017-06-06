@@ -148,12 +148,6 @@ public class HBaseAdminService implements OCDPAdminService{
     }
 
     @Override
-    public String getDashboardUrl(){
-        // Todo: should support multi-tent in future, each account can only see HBase namespace which belong to themself.
-        return this.clusterConfig.getHbaseMasterUrl();
-    }
-
-    @Override
     public Map<String, Object> generateCredentialsInfo(String accountName, String accountPwd, String accountKeytab,
                                                        String serviceInstanceResource, String rangerPolicyId){
         return new HashMap<String, Object>(){

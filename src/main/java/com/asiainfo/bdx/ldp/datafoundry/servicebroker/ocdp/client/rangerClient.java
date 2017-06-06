@@ -72,10 +72,6 @@ public class rangerClient {
         this.context = context;
     }
 
-    public String getPolicy(String policyID) {
-        return doGetPolicy("service/public/api/policy", policyID);
-    }
-
     public String getV2Policy(String policyID){
         return doGetPolicy("service/public/v2/api/policy", policyID);
     }
@@ -94,27 +90,6 @@ public class rangerClient {
             e.printStackTrace();
         }
         return policyDef;
-    }
-
-    private String createPolicy(BaseRangerV1Policy policy){
-        String newPolicyString = null;
-        String policyDef = gson.toJson(policy);
-        URI uri = buildPolicyUri("service/public/api/policy", "", "");
-        HttpPost request = new HttpPost(uri);
-        StringEntity entity = new StringEntity(policyDef, HTTP.UTF_8);
-        entity.setContentType("application/json");
-        request.setEntity(entity);
-        try{
-            CloseableHttpResponse response = this.httpClient.execute(request, this.context);
-            if(response.getStatusLine().getStatusCode() == 200)
-            {
-                newPolicyString = EntityUtils.toString(response.getEntity(),"UTF-8");
-            }
-            response.close();
-        }catch (IOException e){
-            e.printStackTrace();
-        }
-        return newPolicyString;
     }
 
     private String createV2Policy(RangerV2Policy policy){
@@ -206,10 +181,6 @@ public class rangerClient {
         return policyId;
     }
 
-    public boolean removePolicy(String policyID){
-        return doRemovePolicy("service/public/api/policy", policyID);
-    }
-
     public boolean removeV2Policy(String policyID){
         return doRemovePolicy("service/public/v2/api/policy", policyID);
     }
@@ -226,10 +197,6 @@ public class rangerClient {
             e.printStackTrace();
         }
         return status;
-    }
-
-    public boolean updatePolicy(String policyID, String policyUpdateDef){
-        return doUpdatePolicy("service/public/api/policy/", policyID, policyUpdateDef);
     }
 
     public boolean updateV2Policy(String policyID, String policyUpdateDef){

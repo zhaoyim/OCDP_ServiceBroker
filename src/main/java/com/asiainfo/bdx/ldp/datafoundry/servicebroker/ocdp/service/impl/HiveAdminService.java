@@ -118,12 +118,6 @@ public class HiveAdminService implements OCDPAdminService {
     }
 
     @Override
-    public String getDashboardUrl(){
-        //TODO Hive 1.2.0 not support web UI, this part should be enhance in hive 2.1.
-        return "";
-    }
-
-    @Override
     public Map<String, Object> generateCredentialsInfo(String accountName, String accountPwd, String accountKeytab,
                                                        String serviceInstanceResource, String rangerPolicyId){
         // Get hive database name from service instance resources

@@ -119,11 +119,6 @@ public class SparkAdminService implements OCDPAdminService {
     }
 
     @Override
-    public String getDashboardUrl() {
-        return this.clusterConfig.getSparkHistoryURL();
-    }
-
-    @Override
     public Map<String, Object> generateCredentialsInfo(String accountName, String accountPwd, String accountKeytab,
                                                        String serviceInstanceResource, String rangerPolicyId){
         return new HashMap<String, Object>(){

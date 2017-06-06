@@ -170,12 +170,6 @@ public class HDFSAdminService implements OCDPAdminService{
     }
 
     @Override
-    public String getDashboardUrl(){
-        // Todo: should support multi-tent in future, each account can only see HDFS folders which belong to themself.
-        return "http://" + this.clusterConfig.getHdfsNameNode() + ":" + this.clusterConfig.getHdfsPort();
-    }
-
-    @Override
     public Map<String, Object> generateCredentialsInfo(String accountName, String accountPwd, String accountKeytab,
                                                        String serviceInstanceResource, String rangerPolicyId){
         return new HashMap<String, Object>(){

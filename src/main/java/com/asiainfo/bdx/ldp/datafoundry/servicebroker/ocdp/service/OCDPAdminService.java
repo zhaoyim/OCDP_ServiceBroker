@@ -25,8 +25,6 @@ public interface OCDPAdminService {
 
     boolean removeUserFromResourcePermission(String policyId, String groupName, String accountName);
 
-    String getDashboardUrl();
-
     Map<String, Object> generateCredentialsInfo(String accountName, String accountPwd, String accountKeytab,
                                                 String serviceInstanceResource, String rangerPolicyId);
 

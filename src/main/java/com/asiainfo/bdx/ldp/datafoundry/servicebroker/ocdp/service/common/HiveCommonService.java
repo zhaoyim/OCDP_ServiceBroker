@@ -129,10 +129,6 @@ public class HiveCommonService {
         return this.updateUserForResourcePermission(policyId, groupName, accountName, false);
     }
 
-    public String getHiveJDBCUrl(){
-        return this.hiveJDBCUrl;
-    }
-
     private boolean updateUserForResourcePermission(String policyId, String groupName, String accountName, boolean isAppend){
         String currentPolicy = this.rc.getV2Policy(policyId);
         if (currentPolicy == null)

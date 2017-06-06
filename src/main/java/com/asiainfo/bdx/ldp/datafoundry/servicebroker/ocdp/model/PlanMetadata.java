@@ -35,7 +35,7 @@ public class PlanMetadata {
         String unit;
     }
 
-    public List<Costs> getCosts(){ return this.costs; }
-    public List<String> getBullets() { return this.bullets; }
-    public Map<String, CustomizeQuotaItem> getCustomize() { return this.customize; }
+    public List<Costs> getCosts(){ return costs; }
+    public List<String> getBullets() { return bullets; }
+    public Map<String, CustomizeQuotaItem> getCustomize() { return customize; }
 }

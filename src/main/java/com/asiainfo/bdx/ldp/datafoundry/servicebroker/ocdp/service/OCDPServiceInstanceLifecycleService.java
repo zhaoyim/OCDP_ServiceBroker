@@ -89,7 +89,6 @@ public class OCDPServiceInstanceLifecycleService {
         String ldapGroupId = this.clusterConfig.getLdapGroupId();
         String krbRealm = this.clusterConfig.getKrbRealm();
         OCDPAdminService ocdp = getOCDPAdminService(serviceDefinitionId);
-        instance.setDashboardUrl(ocdp.getDashboardUrl());
 
         //Create LDAP user and related kerberos principal/keytab if it not exists
         boolean newCreatedLDAPUser = false;
@@ -190,14 +189,6 @@ public class OCDPServiceInstanceLifecycleService {
         instance.setCredential(credentials);
         repository.save(instance);
 
-        /**
-        CreateServiceInstanceResponse response = new CreateServiceInstanceResponse()
-                .withDashboardUrl(instance.getDashboardUrl())
-                .withAsync(false);
-         Do not return OCDP components dashboard to DF, due to current Hadoop component dashboard not support multi-tenant function.
-         For details, please refer to https://github.com/asiainfoLDP/datafoundry_servicebroker_ocdp/issues/2
-        **/
-
         CreateServiceInstanceResponse response = new OCDPCreateServiceInstanceResponse()
                 .withCredential(credentials)
                 .withAsync(false);
@@ -241,11 +232,6 @@ public class OCDPServiceInstanceLifecycleService {
 
 		return new DeleteServiceInstanceResponse().withAsync(false);
 	}
-
-    public String getOCDPServiceDashboard(String serviceDefinitionId){
-        OCDPAdminService ocdp = getOCDPAdminService(serviceDefinitionId);
-        return ocdp.getDashboardUrl();
-    }
 
     public Map<String, String> getOCDPServiceCredential(
             String serviceDefinitionId, String serviceInstanceId, String accountName, String password){
