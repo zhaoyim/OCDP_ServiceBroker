@@ -5,6 +5,7 @@ import com.asiainfo.bdx.ldp.datafoundry.servicebroker.ocdp.client.etcdClient;
 import com.asiainfo.bdx.ldp.datafoundry.servicebroker.ocdp.exception.OCDPServiceException;
 import com.asiainfo.bdx.ldp.datafoundry.servicebroker.ocdp.model.*;
 import com.asiainfo.bdx.ldp.datafoundry.servicebroker.ocdp.repository.OCDPServiceInstanceRepository;
+import com.asiainfo.bdx.ldp.datafoundry.servicebroker.ocdp.service.common.OCDPServiceInstanceCommonService;
 import com.asiainfo.bdx.ldp.datafoundry.servicebroker.ocdp.utils.BrokerUtil;
 import com.asiainfo.bdx.ldp.datafoundry.servicebroker.ocdp.utils.OCDPAdminServiceMapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -60,14 +61,6 @@ public class OCDPServiceInstanceService implements ServiceInstanceService {
         String serviceDefinitionId = request.getServiceDefinitionId();
         String serviceInstanceId = request.getServiceInstanceId();
         String planId = request.getPlanId();
-        String accountName = request.getSpaceGuid();
-        // For citic case: provision response should return connection info
-        String password;
-        if(! BrokerUtil.isLDAPUserExist(this.ldap, accountName)){
-            password = UUID.randomUUID().toString();
-        }else {
-            password = etcdClient.readToString("/servicebroker/ocdp/user/krb/" + accountName + "@" + clusterConfig.getKrbRealm());
-        }
 
         ServiceInstance instance = repository.findOne(serviceInstanceId);
         // Check service instance and planid
@@ -77,16 +70,15 @@ public class OCDPServiceInstanceService implements ServiceInstanceService {
             throw new ServiceBrokerInvalidParametersException("Unknown plan id: " + planId);
         }
         CreateServiceInstanceResponse response;
-        OCDPServiceInstanceLifecycleService service = getOCDPServiceInstanceLifecycleService();
+        OCDPServiceInstanceCommonService service = getOCDPServiceInstanceCommonService();
         if(request.isAsyncAccepted()){
-            Future<CreateServiceInstanceResponse> responseFuture = service.doCreateServiceInstanceAsync(request, password);
+            Future<CreateServiceInstanceResponse> responseFuture = service.doCreateServiceInstanceAsync(request);
             this.instanceProvisionStateMap.put(request.getServiceInstanceId(), responseFuture);
             //CITIC case: return service credential info in provision response body
-            Map<String, String> credential = service.getOCDPServiceCredential(
-                    serviceDefinitionId, serviceInstanceId, accountName, password);
+            Map<String, Object> credential = service.getOCDPServiceCredential(serviceDefinitionId, serviceInstanceId);
             response = new OCDPCreateServiceInstanceResponse().withCredential(credential).withAsync(true);
         } else {
-            response = service.doCreateServiceInstance(request, password);
+            response = service.doCreateServiceInstance(request);
         }
         return response;
     }
@@ -134,7 +126,7 @@ public class OCDPServiceInstanceService implements ServiceInstanceService {
             throw new ServiceBrokerInvalidParametersException("Unknown plan id: " + planId);
         }
         DeleteServiceInstanceResponse response;
-        OCDPServiceInstanceLifecycleService service = getOCDPServiceInstanceLifecycleService();
+        OCDPServiceInstanceCommonService service = getOCDPServiceInstanceCommonService();
         if(request.isAsyncAccepted()){
             Future<DeleteServiceInstanceResponse> responseFuture = service.doDeleteServiceInstanceAsync(request, instance);
             this.instanceDeleteStateMap.put(request.getServiceInstanceId(), responseFuture);
@@ -151,8 +143,8 @@ public class OCDPServiceInstanceService implements ServiceInstanceService {
         return new UpdateServiceInstanceResponse();
     }
 
-    private OCDPServiceInstanceLifecycleService getOCDPServiceInstanceLifecycleService() {
-        return (OCDPServiceInstanceLifecycleService)context.getBean("OCDPServiceInstanceLifecycleService");
+    private OCDPServiceInstanceCommonService getOCDPServiceInstanceCommonService() {
+        return (OCDPServiceInstanceCommonService)context.getBean("OCDPServiceInstanceCommonService");
     }
 
     private OperationType getOperationType(String serviceInstanceId){

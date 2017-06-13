@@ -13,7 +13,7 @@ public interface OCDPAdminService {
 
     // For Citic case, append customize quota in parameters
 	String provisionResources(String serviceDefinitionId, String planId, String serviceInstanceId,
-                              String bindingId, String accountName, Map<String, Object> cuzQuota) throws Exception;
+                              String bindingId, Map<String, Object> cuzQuota) throws Exception;
 
     String assignPermissionToResources(String policyName, List<String> resources, String accountName, String groupName);
 
@@ -25,8 +25,8 @@ public interface OCDPAdminService {
 
     boolean removeUserFromResourcePermission(String policyId, String groupName, String accountName);
 
-    Map<String, Object> generateCredentialsInfo(String accountName, String accountPwd, String accountKeytab,
-                                                String serviceInstanceResource, String rangerPolicyId);
+    //For instance provision case
+    Map<String, Object> generateCredentialsInfo(String serviceInstanceId);
 
-    Map<String, String> getCredentialsInfo(String serviceInstanceId, String accountName, String password);
+    String getServiceResourceType();
 }

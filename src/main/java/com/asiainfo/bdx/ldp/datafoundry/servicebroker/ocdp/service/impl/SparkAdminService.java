@@ -1,14 +1,11 @@
 package com.asiainfo.bdx.ldp.datafoundry.servicebroker.ocdp.service.impl;
 
-import com.asiainfo.bdx.ldp.datafoundry.servicebroker.ocdp.config.CatalogConfig;
 import com.asiainfo.bdx.ldp.datafoundry.servicebroker.ocdp.config.ClusterConfig;
 import com.asiainfo.bdx.ldp.datafoundry.servicebroker.ocdp.service.OCDPAdminService;
 import com.asiainfo.bdx.ldp.datafoundry.servicebroker.ocdp.service.common.YarnCommonService;
-import com.asiainfo.bdx.ldp.datafoundry.servicebroker.ocdp.utils.BrokerUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.cloud.servicebroker.model.Plan;
 import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Service;
 
@@ -43,14 +40,9 @@ public class SparkAdminService implements OCDPAdminService {
 
     @Override
     public String provisionResources(String serviceDefinitionId, String planId, String serviceInstanceId,
-                                     String bindingId, String accountName, Map<String, Object> cuzQuota) throws Exception {
+                                     String bindingId, Map<String, Object> cuzQuota) throws Exception {
         Map<String, String> quota = this.yarnCommonService.getQuotaFromPlan(serviceDefinitionId, planId, cuzQuota);
-        String queueName = yarnCommonService.createQueue(quota.get("yarnQueueQuota"));
-        //Append random user name after username passed from DF, due to broker use space_guid as username for every provision request now
-        String dirName = "/user/" + accountName + "_" + BrokerUtil.generateAccountName(8);
-        this.hdfsAdminService.createHDFSDir(dirName, new Long(quota.get("nameSpaceQuota")), new Long(quota.get("storageSpaceQuota")) * 1000000000);
-        // return yarn queue name and hdfs folder, because spark need both resources
-        return queueName + ":" + dirName;
+        return yarnCommonService.createQueue(quota.get("yarnQueueQuota"));
     }
 
     @Override
@@ -71,81 +63,48 @@ public class SparkAdminService implements OCDPAdminService {
             logger.info("Assign permissions for /user/" + accountName + " folder.");
         }
 
-        String[] resourcesList = resources.get(0).split(":");
+        String resource = resources.get(0);
         logger.info("Assign submit-app/admin-queue permission to yarn queue.");
-        String yarnPolicyId = this.yarnCommonService.assignPermissionToQueue(policyName, resourcesList[0], accountName, groupName);
-        logger.info("Create corresponding hdfs policy for spark tenant");
-        List<String> hdfsFolders = new ArrayList<String>(){
-            {
-                add(resourcesList[1]);
-            }
-        };
-        String hdfsPolicyId = this.hdfsAdminService.assignPermissionToResources("spark_" + policyName, hdfsFolders, accountName, groupName);
-        // return yarn policy id and hive policy id, because spark need both resources
-        return (yarnPolicyId != null && hdfsPolicyId != null) ? yarnPolicyId + ":" + hdfsPolicyId : null;
+        String yarnPolicyId = this.yarnCommonService.assignPermissionToQueue(policyName, resource, accountName, groupName);
+        // return yarn policy id
+        return (yarnPolicyId != null) ? yarnPolicyId : null;
     }
 
     @Override
     public boolean appendUserToResourcePermission(String policyId, String groupName, String accountName) {
-        String[] policyIds = policyId.split(":");
-        boolean userAppendToYarnPolicy = this.yarnCommonService.appendUserToQueuePermission(policyIds[0], groupName, accountName);
-        boolean userAppendToHDFSPolicy = this.hdfsAdminService.appendUserToResourcePermission(policyIds[1], groupName, accountName);
-        return userAppendToYarnPolicy && userAppendToHDFSPolicy;
+        return this.yarnCommonService.appendUserToQueuePermission(policyId, groupName, accountName);
     }
 
     @Override
     public void deprovisionResources(String serviceInstanceResuorceName)throws Exception{
-        String[] resources = serviceInstanceResuorceName.split(":");
-        this.yarnCommonService.deleteQueue(resources[0]);
-        this.hdfsAdminService.deprovisionResources(resources[1]);
+        this.yarnCommonService.deleteQueue(serviceInstanceResuorceName);
     }
 
     @Override
     public boolean unassignPermissionFromResources(String policyId) {
-        String[] policyIds = policyId.split(":");
         logger.info("Unassign submit/admin permission to yarn queue.");
-        boolean yarnPolicyDeleted = this.yarnCommonService.unassignPermissionFromQueue(policyIds[0]);
-        logger.info("Unassign read/write/execute permission to hdfs folder.");
-        boolean hdfsPolicyDeleted = this.hdfsAdminService.unassignPermissionFromResources(policyIds[1]);
-        return yarnPolicyDeleted && hdfsPolicyDeleted;
+        return this.yarnCommonService.unassignPermissionFromQueue(policyId);
     }
 
     @Override
     public boolean removeUserFromResourcePermission(String policyId, String groupName, String accountName) {
-        String[] policyIds = policyId.split(":");
-        boolean userRemovedFromYarnPolicy = this.yarnCommonService.removeUserFromQueuePermission(policyIds[0], groupName, accountName);
-        boolean userRemovedFromHDFSPolicy = this.hdfsAdminService.removeUserFromResourcePermission(policyIds[1], groupName, accountName);
-        return userRemovedFromYarnPolicy && userRemovedFromHDFSPolicy;
+        return  this.yarnCommonService.removeUserFromQueuePermission(policyId, groupName, accountName);
     }
 
     @Override
-    public Map<String, Object> generateCredentialsInfo(String accountName, String accountPwd, String accountKeytab,
-                                                       String serviceInstanceResource, String rangerPolicyId){
+    public Map<String, Object> generateCredentialsInfo(String serviceInstanceId){
         return new HashMap<String, Object>(){
             {
                 put("uri", clusterConfig.getYarnRMUrl());
-                put("username", accountName + "@" + clusterConfig.getKrbRealm());
-                put("password", accountPwd);
-                put("keytab", accountKeytab);
                 put("host", clusterConfig.getYarnRMHost());
                 put("port", clusterConfig.getYarnRMPort());
-                put("name", serviceInstanceResource);
-                put("rangerPolicyId", rangerPolicyId);
             }
         };
     }
 
     @Override
-    public Map<String, String> getCredentialsInfo(String serviceInstanceId, String accountName, String password){
-        return new HashMap<String, String>(){
-            {
-                put("username", accountName + "@" + clusterConfig.getKrbRealm());
-                put("password", password);
-                put("uri", clusterConfig.getYarnRMUrl());
-                put("host", clusterConfig.getYarnRMHost());
-                put("port", clusterConfig.getYarnRMPort());
-            }
-        };
+    public String getServiceResourceType(){
+        return "Yarn Queue";
     }
 
 }

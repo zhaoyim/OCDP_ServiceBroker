@@ -4,7 +4,6 @@ import com.asiainfo.bdx.ldp.datafoundry.servicebroker.ocdp.client.rangerClient;
 import com.asiainfo.bdx.ldp.datafoundry.servicebroker.ocdp.config.CatalogConfig;
 import com.asiainfo.bdx.ldp.datafoundry.servicebroker.ocdp.config.ClusterConfig;
 import com.asiainfo.bdx.ldp.datafoundry.servicebroker.ocdp.model.CustomizeQuotaItem;
-import com.asiainfo.bdx.ldp.datafoundry.servicebroker.ocdp.model.PlanMetadata;
 import com.asiainfo.bdx.ldp.datafoundry.servicebroker.ocdp.model.RangerV2Policy;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -70,7 +69,7 @@ public class HBaseAdminService implements OCDPAdminService{
 
     @Override
     public String provisionResources(String serviceDefinitionId, String planId, String serviceInstanceId,
-                                     String bindingId, String accountName, Map<String, Object> cuzQuota) throws Exception{
+                                     String bindingId, Map<String, Object> cuzQuota) throws Exception{
         String nsName = serviceInstanceId.replaceAll("-", "");
         Map<String, String> quota = this.getQuotaFromPlan(serviceDefinitionId, planId, cuzQuota);
         try{
@@ -148,34 +147,20 @@ public class HBaseAdminService implements OCDPAdminService{
     }
 
     @Override
-    public Map<String, Object> generateCredentialsInfo(String accountName, String accountPwd, String accountKeytab,
-                                                       String serviceInstanceResource, String rangerPolicyId){
+    public Map<String, Object> generateCredentialsInfo(String serviceInstanceId){
         return new HashMap<String, Object>(){
             {
-                put("uri", "http://" + clusterConfig.getHbaseMaster() + ":" + clusterConfig.getHbaseRestPort());
-                put("username", accountName + "@" + clusterConfig.getKrbRealm());
-                put("password", accountPwd);
-                put("keytab", accountKeytab);
-                put("host", clusterConfig.getHbaseMaster());
-                put("port", clusterConfig.getHbaseRestPort());
-                put("name", serviceInstanceResource);
-                put("rangerPolicyId", rangerPolicyId);
-            }
-        };
-    }
-
-    @Override
-    public Map<String, String> getCredentialsInfo(String serviceInstanceId, String accountName, String password){
-        return new HashMap<String, String>(){
-            {
-                put("username", accountName + "@" + clusterConfig.getKrbRealm());
-                put("password", password);
                 put("uri", "http://" + clusterConfig.getHbaseMaster() + ":" + clusterConfig.getHbaseRestPort());
                 put("host", clusterConfig.getHbaseMaster());
                 put("port", clusterConfig.getHbaseRestPort());
                 put("HBase NameSpace", serviceInstanceId.replaceAll("-", ""));
             }
         };
+    }
+
+    @Override
+    public String getServiceResourceType(){
+        return "HDFS Path";
     }
 
     private boolean updateUserForResourcePermission(String policyId, String groupName, String accountName, boolean isAppend){

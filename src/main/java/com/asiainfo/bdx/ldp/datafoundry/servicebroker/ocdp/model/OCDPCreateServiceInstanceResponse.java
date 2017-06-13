@@ -17,9 +17,9 @@ public class OCDPCreateServiceInstanceResponse extends CreateServiceInstanceResp
 //    @SerializedName("credentials")
     @JsonSerialize
     @JsonProperty("credentials")
-    private Map<String, String> credentials;
+    private Map<String, Object> credentials;
 
-    public OCDPCreateServiceInstanceResponse withCredential(final Map<String, String> credential){
+    public OCDPCreateServiceInstanceResponse withCredential(final Map<String, Object> credential){
         this.credentials = credential;
         return this;
     }
