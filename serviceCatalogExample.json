@@ -109,7 +109,7 @@
               "price": 10,
               "unit": "GB",
               "step": 10,
-              "desc": "Yarn队列的最大容量"
+              "desc": "运行Hive SQL的Yarn队列的最大容量"
             }
           }
         },
@@ -142,23 +142,7 @@
               "price": 10,
               "unit": "GB",
               "step": 10,
-              "desc": "Yarn队列的最大容量"
-            },
-            "nameSpaceQuota": {
-              "default": 1000,
-              "max": 100000,
-              "price": 10,
-              "unit": "",
-              "step": 10,
-              "desc": "HDFS目录允许创建的最大文件数目"
-            },
-            "storageSpaceQuota": {
-              "default": 1024,
-              "max": 102400,
-              "price": 10,
-              "unit": "GB",
-              "step": 10,
-              "desc": "HDFS目录的最大存储容量"
+              "desc": "运行MapReduce作业的Yarn队列的最大容量"
             }
           }
         },
@@ -191,23 +175,7 @@
               "price": 10,
               "unit": "GB",
               "step": 10,
-              "desc": "Yarn队列的最大容量"
-            },
-            "nameSpaceQuota": {
-              "default": 1000,
-              "max": 100000,
-              "price": 10,
-              "unit": "",
-              "step": 10,
-              "desc": "HDFS目录允许创建的最大文件数目"
-            },
-            "StorageSpaceQuota": {
-              "default": 1024,
-              "max": 102400,
-              "price": 10,
-              "unit": "GB",
-              "step": 10,
-              "desc": "HDFS目录的最大存储容量"
+              "desc": "运行Spark作业的Yarn队列的最大容量"
             }
           }
         },

@@ -3,7 +3,6 @@ package com.asiainfo.bdx.ldp.datafoundry.servicebroker.ocdp.service.impl;
 import com.asiainfo.bdx.ldp.datafoundry.servicebroker.ocdp.config.CatalogConfig;
 import com.asiainfo.bdx.ldp.datafoundry.servicebroker.ocdp.config.ClusterConfig;
 import com.asiainfo.bdx.ldp.datafoundry.servicebroker.ocdp.model.CustomizeQuotaItem;
-import com.asiainfo.bdx.ldp.datafoundry.servicebroker.ocdp.model.PlanMetadata;
 import com.asiainfo.bdx.ldp.datafoundry.servicebroker.ocdp.service.common.HiveCommonService;
 import com.asiainfo.bdx.ldp.datafoundry.servicebroker.ocdp.service.common.YarnCommonService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -49,7 +48,7 @@ public class HiveAdminService implements OCDPAdminService {
 
     @Override
     public String provisionResources(String serviceDefinitionId, String planId, String serviceInstanceId, String bindingId,
-                                     String accountName, Map<String, Object> cuzQuota) throws Exception{
+                                     Map<String, Object> cuzQuota) throws Exception{
         Map<String, String> quota = this.getQuotaFromPlan(serviceDefinitionId, planId, cuzQuota);
         String dbName = hiveCommonService.createDatabase(serviceInstanceId);
         // Set database storage quota
@@ -118,33 +117,10 @@ public class HiveAdminService implements OCDPAdminService {
     }
 
     @Override
-    public Map<String, Object> generateCredentialsInfo(String accountName, String accountPwd, String accountKeytab,
-                                                       String serviceInstanceResource, String rangerPolicyId){
-        // Get hive database name from service instance resources
-        String[] resources = serviceInstanceResource.split(":");
+    public Map<String, Object> generateCredentialsInfo(String serviceInstanceId){
+        String dbName = serviceInstanceId.replaceAll("-", "");
         return new HashMap<String, Object>(){
             {
-                put("uri", "jdbc:hive2://" + clusterConfig.getHiveHost() + ":" +
-                                clusterConfig.getHivePort() + "/" + resources[0] +
-                                ";principal=" + clusterConfig.getHiveSuperUser());
-                put("username", accountName + "@" + clusterConfig.getKrbRealm());
-                put("password", accountPwd);
-                put("keytab", accountKeytab);
-                put("host", clusterConfig.getHiveHost());
-                put("port", clusterConfig.getHivePort());
-                put("name", resources[0]);
-                put("rangerPolicyId", rangerPolicyId);
-            }
-        };
-    }
-
-    @Override
-    public Map<String, String> getCredentialsInfo(String serviceInstanceId, String accountName, String password){
-        String dbName = serviceInstanceId.replaceAll("-", "");
-        return new HashMap<String, String>(){
-            {
-                put("username", accountName + "@" + clusterConfig.getKrbRealm());
-                put("password", password);
                 put("uri", "jdbc:hive2://" + clusterConfig.getHiveHost() + ":" +
                         clusterConfig.getHivePort() + "/" + dbName + ";principal=" + clusterConfig.getHiveSuperUser());
                 put("host", clusterConfig.getHiveHost());
@@ -152,6 +128,11 @@ public class HiveAdminService implements OCDPAdminService {
                 put("Hive database", dbName);
             }
         };
+    }
+
+    @Override
+    public String getServiceResourceType(){
+        return "HDFS Path";
     }
 
     private Map<String, String> getQuotaFromPlan(String serviceDefinitionId, String planId, Map<String, Object> cuzQuota){
