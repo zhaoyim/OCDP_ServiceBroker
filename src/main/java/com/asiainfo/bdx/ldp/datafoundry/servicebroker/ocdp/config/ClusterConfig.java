@@ -124,8 +124,16 @@ public class ClusterConfig implements EnvironmentAware{
 
     //Hadoop Spark History server
     private String spark_history_url;
+    
+    private String zk_connection; // eg: ochadoop111.jcloud.local:2181
+    
+    private String zk_security; // whether security mode in on, false by default
 
-    @Override
+    private String zk_conn_timeout; // zk connection timeout, 30000 ms by default
+    
+    private String zk_session_timeout; // zk session timeout , 30000 ms by default
+
+	@Override
     public void setEnvironment(Environment env){
         this.etcd_host = env.getProperty("ETCD_HOST");
         this.etcd_port = env.getProperty("ETCD_PORT");
@@ -174,6 +182,10 @@ public class ClusterConfig implements EnvironmentAware{
         this.yarn_superUserKeytab = env.getProperty("YARN_SUPER_USER_KEYTAB");
         this.mr_history_url = env.getProperty("MR_HISTORY_URL");
         this.spark_history_url = env.getProperty("SPARK_HISTORY_URL");
+        this.zk_connection = env.getProperty("OC_ZK_CONNECTION");
+        this.zk_security = env.getProperty("OC_ZK_ISSECURITY");
+        this.zk_conn_timeout = env.getProperty("OC_ZK_CONN_TIMEOUT_MS");
+        this.zk_session_timeout = env.getProperty("OC_ZK_SESSTION_TIMEOUT_MS");
     }
 
     public String getEtcdHost() { return etcd_host; }
@@ -267,5 +279,20 @@ public class ClusterConfig implements EnvironmentAware{
     public yarnClient getYarnClient(){
         return new yarnClient(yarn_rm_url);
     }
+    
+    public String getZk_connection() {
+		return zk_connection;
+	}
+    
+	public String getZk_session_timeout() {
+		return zk_session_timeout;
+	}
 
+	public String getZk_conn_timeout() {
+		return zk_conn_timeout;
+	}
+
+	public String getZk_security() {
+		return zk_security;
+	}
 }

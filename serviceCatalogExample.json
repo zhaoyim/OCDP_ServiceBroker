@@ -188,5 +188,54 @@
       "displayName":"Spark",
       "imageUrl":"http://...",
       "supportUrl":"https://github.com/baikai/datafoundry_servicebroker_ocdp"},
-    "requires":[],"dashboard_client":null}
+    "requires":[],"dashboard_client":null},
+  {"id":"7b738c78-d412-422b-ac3e-43a9fc72a4a7",
+	"name":"Kafka",
+	"description":"A Kafka service broker implementation",
+	"bindable":true,
+	"plan_updateable":false,
+	"plans":[
+	  {"id":"68ee85c2-5b1a-4f51-89e9-5b111c251f0d",
+	    "name":"Default Kafka Plan",
+	    "description":"This is a default kafka plan.  All services are created equally.",
+	    "metadata":{
+	      "costs":[{"amount":{"usd":0.0},"unit":"MONTHLY"}],
+	      "bullets":["Kafka Topic Partitions:1", "Kafka Partition Size(Bytes):-1", "Kafka Topic TTL(ms):604800000"],
+	      "customize": {
+	        "topicTTL": {
+	          "default": 604800000,
+	          "max": -1,
+	          "price": 10,
+	          "unit": "ms",
+	          "step": 10,
+	          "desc": "Topic TTL."
+	        },
+	        "topicQuota": {
+	          "default": 1,
+	          "max": -1,
+	          "price": 10,
+	          "unit": "",
+	          "step": 10,
+	          "desc": "Number of partitions in a topic."
+	        },
+	        "partitionQuota": {
+	          "default": -1,
+	          "max": -1,
+	          "price": 10,
+	          "unit": "Bytes",
+	          "step": 10,
+	          "desc": "Storage(Bytes) of one partition in a topic."
+	        }
+	      }
+	    },
+	    "free":false}],
+	"tags":["Kafka","document"],
+	"metadata":{
+	  "longDescription":"Kafka Service",
+	  "domentationUrl":"https://github.com/baikai/datafoundry_servicebroker_ocdp",
+	  "providerDisplayName":"asiainfo",
+	  "displayName":"Kafka",
+	  "imageUrl":"http://...",
+	  "supportUrl":"https://github.com/baikai/datafoundry_servicebroker_ocdp"},
+	"requires":[],"dashboard_client":null}
 ]}
