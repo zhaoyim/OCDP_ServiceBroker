@@ -50,6 +50,10 @@ public class HBaseAdminService implements OCDPAdminService{
 
     private Connection connection;
 
+    private String serviceType = "HBase";
+
+    private String serviceResourceType = "HBase NameSpace";
+
     @Autowired
     public HBaseAdminService(ClusterConfig clusterConfig){
         this.clusterConfig = clusterConfig;
@@ -93,21 +97,42 @@ public class HBaseAdminService implements OCDPAdminService{
     }
 
     @Override
-    public String assignPermissionToResources(String policyName, List<String> tableList, String accountName, String groupName){
+    public String createPolicyForTenant(String policyName, List<String> tableList, String tenantName, String groupName){
         logger.info("Assign read/write/create/admin permission to hbase namespace.");
+        String policyId = null;
         ArrayList<String> cfList = new ArrayList<String>(){{add("*");}};
         ArrayList<String> cList = new ArrayList<String>(){{add("*");}};
         ArrayList<String> groupList = new ArrayList<String>(){{add(groupName);}};
-        ArrayList<String> userList = new ArrayList<String>(){{add(accountName);}};
+        ArrayList<String> userList = new ArrayList<String>(){{add(tenantName);}};
         ArrayList<String> types = new ArrayList<String>(){{add("read");add("write");add("create");add("admin");}};
         ArrayList<String> conditions = new ArrayList<String>();
-        return this.rc.createHBasePolicy(policyName,"This is HBase Policy", clusterConfig.getClusterName()+"_hbase",
-                tableList, cfList, cList, groupList,userList,types,conditions);
+        RangerV2Policy rp = new RangerV2Policy(
+                policyName,"","This is HBase Policy", clusterConfig.getClusterName()+"_hbase",true,true);
+        ArrayList<String> nsList = new ArrayList<String>();
+        // Convert namespace name to 'ns:*'
+        for (String e : tableList){
+            nsList.add(e + ":*");
+        }
+        rp.addResources("table", nsList, false);
+        rp.addResources("column-family", cfList, false);
+        rp.addResources("column", cList, false);
+        rp.addPolicyItems(userList,groupList,conditions,false,types);
+        String newPolicyString = rc.createV2Policy(rp);
+        if (newPolicyString != null){
+            RangerV2Policy newPolicyObj = gson.fromJson(newPolicyString, RangerV2Policy.class);
+            policyId = newPolicyObj.getPolicyId();
+        }
+        return policyId;
     }
 
     @Override
-    public boolean appendUserToResourcePermission(String policyId, String groupName, String accountName){
-        return this.updateUserForResourcePermission(policyId, groupName, accountName, true);
+    public boolean appendResourceToTenantPolicy(String policyId, String serviceInstanceResource){
+        return rc.appendResourceToV2Policy(policyId, serviceInstanceResource, "table");
+    }
+
+    @Override
+    public boolean appendUserToTenantPolicy(String policyId, String groupName, String accountName, List<String> permissions){
+        return rc.appendUserToV2Policy(policyId, groupName, accountName, permissions);
     }
 
     @Override
@@ -136,14 +161,19 @@ public class HBaseAdminService implements OCDPAdminService{
     }
 
     @Override
-    public boolean unassignPermissionFromResources(String policyId){
+    public boolean deletePolicyForTenant(String policyId){
         logger.info("Unassign read/write/create/admin permission to hbase namespace.");
         return this.rc.removeV2Policy(policyId);
     }
 
     @Override
-    public boolean removeUserFromResourcePermission(String policyId, String groupName, String accountName){
-        return this.updateUserForResourcePermission(policyId, groupName, accountName, false);
+    public boolean removeResourceFromTenantPolicy(String policyId, String serviceInstanceResource){
+        return rc.removeResourceFromV2Policy(policyId, serviceInstanceResource, "table");
+    }
+
+    @Override
+    public boolean removeUserFromTenantPolicy(String policyId, String accountName){
+        return rc.removeUserFromV2Policy(policyId, accountName);
     }
 
     @Override
@@ -160,19 +190,22 @@ public class HBaseAdminService implements OCDPAdminService{
 
     @Override
     public String getServiceResourceType(){
-        return "HDFS Path";
+        return serviceResourceType;
     }
 
-    private boolean updateUserForResourcePermission(String policyId, String groupName, String accountName, boolean isAppend){
-        String currentPolicy = this.rc.getV2Policy(policyId);
-        if (currentPolicy == null)
-        {
-            return false;
-        }
-        RangerV2Policy rp = gson.fromJson(currentPolicy, RangerV2Policy.class);
-        rp.updatePolicy(
-                groupName, accountName, new ArrayList<String>(){{add("read"); add("write"); add("create"); add("admin");}}, isAppend);
-        return this.rc.updateV2Policy(policyId, gson.toJson(rp));
+    @Override
+    public String getServiceType(){
+        return serviceType;
+    }
+
+    @Override
+    public  List<String> getResourceFromTenantPolicy(String policyId){
+        return rc.getResourcsFromV2Policy(policyId, "table");
+    }
+
+    @Override
+    public void resizeResourceQuota(String serviceInstanceId, Map<String, Object> cuzQuota) {
+
     }
 
     private Map<String, String> getQuotaFromPlan(String serviceDefinitionId, String planId, Map<String, Object> cuzQuota){

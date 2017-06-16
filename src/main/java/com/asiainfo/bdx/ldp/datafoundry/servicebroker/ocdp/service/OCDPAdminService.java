@@ -11,22 +11,30 @@ import java.util.Map;
  */
 public interface OCDPAdminService {
 
-    // For Citic case, append customize quota in parameters
 	String provisionResources(String serviceDefinitionId, String planId, String serviceInstanceId,
                               String bindingId, Map<String, Object> cuzQuota) throws Exception;
 
-    String assignPermissionToResources(String policyName, List<String> resources, String accountName, String groupName);
+    String createPolicyForTenant(String policyName, List<String> resources, String tenantName, String groupName);
 
-    boolean appendUserToResourcePermission(String policyId, String groupName, String accountName);
+    boolean appendResourceToTenantPolicy(String policyId, String serviceInstanceResource);
+
+    boolean appendUserToTenantPolicy(String policyId, String groupName, String accountName, List<String> permissions);
 
     void deprovisionResources(String serviceInstanceResuorceName) throws Exception;
 
-    boolean unassignPermissionFromResources(String policyId);
+    boolean deletePolicyForTenant(String policyId);
 
-    boolean removeUserFromResourcePermission(String policyId, String groupName, String accountName);
+    boolean removeResourceFromTenantPolicy(String policyId, String serviceInstanceResource);
 
-    //For instance provision case
+    boolean removeUserFromTenantPolicy(String policyId, String accountName);
+
+    List<String> getResourceFromTenantPolicy(String policyId);
+
     Map<String, Object> generateCredentialsInfo(String serviceInstanceId);
+
+    void resizeResourceQuota(String serviceInstanceId, Map<String, Object> cuzQuota);
+
+    String getServiceType();
 
     String getServiceResourceType();
 }

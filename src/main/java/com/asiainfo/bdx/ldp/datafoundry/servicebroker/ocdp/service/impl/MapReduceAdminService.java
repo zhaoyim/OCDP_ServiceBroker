@@ -31,6 +31,10 @@ public class MapReduceAdminService implements OCDPAdminService{
 
     private HDFSAdminService hdfsAdminService;
 
+    private String serviceType = "MapReduce";
+
+    private String serviceResourceType = "Yarn Queue";
+
     @Autowired
     public MapReduceAdminService(ClusterConfig clusterConfig, YarnCommonService yarnCommonService, HDFSAdminService hdfsAdminService){
         this.clusterConfig = clusterConfig;
@@ -46,7 +50,7 @@ public class MapReduceAdminService implements OCDPAdminService{
     }
 
     @Override
-    public String assignPermissionToResources(String policyName, final List<String> resources, String accountName, String groupName) {
+    public String createPolicyForTenant(String policyName, final List<String> resources, String tenantName, String groupName) {
         /**
          * Temp fix:
          * Create ranger policy to make sure current tenant can use /user/<account name> folder to store some files generate by spark or mr.
@@ -55,24 +59,29 @@ public class MapReduceAdminService implements OCDPAdminService{
          */
         List <String> hdfsFolderForJobExec = new ArrayList<String>(){
             {
-                add("/user/" + accountName);
+                add("/user/" + tenantName);
                 add("/mr-history");
             }
         };
-        if (this.hdfsAdminService.assignPermissionToResources(accountName + "_" + policyName, hdfsFolderForJobExec, accountName, groupName) != null){
-            logger.info("Assign permissions for /user/" + accountName + " folder.");
+        if (this.hdfsAdminService.createPolicyForTenant(tenantName + "_" + policyName, hdfsFolderForJobExec, tenantName, groupName) != null){
+            logger.info("Assign permissions for /user/" + tenantName + " folder.");
         }
 
         String resource = resources.get(0);
-        logger.info("Assign submit-app/admin-queue permission to yarn queue.");
-        String yarnPolicyId = this.yarnCommonService.assignPermissionToQueue(policyName, resource, accountName, groupName);
+        String yarnPolicyId = this.yarnCommonService.assignPermissionToQueue(policyName, resource, tenantName, groupName);
         // return yarn policy id
         return (yarnPolicyId != null) ? yarnPolicyId : null;
     }
 
     @Override
-    public boolean appendUserToResourcePermission(String policyId, String groupName, String accountName) {
-        return this.yarnCommonService.appendUserToQueuePermission(policyId, groupName, accountName);
+    public boolean appendResourceToTenantPolicy(String policyId, String serviceInstanceResource){
+        return yarnCommonService.appendResourceToQueuePermission(policyId, serviceInstanceResource);
+    }
+
+    @Override
+    public boolean appendUserToTenantPolicy(
+            String policyId, String groupName, String accountName, List<String> permissions) {
+        return this.yarnCommonService.appendUserToQueuePermission(policyId, groupName, accountName, permissions);
     }
 
     @Override
@@ -81,14 +90,23 @@ public class MapReduceAdminService implements OCDPAdminService{
     }
 
     @Override
-    public boolean unassignPermissionFromResources(String policyId) {
-        logger.info("Unassign submit/admin permission to yarn queue.");
+    public boolean deletePolicyForTenant(String policyId) {
         return this.yarnCommonService.unassignPermissionFromQueue(policyId);
     }
 
     @Override
-    public boolean removeUserFromResourcePermission(String policyId, String groupName, String accountName) {
-        return this.yarnCommonService.removeUserFromQueuePermission(policyId, groupName, accountName);
+    public boolean removeResourceFromTenantPolicy(String policyId, String serviceInstanceResource){
+        return yarnCommonService.removeResourceFromQueuePermission(policyId, serviceInstanceResource);
+    }
+
+    @Override
+    public boolean removeUserFromTenantPolicy(String policyId, String accountName) {
+        return this.yarnCommonService.removeUserFromQueuePermission(policyId, accountName);
+    }
+
+    @Override
+    public  List<String> getResourceFromTenantPolicy(String policyId){
+        return yarnCommonService.getResourceFromQueuePolicy(policyId);
     }
 
     @Override
@@ -104,7 +122,17 @@ public class MapReduceAdminService implements OCDPAdminService{
 
     @Override
     public String getServiceResourceType(){
-        return "Yarn Queue";
+        return serviceResourceType;
+    }
+
+    @Override
+    public String getServiceType(){
+        return serviceType;
+    }
+
+    @Override
+    public void resizeResourceQuota(String serviceInstanceId, Map<String, Object> cuzQuota){
+
     }
 
 }
