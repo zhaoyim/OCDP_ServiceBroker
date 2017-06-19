@@ -39,10 +39,6 @@ public class HiveAdminService implements OCDPAdminService {
 
     private YarnCommonService yarnCommonService;
 
-    private String serviceType = "Hive";
-
-    private String serviceResourceType = "Hive database";
-
     @Autowired
     public HiveAdminService(ClusterConfig clusterConfig, HiveCommonService hiveCommonService, HDFSAdminService hdfsAdminService,
                             YarnCommonService yarnCommonService){
@@ -152,16 +148,6 @@ public class HiveAdminService implements OCDPAdminService {
     @Override
     public  List<String> getResourceFromTenantPolicy(String policyId){
         return hiveCommonService.getResourceFromDatabasePolicy(policyId);
-    }
-
-    @Override
-    public String getServiceResourceType(){
-        return serviceResourceType;
-    }
-
-    @Override
-    public String getServiceType(){
-        return serviceType;
     }
 
     @Override

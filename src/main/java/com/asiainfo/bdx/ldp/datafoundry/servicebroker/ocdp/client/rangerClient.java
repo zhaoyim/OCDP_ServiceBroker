@@ -193,8 +193,8 @@ public class rangerClient {
             return false;
         }
         RangerV2Policy rp = gson.fromJson(currentPolicy, RangerV2Policy.class);
-        rp.addPolicyItems(new ArrayList<String>(){{add(groupName);}},
-                new ArrayList<String>(){{add(accountName);}}, new ArrayList<>(), true, permissions);
+        rp.addPolicyItems(new ArrayList<String>(){{add(accountName);}},
+                new ArrayList<String>(){{add(groupName);}}, new ArrayList<>(), true, permissions);
         return updateV2Policy(policyId, rp);
     }
 
