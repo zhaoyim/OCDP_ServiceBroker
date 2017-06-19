@@ -71,6 +71,8 @@ public class OCDPServiceInstanceBindingService implements ServiceInstanceBinding
             throw new ServiceInstanceDoesNotExistException(serviceInstanceId);
         }
         Map<String, Object> serviceInstanceCredentials = instance.getServiceInstanceCredentials();
+        serviceInstanceCredentials.remove("rangerPolicyId");
+        serviceInstanceCredentials.remove("tenantName");
         String appGuid = request.getBoundAppGuid();
         // save service instance binding
         ServiceInstanceBinding binding = new ServiceInstanceBinding(
@@ -95,8 +97,8 @@ public class OCDPServiceInstanceBindingService implements ServiceInstanceBinding
         bindingRepository.delete(serviceInstanceId, bindingId);
     }
 
-    private OCDPAdminService_old getOCDPAdminService(String serviceDefinitionId){
-        return  (OCDPAdminService_old) this.context.getBean(
+    private OCDPAdminService getOCDPAdminService(String serviceDefinitionId){
+        return  (OCDPAdminService) this.context.getBean(
                 OCDPAdminServiceMapper.getOCDPAdminService(serviceDefinitionId)
         );
     }

@@ -18,7 +18,7 @@ public interface OCDPAdminService {
 
     boolean appendResourceToTenantPolicy(String policyId, String serviceInstanceResource);
 
-    boolean appendUserToTenantPolicy(String policyId, String groupName, String accountName);
+    boolean appendUserToTenantPolicy(String policyId, String groupName, String accountName, List<String> permissions);
 
     void deprovisionResources(String serviceInstanceResuorceName) throws Exception;
 
@@ -26,7 +26,7 @@ public interface OCDPAdminService {
 
     boolean removeResourceFromTenantPolicy(String policyId, String serviceInstanceResource);
 
-    boolean removeUserFromTenantPolicy(String policyId, String groupName, String accountName);
+    boolean removeUserFromTenantPolicy(String policyId, String accountName);
 
     List<String> getResourceFromTenantPolicy(String policyId);
 

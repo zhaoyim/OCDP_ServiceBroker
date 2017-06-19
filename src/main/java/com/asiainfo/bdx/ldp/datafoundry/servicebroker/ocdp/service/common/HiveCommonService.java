@@ -18,6 +18,7 @@ import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Created by baikai on 8/8/16.
@@ -84,20 +85,37 @@ public class HiveCommonService {
     }
 
     public String assignPermissionToDatabase(String policyName, final String dbName, String accountName, String groupName){
+        logger.info("Assign select/update/create/drop/alter/index/lock/all permission to hive database.");
+        String policyId = null;
         ArrayList<String> dbList = new ArrayList<String>(){{add(dbName);}};
-        ArrayList<String> cfList = new ArrayList<String>(){{add("*");}};
+        ArrayList<String> tbList = new ArrayList<String>(){{add("*");}};
         ArrayList<String> cList = new ArrayList<String>(){{add("*");}};
         ArrayList<String> groupList = new ArrayList<String>(){{add(groupName);}};
         ArrayList<String> userList = new ArrayList<String>(){{add(accountName);}};
         ArrayList<String> types = new ArrayList<String>(){{add("select"); add("update");
             add("create"); add("drop"); add("alter"); add("index"); add("lock"); add("all");}};
         ArrayList<String> conditions = new ArrayList<String>();
-        return this.rc.createHivePolicy(policyName,"This is Hive Policy", clusterConfig.getClusterName()+"_hive",
-                dbList, cfList, cList, groupList,userList,types,conditions);
+        RangerV2Policy rp = new RangerV2Policy(
+                policyName,"","This is Hive Policy",clusterConfig.getClusterName()+"_hive",true,true);
+        rp.addResources("database", dbList, false);
+        rp.addResources("table", tbList, false);
+        rp.addResources("column", cList, false);
+        rp.addPolicyItems(userList,groupList,conditions,false,types);
+        String newPolicyString = rc.createV2Policy(rp);
+        if (newPolicyString != null){
+            RangerV2Policy newPolicyObj = gson.fromJson(newPolicyString, RangerV2Policy.class);
+            policyId = newPolicyObj.getPolicyId();
+        }
+        return policyId;
     }
 
-    public boolean appendUserToDatabasePermission(String policyId, String groupName, String accountName) {
-        return this.updateUserForResourcePermission(policyId, groupName, accountName, true);
+    public boolean appendResourceToDatabasePermission(String policyId, String databaseName){
+        return rc.appendResourceToV2Policy(policyId, databaseName, "database");
+    }
+
+    public boolean appendUserToDatabasePermission(
+            String policyId, String groupName, String accountName, List<String> permissions) {
+        return rc.appendUserToV2Policy(policyId, groupName, accountName, permissions);
     }
 
     public void deleteDatabase(String dbName) throws Exception{
@@ -122,24 +140,19 @@ public class HiveCommonService {
     }
 
     public boolean unassignPermissionFromDatabase(String policyId){
-        return this.rc.removeV2Policy(policyId);
+        return rc.removeV2Policy(policyId);
     }
 
-    public boolean removeUserFromDatabasePermission(String policyId, String groupName, String accountName){
-        return this.updateUserForResourcePermission(policyId, groupName, accountName, false);
+    public boolean removeResourceFromDatabasePermission(String policyId, String databaseName){
+        return rc.removeResourceFromV2Policy(policyId, databaseName, "database");
     }
 
-    private boolean updateUserForResourcePermission(String policyId, String groupName, String accountName, boolean isAppend){
-        String currentPolicy = this.rc.getV2Policy(policyId);
-        if (currentPolicy == null)
-        {
-            return false;
-        }
-        RangerV2Policy rp = gson.fromJson(currentPolicy, RangerV2Policy.class);
-        rp.updatePolicy(
-                groupName, accountName, new ArrayList<String>(){{add("select"); add("update");
-                    add("create"); add("drop"); add("alter"); add("index"); add("lock"); add("all");}}, isAppend);
-        return this.rc.updateV2Policy(policyId, gson.toJson(rp));
+    public boolean removeUserFromDatabasePermission(String policyId, String accountName){
+        return rc.removeUserFromV2Policy(policyId, accountName);
+    }
+
+    public  List<String> getResourceFromDatabasePolicy(String policyId){
+        return rc.getResourcsFromV2Policy(policyId, "database");
     }
 
 }
