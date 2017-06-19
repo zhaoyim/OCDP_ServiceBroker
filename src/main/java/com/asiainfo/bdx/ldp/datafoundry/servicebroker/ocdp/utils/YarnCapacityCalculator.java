@@ -1,18 +1,15 @@
 package com.asiainfo.bdx.ldp.datafoundry.servicebroker.ocdp.utils;
 
-import com.asiainfo.bdx.ldp.datafoundry.servicebroker.ocdp.exception.OCDPServiceException;
 import com.asiainfo.bdx.ldp.datafoundry.servicebroker.ocdp.model.CapacitySchedulerConfig;
 import com.google.common.base.Splitter;
-import com.google.common.math.DoubleMath;
 
-import java.util.ArrayList;
 import java.util.Map;
 import java.util.UUID;
 
 /**
  * Created by Aaron on 16/7/26.
  */
-public class YarnCapacityCaculater {
+public class YarnCapacityCalculator {
 
 //    private String planId;
 
@@ -25,7 +22,7 @@ public class YarnCapacityCaculater {
     private Double availableCapacity;
 
 
-    public YarnCapacityCaculater(String totalMem, CapacitySchedulerConfig csConfig){
+    public YarnCapacityCalculator(String totalMem, CapacitySchedulerConfig csConfig){
 
 //        this.planId = planId;
 //        this.serviceInstanceId = serviceInstanceId;
@@ -44,8 +41,9 @@ public class YarnCapacityCaculater {
     public String applyQueue(Long quota){
 
         String emptyQueue = null;
-        String targetQueueCapacity = String.valueOf((100*quota)/(totalMemory/1024));
-        String resourcePoolCapacity = String.valueOf(availableCapacity-(Double.parseDouble(targetQueueCapacity)));
+        //To make sure that the sum of all the queues capacity equals 100%, the patch for ambari server to support two decimal places in capacity scheduler should be installed.
+        String targetQueueCapacity = String.format("%.2f", ((100 * quota) / (totalMemory / 1024)));
+        String resourcePoolCapacity = String.format("%.2f", (availableCapacity - (Double.parseDouble(targetQueueCapacity))));
 
         if(Double.parseDouble(targetQueueCapacity) > availableCapacity){
 //            throw new OCDPServiceException("Not Enough Capacity to apply!");

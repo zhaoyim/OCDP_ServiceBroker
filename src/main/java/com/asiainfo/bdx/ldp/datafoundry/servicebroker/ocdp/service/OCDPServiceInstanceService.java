@@ -7,6 +7,8 @@ import com.asiainfo.bdx.ldp.datafoundry.servicebroker.ocdp.model.*;
 import com.asiainfo.bdx.ldp.datafoundry.servicebroker.ocdp.repository.OCDPServiceInstanceRepository;
 import com.asiainfo.bdx.ldp.datafoundry.servicebroker.ocdp.utils.BrokerUtil;
 import com.asiainfo.bdx.ldp.datafoundry.servicebroker.ocdp.utils.OCDPAdminServiceMapper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cloud.servicebroker.exception.ServiceBrokerInvalidParametersException;
 import org.springframework.cloud.servicebroker.exception.ServiceInstanceDoesNotExistException;
@@ -28,6 +30,8 @@ import java.util.concurrent.Future;
  */
 @Service
 public class OCDPServiceInstanceService implements ServiceInstanceService {
+
+    private Logger logger = LoggerFactory.getLogger(OCDPServiceInstanceService.class);
 
     @Autowired
     private ApplicationContext context;

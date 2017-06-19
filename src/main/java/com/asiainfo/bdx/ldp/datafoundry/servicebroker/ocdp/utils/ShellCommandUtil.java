@@ -31,7 +31,7 @@ public class ShellCommandUtil {
                 // Improbable
                 e.printStackTrace();
             } catch (InterruptedException e) {
-                e.printStackTrace();;
+                e.printStackTrace();
             }
         } else {
             System.out.println(String.format("Not performing stat -s \"%%a\" command on file %s " +
@@ -54,7 +54,7 @@ public class ShellCommandUtil {
                 // Improbable
                 e.printStackTrace();
             } catch (InterruptedException e) {
-                e.printStackTrace();;
+                e.printStackTrace();
             }
         } else {
             System.out.println(String.format("Not performing chmod %s command for file %s " +

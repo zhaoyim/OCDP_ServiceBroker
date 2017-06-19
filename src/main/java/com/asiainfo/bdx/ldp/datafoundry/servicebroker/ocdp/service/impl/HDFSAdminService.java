@@ -9,7 +9,6 @@ import java.net.URI;
 
 import com.asiainfo.bdx.ldp.datafoundry.servicebroker.ocdp.config.CatalogConfig;
 import com.asiainfo.bdx.ldp.datafoundry.servicebroker.ocdp.config.ClusterConfig;
-import com.asiainfo.bdx.ldp.datafoundry.servicebroker.ocdp.model.PlanMetadata;
 import com.asiainfo.bdx.ldp.datafoundry.servicebroker.ocdp.model.RangerV2Policy;
 import com.asiainfo.bdx.ldp.datafoundry.servicebroker.ocdp.model.CustomizeQuotaItem;
 import com.google.gson.Gson;
@@ -70,15 +69,36 @@ public class HDFSAdminService implements OCDPAdminService{
         this.dfs = new DistributedFileSystem();
 
         this.conf = new Configuration();
+
+        if (this.clusterConfig.getHdfsNameservices() != null) {
+            String nameservices = this.clusterConfig.getHdfsNameservices();
+            String[] namenodesAddr = {this.clusterConfig.getHdfs_nameNode1_addr(), this.clusterConfig.getHdfs_nameNode2_addr()};
+            String[] namenodes = {this.clusterConfig.getHdfs_nameNode1(), this.clusterConfig.getHdfs_nameNode2()};
+            System.out.println("nameservices = " + nameservices);
+            conf.set("fs.defaultFS", "hdfs://" + nameservices);
+            conf.set("dfs.nameservices", nameservices);
+            conf.set("dfs.ha.namenodes." + nameservices, namenodes[0] + "," + namenodes[1]);
+            conf.set("dfs.namenode.rpc-address." + nameservices + "." + namenodes[0], namenodesAddr[0]);
+            conf.set("dfs.namenode.rpc-address." + nameservices + "." + namenodes[1], namenodesAddr[1]);
+            conf.set("dfs.client.failover.proxy.provider." + nameservices, "org.apache.hadoop.hdfs.server.namenode.ha.ConfiguredFailoverProxyProvider");
+            this.hdfsRPCUrl = "hdfs://" + this.clusterConfig.getHdfsNameservices() + ":" + this.clusterConfig.getHdfsRpcPort();
+        }
+        else {
+            this.hdfsRPCUrl = "hdfs://" + this.clusterConfig.getHdfsNameNode() + ":" + this.clusterConfig.getHdfsRpcPort();
+
+        }
+
+
         conf.set("hadoop.security.authentication", "Kerberos");
         conf.set("hdfs.kerberos.principal", clusterConfig.getHdfsSuperUser());
         conf.set("hdfs.keytab.file", clusterConfig.getHdfsUserKeytab());
 
         System.setProperty("java.security.krb5.conf", clusterConfig.getKrb5FilePath());
 
-        this.hdfsRPCUrl = "hdfs://" + this.clusterConfig.getHdfsNameNode() + ":" + this.clusterConfig.getHdfsRpcPort();
         this.webHdfsUrl = "http://" + this.clusterConfig.getHdfsNameNode() + ":" + this.clusterConfig.getHdfsPort() + "/webhdfs/v1";
     }
+
+
 
     @Override
     public String provisionResources(String serviceDefinitionId, String planId, String serviceInstanceId,
@@ -231,7 +251,7 @@ public class HDFSAdminService implements OCDPAdminService{
             long maxStorageSpaceQuota = storageSpaceQuotaItem.getMax();
 
             logger.info(cuzQuota.toString());
-            logger.info((String) cuzQuota.get("nameSpaceQuota") + " " + (String) cuzQuota.get("storageSpaceQuota") );
+            logger.info(cuzQuota.get("nameSpaceQuota") + " " + cuzQuota.get("storageSpaceQuota"));
             if (cuzQuota.get("nameSpaceQuota") != null && cuzQuota.get("storageSpaceQuota") != null){
                 // customize quota have input value
                 nameSpaceQuota = Long.parseLong((String)cuzQuota.get("nameSpaceQuota"));

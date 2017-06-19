@@ -8,9 +8,8 @@ import com.asiainfo.bdx.ldp.datafoundry.servicebroker.ocdp.config.ClusterConfig;
 import com.asiainfo.bdx.ldp.datafoundry.servicebroker.ocdp.exception.OCDPServiceException;
 import com.asiainfo.bdx.ldp.datafoundry.servicebroker.ocdp.model.CapacitySchedulerConfig;
 import com.asiainfo.bdx.ldp.datafoundry.servicebroker.ocdp.model.CustomizeQuotaItem;
-import com.asiainfo.bdx.ldp.datafoundry.servicebroker.ocdp.model.PlanMetadata;
 import com.asiainfo.bdx.ldp.datafoundry.servicebroker.ocdp.model.RangerV2Policy;
-import com.asiainfo.bdx.ldp.datafoundry.servicebroker.ocdp.utils.YarnCapacityCaculater;
+import com.asiainfo.bdx.ldp.datafoundry.servicebroker.ocdp.utils.YarnCapacityCalculator;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import org.slf4j.Logger;
@@ -20,6 +19,7 @@ import org.springframework.cloud.servicebroker.model.Plan;
 import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Service;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -46,7 +46,7 @@ public class YarnCommonService {
 
     private yarnClient yClient;
 
-    private YarnCapacityCaculater capacityCaculater;
+    private YarnCapacityCalculator capacityCalculator;
 
     @Autowired
     public YarnCommonService(ClusterConfig clusterConfig){
@@ -59,25 +59,28 @@ public class YarnCommonService {
         this.yClient = clusterConfig.getYarnClient();
     }
 
-    public synchronized String createQueue(String quota){
+    public synchronized String createQueue(String quota) throws IOException {
         String csConfig;
         String clusterTotalMemory;
         String provisionedQueue;
-        String queuePath = null;
+        String queuePath;
+        logger.info("Try to calculate queue capacity using quota.");
         try {
             csConfig = ambClient.getCapacitySchedulerConfig(clusterConfig.getYarnRMHost());
             CapacitySchedulerConfig csActualConfig = gson.fromJson(csConfig, CapacitySchedulerConfig.class);
             yClient.getClusterMetrics();
             clusterTotalMemory = yClient.getTotalMemory();
-            YarnCapacityCaculater capacityCaculater = new YarnCapacityCaculater(clusterTotalMemory,csActualConfig);
-            provisionedQueue = capacityCaculater.applyQueue(new Long(quota));
+            YarnCapacityCalculator capacityCalculator = new YarnCapacityCalculator(clusterTotalMemory,csActualConfig);
+            provisionedQueue = capacityCalculator.applyQueue(new Long(quota));
             if(provisionedQueue == null)
-                throw new OCDPServiceException("Not Enough Capacity to apply!");
+                throw new OCDPServiceException("Not Enough Queue Capacity to apply!");
             queuePath = "root."+provisionedQueue;
-            this.capacityCaculater = capacityCaculater;
+            this.capacityCalculator = capacityCalculator;
         }catch (Exception e){
             e.printStackTrace();
+            throw e;
         }
+        logger.info("Queue capacity calculated successfully!");
         return queuePath;
     }
 
@@ -90,8 +93,8 @@ public class YarnCommonService {
         String policyId = this.rc.createYarnPolicy(policyName,"This is Yarn Policy",clusterConfig.getClusterName()+"_yarn",
                 queueList,groupList,userList,types,conditions);
         if(policyId != null){
-            this.capacityCaculater.addQueueMapping(accountName, queueName);
-            ambClient.updateCapacitySchedulerConfig(this.capacityCaculater.getProperties(),clusterConfig.getClusterName());
+            this.capacityCalculator.addQueueMapping(accountName, queueName);
+            ambClient.updateCapacitySchedulerConfig(this.capacityCalculator.getProperties(),clusterConfig.getClusterName());
             ambClient.refreshYarnQueue(clusterConfig.getYarnRMHost());
 
             logger.info("Complete refresh yarn queues.");
@@ -112,11 +115,11 @@ public class YarnCommonService {
             CapacitySchedulerConfig csActualConfig = gson.fromJson(csConfig, CapacitySchedulerConfig.class);
             yClient.getClusterMetrics();
             clusterTotalMemory = yClient.getTotalMemory();
-            YarnCapacityCaculater capacityCaculater = new YarnCapacityCaculater(clusterTotalMemory,csActualConfig);
+            YarnCapacityCalculator capacityCalculator = new YarnCapacityCalculator(clusterTotalMemory,csActualConfig);
 
-            capacityCaculater.revokeQueue(queueName);
-            capacityCaculater.removeQueueMapping(queueName);
-            ambClient.updateCapacitySchedulerConfig(capacityCaculater.getProperties(),clusterConfig.getClusterName());
+            capacityCalculator.revokeQueue(queueName);
+            capacityCalculator.removeQueueMapping(queueName);
+            ambClient.updateCapacitySchedulerConfig(capacityCalculator.getProperties(),clusterConfig.getClusterName());
             ambClient.refreshYarnQueue(clusterConfig.getYarnRMHost());
             logger.info("Complete refresh yarn queues.");
         }catch (Exception e){
@@ -150,13 +153,13 @@ public class YarnCommonService {
                 CapacitySchedulerConfig csActualConfig = gson.fromJson(csConfig, CapacitySchedulerConfig.class);
                 yClient.getClusterMetrics();
                 String clusterTotalMemory = yClient.getTotalMemory();
-                YarnCapacityCaculater capacityCaculater = new YarnCapacityCaculater(clusterTotalMemory, csActualConfig);
+                YarnCapacityCalculator capacityCalculator = new YarnCapacityCalculator(clusterTotalMemory, csActualConfig);
                 if (isAppend) {
-                    capacityCaculater.addQueueMapping(accountName, queueName);
+                    capacityCalculator.addQueueMapping(accountName, queueName);
                 } else {
-                    capacityCaculater.removeQueueMapping(accountName, queueName);
+                    capacityCalculator.removeQueueMapping(accountName, queueName);
                 }
-                ambClient.updateCapacitySchedulerConfig(capacityCaculater.getProperties(),clusterConfig.getClusterName());
+                ambClient.updateCapacitySchedulerConfig(capacityCalculator.getProperties(),clusterConfig.getClusterName());
                 ambClient.refreshYarnQueue(clusterConfig.getYarnRMHost());
                 logger.info("Complete refresh yarn queues.");
             } catch (Exception e) {

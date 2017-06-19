@@ -7,19 +7,22 @@ import org.apache.http.HttpHost;
 import org.apache.http.client.AuthCache;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
-import org.apache.http.client.methods.HttpUriRequest;
 import org.apache.http.client.protocol.HttpClientContext;
 import org.apache.http.impl.auth.BasicScheme;
 import org.apache.http.impl.client.BasicAuthCache;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.util.EntityUtils;
+import org.slf4j.LoggerFactory;
+import org.slf4j.Logger;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.net.URLEncoder;
+import java.util.ArrayList;
 import java.util.Map;
+import java.util.List;
 
 /**
  * Created by Aaron on 16/7/26.
@@ -27,35 +30,53 @@ import java.util.Map;
 public class yarnClient{
 
     private CloseableHttpClient httpClient;
-    private HttpClientContext context;
-    private URI baseUri;
+    private List<HttpClientContext> contexts;
+    private List<URI> baseUris;
 
     private String totalMemory;
     private String availableMemory;
     private String allocateMemory;
+    private Logger logger = LoggerFactory.getLogger(yarnClient.class);
 
-    public yarnClient(String uri) {
+    private void buildContext(String uri) {
         if(! uri.endsWith("/")){
             uri += "/";
         }
-        this.baseUri = URI.create(uri);
-
+        URI baseUri = URI.create(uri);
+        this.baseUris.add(baseUri);
         this.httpClient = HttpClientBuilder.create().build();
-
-        HttpHost targetHost = new HttpHost(this.baseUri.getHost(), 8088, "http");
+        HttpHost targetHost = new HttpHost(baseUri.getHost(), baseUri.getPort(), baseUri.getScheme());
         AuthCache authCache = new BasicAuthCache();
         authCache.put(targetHost, new BasicScheme());
         HttpClientContext context = HttpClientContext.create();
         context.setAuthCache(authCache);
-        this.context = context;
+        this.contexts.add(context);
     }
 
-    public void getClusterMetrics(){
-        URI uri = buildUri("","","ws/v1/cluster/metrics");
+    public yarnClient(String uri) {
+        this.contexts =new ArrayList<>();
+        this.baseUris =new ArrayList<>();
+        buildContext(uri);
+    }
 
-        HttpGet request = new HttpGet(uri);
+    public yarnClient(String uri1, String uri2) {
+        this.contexts =new ArrayList<>();
+        this.baseUris =new ArrayList<>();
+        buildContext(uri1);
+        buildContext(uri2);
 
-        String jsonStr = excuteRequest(request);
+    }
+
+    public void getClusterMetrics() throws IOException {
+        URI uri = buildUri("","","ws/v1/cluster/metrics",this.baseUris.get(0));
+        URI uri2 = buildUri("","","ws/v1/cluster/metrics",this.baseUris.get(1));
+
+        List<HttpGet> requests = new ArrayList<>();
+        requests.add(new HttpGet(uri));
+        requests.add(new HttpGet(uri2));
+
+
+        String jsonStr = executeRequest(requests);
 
         this.allocateMemory = getMetrics("allocatedMB",jsonStr);
 
@@ -86,22 +107,25 @@ public class yarnClient{
     public String getAvailableMemory(){ return  this.availableMemory;}
     public String getAllocateMemory(){ return this.allocateMemory;}
 
-    private String excuteRequest(HttpUriRequest request)
-    {
+    private String executeRequest(List<HttpGet> requests) throws IOException {
         String responseDef = null;
-        try{
-            CloseableHttpResponse response = this.httpClient.execute(request, this.context);
-            if(response.getStatusLine().getStatusCode() == 200){
-                responseDef = EntityUtils.toString(response.getEntity());
+        for (int i=0; i<requests.size(); i++) {
+            try {
+                CloseableHttpResponse response = this.httpClient.execute(requests.get(i), this.contexts.get(i));
+                if (response.getStatusLine().getStatusCode() == 200) {
+                    responseDef = EntityUtils.toString(response.getEntity());
+                }
+                response.close();
+            } catch (IOException e) {
+//                e.printStackTrace();
+                logger.warn(e.getMessage());
             }
-            response.close();
-        }catch (IOException e){
-            e.printStackTrace();
+            if (responseDef != null) return responseDef;
         }
-        return responseDef;
+        throw new IOException("Connection to Yarn Resource Manager failed!");
     }
 
-    private URI buildUri(String prefix, String key, String suffix) {
+    private URI buildUri(String prefix, String key, String suffix, URI baseUri) {
         StringBuilder sb = new StringBuilder();
         sb.append(prefix);
         if (key.startsWith("/")) {
@@ -113,7 +137,7 @@ public class yarnClient{
         }
         sb.append(suffix);
 
-        URI uri = this.baseUri.resolve(sb.toString());
+        URI uri = baseUri.resolve(sb.toString());
         return uri;
     }
 
