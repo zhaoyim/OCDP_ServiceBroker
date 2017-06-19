@@ -95,8 +95,8 @@ public class OCDPServiceInstanceBindingService implements ServiceInstanceBinding
         bindingRepository.delete(serviceInstanceId, bindingId);
     }
 
-    private OCDPAdminService getOCDPAdminService(String serviceDefinitionId){
-        return  (OCDPAdminService) this.context.getBean(
+    private OCDPAdminService_old getOCDPAdminService(String serviceDefinitionId){
+        return  (OCDPAdminService_old) this.context.getBean(
                 OCDPAdminServiceMapper.getOCDPAdminService(serviceDefinitionId)
         );
     }

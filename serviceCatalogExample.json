@@ -200,7 +200,7 @@
 	    "description":"This is a default kafka plan.  All services are created equally.",
 	    "metadata":{
 	      "costs":[{"amount":{"usd":0.0},"unit":"MONTHLY"}],
-	      "bullets":["Kafka Topic Partitions:1", "Kafka Partition Size(Bytes):-1", "Kafka Topic TTL(ms):604800000"],
+	      "bullets":["topicQuota:1", "partitionSize:-1", "topicTTL:604800000"],
 	      "customize": {
 	        "topicTTL": {
 	          "default": 604800000,
@@ -218,7 +218,7 @@
 	          "step": 10,
 	          "desc": "Number of partitions in a topic."
 	        },
-	        "partitionQuota": {
+	        "partitionSize": {
 	          "default": -1,
 	          "max": -1,
 	          "price": 10,

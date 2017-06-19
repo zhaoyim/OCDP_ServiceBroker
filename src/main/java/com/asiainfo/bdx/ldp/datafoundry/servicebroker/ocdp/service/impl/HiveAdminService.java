@@ -11,7 +11,7 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Service;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import com.asiainfo.bdx.ldp.datafoundry.servicebroker.ocdp.service.OCDPAdminService;
+import com.asiainfo.bdx.ldp.datafoundry.servicebroker.ocdp.service.OCDPAdminService_old;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -22,7 +22,7 @@ import java.util.Map;
  * Created by baikai on 5/19/16.
  */
 @Service
-public class HiveAdminService implements OCDPAdminService {
+public class HiveAdminService implements OCDPAdminService_old {
 
     private Logger logger = LoggerFactory.getLogger(HiveAdminService.class);
 

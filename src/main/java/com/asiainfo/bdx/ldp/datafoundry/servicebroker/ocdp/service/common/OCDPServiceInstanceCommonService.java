@@ -10,7 +10,7 @@ import java.util.concurrent.Future;
 
 import com.asiainfo.bdx.ldp.datafoundry.servicebroker.ocdp.client.etcdClient;
 import com.asiainfo.bdx.ldp.datafoundry.servicebroker.ocdp.config.ClusterConfig;
-import com.asiainfo.bdx.ldp.datafoundry.servicebroker.ocdp.service.OCDPAdminService;
+import com.asiainfo.bdx.ldp.datafoundry.servicebroker.ocdp.service.OCDPAdminService_old;
 import com.asiainfo.bdx.ldp.datafoundry.servicebroker.ocdp.utils.BrokerUtil;
 import org.springframework.cloud.servicebroker.model.CreateServiceInstanceRequest;
 import com.asiainfo.bdx.ldp.datafoundry.servicebroker.ocdp.model.OCDPCreateServiceInstanceResponse;
@@ -82,7 +82,7 @@ public class OCDPServiceInstanceCommonService {
         String serviceInstanceId = request.getServiceInstanceId();
         String planId = request.getPlanId();
         Map<String, Object> params = request.getParameters();
-        OCDPAdminService ocdp = getOCDPAdminService(serviceDefinitionId);
+        OCDPAdminService_old ocdp = getOCDPAdminService(serviceDefinitionId);
 
         // Create big data resources like hdfs folder, hbase namespace ...
         String serviceInstanceResource = createTenentResource(
@@ -116,7 +116,7 @@ public class OCDPServiceInstanceCommonService {
     public DeleteServiceInstanceResponse doDeleteServiceInstance(
             DeleteServiceInstanceRequest request, ServiceInstance instance) throws OCDPServiceException {
         String serviceDefinitionId = request.getServiceDefinitionId();
-        OCDPAdminService ocdp = getOCDPAdminService(serviceDefinitionId);
+        OCDPAdminService_old ocdp = getOCDPAdminService(serviceDefinitionId);
         String serviceInstanceId = request.getServiceInstanceId();
         Map<String, Object> Credential = instance.getServiceInstanceCredentials();
         String serviceResourceType = ocdp.getServiceResourceType();
@@ -133,12 +133,12 @@ public class OCDPServiceInstanceCommonService {
 
     public Map<String, Object> getOCDPServiceCredential(
             String serviceDefinitionId, String serviceInstanceId){
-        OCDPAdminService ocdp = getOCDPAdminService(serviceDefinitionId);
+        OCDPAdminService_old ocdp = getOCDPAdminService(serviceDefinitionId);
         return ocdp.generateCredentialsInfo(serviceInstanceId);
     }
 
-    private OCDPAdminService getOCDPAdminService(String serviceDefinitionId){
-        return  (OCDPAdminService) this.context.getBean(
+    private OCDPAdminService_old getOCDPAdminService(String serviceDefinitionId){
+        return  (OCDPAdminService_old) this.context.getBean(
                 OCDPAdminServiceMapper.getOCDPAdminService(serviceDefinitionId)
         );
     }
@@ -175,7 +175,7 @@ public class OCDPServiceInstanceCommonService {
         }
     }
 
-    private String createTenentResource(OCDPAdminService ocdp, String serviceDefinitionId, String planId,
+    private String createTenentResource(OCDPAdminService_old ocdp, String serviceDefinitionId, String planId,
                                         String serviceInstanceId, Map<String, Object> params) {
         String serviceInstanceResource;
         try{
@@ -189,7 +189,7 @@ public class OCDPServiceInstanceCommonService {
         return serviceInstanceResource;
     }
 
-    private void deleteTenentResource(OCDPAdminService ocdp, String serviceInstanceResource){
+    private void deleteTenentResource(OCDPAdminService_old ocdp, String serviceInstanceResource){
         try{
             ocdp.deprovisionResources(serviceInstanceResource);
         }catch (Exception e){
@@ -199,7 +199,7 @@ public class OCDPServiceInstanceCommonService {
         }
     }
 
-    private String createPolicyForTenant(OCDPAdminService ocdp, String serviceInstanceResource,
+    private String createPolicyForTenant(OCDPAdminService_old ocdp, String serviceInstanceResource,
                                          String tenantName, boolean newCreatedLDAPUser){
         String policyName = UUID.randomUUID().toString();
         String policyId = null;
@@ -234,12 +234,12 @@ public class OCDPServiceInstanceCommonService {
 
 
 
-    private String grantPrivilegeForUser(OCDPAdminService ocdp, String tenantName, String accountName,
+    private String grantPrivilegeForUser(OCDPAdminService_old ocdp, String tenantName, String accountName,
                                          List<String> access) {
         return "";
     }
 
-    private String revokePrivilegeForUser(OCDPAdminService ocdp, String tenantName, String accountName) {
+    private String revokePrivilegeForUser(OCDPAdminService_old ocdp, String tenantName, String accountName) {
         return "";
     }
 
@@ -265,7 +265,7 @@ public class OCDPServiceInstanceCommonService {
         }
     }
 
-    private void rollbackResource(OCDPAdminService ocdp, String serviceInstanceResource) {
+    private void rollbackResource(OCDPAdminService_old ocdp, String serviceInstanceResource) {
         logger.info("Rollback OCDP resource: " + serviceInstanceResource);
         try{
             ocdp.deprovisionResources(serviceInstanceResource);

@@ -26,7 +26,7 @@ import org.apache.hadoop.hbase.security.access.AccessControlClient;
 import org.apache.log4j.xml.DOMConfigurator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import com.asiainfo.bdx.ldp.datafoundry.servicebroker.ocdp.service.OCDPAdminService;
+import com.asiainfo.bdx.ldp.datafoundry.servicebroker.ocdp.service.OCDPAdminService_old;
 import com.asiainfo.bdx.ldp.datafoundry.servicebroker.ocdp.utils.*;
 
 import java.io.IOException;
@@ -39,7 +39,7 @@ import java.util.Map;
  * Created by baikai on 5/19/16.
  */
 @Service
-public class HBaseAdminService implements OCDPAdminService{
+public class HBaseAdminService implements OCDPAdminService_old{
 
     private Logger logger = LoggerFactory.getLogger(HBaseAdminService.class);
 

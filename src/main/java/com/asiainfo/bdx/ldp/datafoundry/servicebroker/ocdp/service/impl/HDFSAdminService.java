@@ -17,7 +17,7 @@ import org.springframework.cloud.servicebroker.model.Plan;
 import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Service;
 import org.springframework.beans.factory.annotation.Autowired;
-import com.asiainfo.bdx.ldp.datafoundry.servicebroker.ocdp.service.OCDPAdminService;
+import com.asiainfo.bdx.ldp.datafoundry.servicebroker.ocdp.service.OCDPAdminService_old;
 import com.asiainfo.bdx.ldp.datafoundry.servicebroker.ocdp.client.rangerClient;
 import com.asiainfo.bdx.ldp.datafoundry.servicebroker.ocdp.utils.*;
 
@@ -33,7 +33,7 @@ import org.slf4j.LoggerFactory;
  * Created by baikai on 5/19/16.
  */
 @Service
-public class HDFSAdminService implements OCDPAdminService{
+public class HDFSAdminService implements OCDPAdminService_old{
 
     private Logger logger = LoggerFactory.getLogger(HDFSAdminService.class);
 
