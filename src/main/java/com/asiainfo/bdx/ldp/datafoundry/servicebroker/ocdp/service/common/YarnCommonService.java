@@ -49,7 +49,7 @@ public class YarnCommonService {
     private YarnCapacityCalculator capacityCalculator;
 
     @Autowired
-    public YarnCommonService(ClusterConfig clusterConfig){
+    public YarnCommonService (ClusterConfig clusterConfig) throws IOException{
         this.clusterConfig = clusterConfig;
 
         this.rc = clusterConfig.getRangerClient();
@@ -57,25 +57,19 @@ public class YarnCommonService {
         this.ambClient = clusterConfig.getAmbariClient();
 
         this.yClient = clusterConfig.getYarnClient();
+
+        initChasityCalculator();
     }
 
-    public synchronized String createQueue(String quota) throws IOException {
-        String csConfig;
-        String clusterTotalMemory;
+    public synchronized String createQueue(String quota) throws IOException{
         String provisionedQueue;
         String queuePath;
         logger.info("Try to calculate queue capacity using quota.");
         try {
-            csConfig = ambClient.getCapacitySchedulerConfig(clusterConfig.getYarnRMHost());
-            CapacitySchedulerConfig csActualConfig = gson.fromJson(csConfig, CapacitySchedulerConfig.class);
-            yClient.getClusterMetrics();
-            clusterTotalMemory = yClient.getTotalMemory();
-            YarnCapacityCalculator capacityCalculator = new YarnCapacityCalculator(clusterTotalMemory,csActualConfig);
             provisionedQueue = capacityCalculator.applyQueue(new Long(quota));
             if(provisionedQueue == null)
                 throw new OCDPServiceException("Not Enough Queue Capacity to apply!");
             queuePath = "root."+provisionedQueue;
-            this.capacityCalculator = capacityCalculator;
         }catch (Exception e){
             e.printStackTrace();
             throw e;
@@ -85,38 +79,55 @@ public class YarnCommonService {
     }
 
     public synchronized String assignPermissionToQueue(String policyName, final String queueName, String accountName, String groupName){
+        logger.info("Assign submit-app/admin-queue permission to yarn queue.");
+        String policyId = null;
         ArrayList<String> queueList = new ArrayList<String>(){{add(queueName);}};
         ArrayList<String> groupList = new ArrayList<String>(){{add(groupName);}};
         ArrayList<String> userList = new ArrayList<String>(){{add(accountName);}};
         ArrayList<String> types = new ArrayList<String>(){{add("submit-app");add("admin-queue");}};
         ArrayList<String> conditions = new ArrayList<String>();
-        String policyId = this.rc.createYarnPolicy(policyName,"This is Yarn Policy",clusterConfig.getClusterName()+"_yarn",
-                queueList,groupList,userList,types,conditions);
-        if(policyId != null){
-            this.capacityCalculator.addQueueMapping(accountName, queueName);
-            ambClient.updateCapacitySchedulerConfig(this.capacityCalculator.getProperties(),clusterConfig.getClusterName());
-            ambClient.refreshYarnQueue(clusterConfig.getYarnRMHost());
-
-            logger.info("Complete refresh yarn queues.");
+        RangerV2Policy rp = new RangerV2Policy(
+                policyName,"","This is Yarn Policy",clusterConfig.getClusterName()+"_yarn",true,true);
+        rp.addResources2("queue", queueList,false,true);
+        rp.addPolicyItems(userList,groupList,conditions,false,types);
+        String newPolicyString = rc.createV2Policy(rp);
+        if (newPolicyString != null){
+            RangerV2Policy newPolicyObj = gson.fromJson(newPolicyString, RangerV2Policy.class);
+            policyId = newPolicyObj.getPolicyId();
         }
         return policyId;
     }
 
-    public boolean appendUserToQueuePermission(String policyId, String groupName, String accountName){
-        return updateUserForQueuePermission(policyId,groupName,accountName,true);
+    public boolean appendResourceToQueuePermission(String policyId, String queueName) {
+        boolean updateResult = rc.appendResourceToV2Policy(policyId, queueName, "queue");
+        if(updateResult){
+            List<String> users = rc.getUsersFromV2Policy(policyId);
+            if(users.size() >= 1){
+                for (String user : users){
+                    this.capacityCalculator.addQueueMapping(user, queueName);
+                }
+                ambClient.updateCapacitySchedulerConfig(this.capacityCalculator.getProperties(),clusterConfig.getClusterName());
+                ambClient.refreshYarnQueue(clusterConfig.getYarnRMHost());
+            }
+        }
+        return updateResult;
+    }
+
+    public boolean appendUserToQueuePermission(String policyId, String groupName, String accountName, List<String> permissions){
+        boolean updateResult = rc.appendUserToV2Policy(policyId, groupName, accountName, permissions);
+        if(updateResult){
+            List<String> queues = rc.getResourcsFromV2Policy(policyId, "queue");
+            for(String queue : queues) {
+                capacityCalculator.addQueueMapping(accountName, queue);
+            }
+            ambClient.updateCapacitySchedulerConfig(capacityCalculator.getProperties(),clusterConfig.getClusterName());
+            ambClient.refreshYarnQueue(clusterConfig.getYarnRMHost());
+        }
+        return updateResult;
     }
 
     public synchronized void deleteQueue(String queueName){
-        String csConfig;
-        String clusterTotalMemory;
-
         try{
-            csConfig = ambClient.getCapacitySchedulerConfig(clusterConfig.getYarnRMHost());
-            CapacitySchedulerConfig csActualConfig = gson.fromJson(csConfig, CapacitySchedulerConfig.class);
-            yClient.getClusterMetrics();
-            clusterTotalMemory = yClient.getTotalMemory();
-            YarnCapacityCalculator capacityCalculator = new YarnCapacityCalculator(clusterTotalMemory,csActualConfig);
-
             capacityCalculator.revokeQueue(queueName);
             capacityCalculator.removeQueueMapping(queueName);
             ambClient.updateCapacitySchedulerConfig(capacityCalculator.getProperties(),clusterConfig.getClusterName());
@@ -128,45 +139,40 @@ public class YarnCommonService {
     }
 
     public boolean unassignPermissionFromQueue(String policyId){
+        logger.info("Unassign submit/admin permission to yarn queue.");
         return this.rc.removeV2Policy(policyId);
     }
 
-    public boolean removeUserFromQueuePermission(String policyId, String groupName, String accountName){
-        return updateUserForQueuePermission(policyId,groupName,accountName,false);
-    }
-
-    private synchronized boolean updateUserForQueuePermission(String policyId, String groupName, String accountName, boolean isAppend){
-
-        String currentPolicy = this.rc.getV2Policy(policyId);
-        if (currentPolicy == null)
-        {
-            return false;
-        }
-        RangerV2Policy rp = gson.fromJson(currentPolicy, RangerV2Policy.class);
-        rp.updatePolicy(
-                groupName, accountName, new ArrayList<String>(){{add("submit-app");add("admin-queue");}}, isAppend);
-        String queueName = rp.getResourceValues().get(0);
-        boolean updateStatus = this.rc.updateV2Policy(policyId, gson.toJson(rp));
-        if(updateStatus) {
-            try {
-                String csConfig = ambClient.getCapacitySchedulerConfig(clusterConfig.getYarnRMHost());
-                CapacitySchedulerConfig csActualConfig = gson.fromJson(csConfig, CapacitySchedulerConfig.class);
-                yClient.getClusterMetrics();
-                String clusterTotalMemory = yClient.getTotalMemory();
-                YarnCapacityCalculator capacityCalculator = new YarnCapacityCalculator(clusterTotalMemory, csActualConfig);
-                if (isAppend) {
-                    capacityCalculator.addQueueMapping(accountName, queueName);
-                } else {
-                    capacityCalculator.removeQueueMapping(accountName, queueName);
+    public boolean removeResourceFromQueuePermission(String policyId, String queueName){
+        boolean updateResult = rc.removeResourceFromV2Policy(policyId, queueName, "queue");
+        if(updateResult){
+            List<String> users = rc.getUsersFromV2Policy(policyId);
+            if(users.size() >= 1){
+                for (String user : users){
+                    this.capacityCalculator.removeQueueMapping(user, queueName);
                 }
-                ambClient.updateCapacitySchedulerConfig(capacityCalculator.getProperties(),clusterConfig.getClusterName());
+                ambClient.updateCapacitySchedulerConfig(this.capacityCalculator.getProperties(),clusterConfig.getClusterName());
                 ambClient.refreshYarnQueue(clusterConfig.getYarnRMHost());
-                logger.info("Complete refresh yarn queues.");
-            } catch (Exception e) {
-                e.printStackTrace();
             }
         }
-        return updateStatus;
+        return updateResult;
+    }
+
+    public boolean removeUserFromQueuePermission(String policyId, String accountName){
+        boolean updateResult = rc.removeUserFromV2Policy(policyId, accountName);
+        if(updateResult){
+            List<String> queues = rc.getResourcsFromV2Policy(policyId, "queue");
+            for(String queue : queues) {
+                capacityCalculator.removeQueueMapping(accountName, queue);
+            }
+            ambClient.updateCapacitySchedulerConfig(capacityCalculator.getProperties(),clusterConfig.getClusterName());
+            ambClient.refreshYarnQueue(clusterConfig.getYarnRMHost());
+        }
+        return updateResult;
+    }
+
+    public  List<String> getResourceFromQueuePolicy(String policyId){
+        return rc.getResourcsFromV2Policy(policyId, "queue");
     }
 
     public Map<String, String> getQuotaFromPlan(String serviceDefinitionId, String planId, Map<String, Object> cuzQuota){
@@ -226,6 +232,14 @@ public class YarnCommonService {
         quota.put("nameSpaceQuota", nameSpaceQuota);
         quota.put("storageSpaceQuota", storageSpaceQuota);
         return quota;
+    }
+
+    private void initChasityCalculator() throws IOException{
+        String csConfig = ambClient.getCapacitySchedulerConfig(clusterConfig.getYarnRMHost());
+        CapacitySchedulerConfig csActualConfig = gson.fromJson(csConfig, CapacitySchedulerConfig.class);
+        yClient.getClusterMetrics();
+        String clusterTotalMemory = yClient.getTotalMemory();
+        this.capacityCalculator = new YarnCapacityCalculator(clusterTotalMemory,csActualConfig);
     }
 
 }

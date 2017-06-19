@@ -76,6 +76,11 @@ public class RangerV2Policy{
         resources.put(resourceType, rr);
     }
 
+    public void removeResource(String resourceType, String resourceName) {
+        RangerResource rr = resources.get(resourceType);
+        rr.values.remove(resourceName);
+    }
+
     public void addPolicyItems(List<String> users, List<String> groups, List<String> conditions,
                                boolean delegateAdmin, List<String> types){
         PolicyItem pi = new PolicyItem();
@@ -89,21 +94,13 @@ public class RangerV2Policy{
         policyItems.add(pi);
     }
 
-    public void updatePolicy(String groupName, String accountName, List<String> accessTypes, boolean isAppend){
-
-        //Temp fix for citic case, do not pass group when create policy
-        //this.policyItems.get(0).groups.clear();
-        //this.policyItems.get(0).groups.add(groupName);
-
-        if(isAppend){
-            this.policyItems.get(0).users.add(accountName);
-        }else{
-            this.policyItems.get(0).users.remove(accountName);
+    public void removePolicyItem(List<String> users) {
+        for(PolicyItem pi : policyItems){
+            if(pi.getUsers().contains(users)){
+                policyItems.remove(pi);
+                break;
+            }
         }
-
-        this.policyItems.get(0).accesses.clear();
-        this.policyItems.get(0).accesses = new PolicyItem().getAccesses(accessTypes);
-
     }
 
     public String getPolicyId(){return id;}
@@ -117,8 +114,8 @@ public class RangerV2Policy{
         return this.policyItems.get(0).getGroups();
     }
      **/
-    public List<String> getResourceValues(){
-        return resources.get("queue").values;
+    public List<String> getResourceValues(String resourceType){
+        return resources.get(resourceType).values;
     }
 
     class RangerResource2 extends RangerResource{

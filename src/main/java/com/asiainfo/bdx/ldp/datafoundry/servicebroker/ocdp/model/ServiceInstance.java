@@ -43,7 +43,7 @@ public class ServiceInstance {
 
 	@JsonSerialize
     @JsonProperty("ServiceInstanceCredentials")
-    private Map<String, String> ServiceInstanceCredentials;
+    private Map<String, Object> ServiceInstanceCredentials;
 
 	@SuppressWarnings("unused")
 	private ServiceInstance() {}
@@ -123,9 +123,9 @@ public class ServiceInstance {
 		this.dashboardUrl = dashboardUrl;
 	}
 
-    public Map<String, String> getServiceInstanceCredentials() { return ServiceInstanceCredentials; }
+    public Map<String, Object> getServiceInstanceCredentials() { return ServiceInstanceCredentials; }
 
-    public void setCredential(Map<String, String> ServiceInstanceCredentials) {
+    public void setCredential(Map<String, Object> ServiceInstanceCredentials) {
         this.ServiceInstanceCredentials = ServiceInstanceCredentials;
     }
 

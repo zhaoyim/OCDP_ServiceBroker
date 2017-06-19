@@ -231,7 +231,6 @@ public class ambariClient {
         String responseDef = null;
         try{
             CloseableHttpResponse response = this.httpClient.execute(request, this.context);
-            CloseableHttpResponse response = this.httpClient.execute(request, this.context);
             if(response.getStatusLine().getStatusCode() == 200){
                 responseDef = EntityUtils.toString(response.getEntity());
             }

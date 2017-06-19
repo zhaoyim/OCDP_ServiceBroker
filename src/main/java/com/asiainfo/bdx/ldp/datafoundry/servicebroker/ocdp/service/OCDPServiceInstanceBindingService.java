@@ -51,8 +51,8 @@ public class OCDPServiceInstanceBindingService implements ServiceInstanceBinding
     public OCDPServiceInstanceBindingService() {}
 
 	@Override
-	public CreateServiceInstanceBindingResponse createServiceInstanceBinding(CreateServiceInstanceBindingRequest request)
-            throws OCDPServiceException {
+	public CreateServiceInstanceBindingResponse createServiceInstanceBinding(
+            CreateServiceInstanceBindingRequest request) throws OCDPServiceException {
         String serviceDefinitionId = request.getServiceDefinitionId();
         String bindingId = request.getBindingId();
         String serviceInstanceId = request.getServiceInstanceId();
@@ -70,20 +70,15 @@ public class OCDPServiceInstanceBindingService implements ServiceInstanceBinding
         if (instance == null) {
             throw new ServiceInstanceDoesNotExistException(serviceInstanceId);
         }
-        Map<String, String> serviceInstanceCredentials = instance.getServiceInstanceCredentials();
+        Map<String, Object> serviceInstanceCredentials = instance.getServiceInstanceCredentials();
+        serviceInstanceCredentials.remove("rangerPolicyId");
+        serviceInstanceCredentials.remove("tenantName");
         String appGuid = request.getBoundAppGuid();
-        OCDPAdminService ocdp = getOCDPAdminService(serviceDefinitionId);
-        // Generate and save service instance binding
-        Map<String, Object> credentials = ocdp.generateCredentialsInfo(
-                serviceInstanceCredentials.get("username"),
-                serviceInstanceCredentials.get("password"),
-                serviceInstanceCredentials.get("keytab"),
-                serviceInstanceCredentials.get("name"),
-                serviceInstanceCredentials.get("rangerPolicyId"));
+        // save service instance binding
         ServiceInstanceBinding binding = new ServiceInstanceBinding(
-                bindingId, serviceInstanceId, credentials, null, appGuid, planId);
+                bindingId, serviceInstanceId, serviceInstanceCredentials, null, appGuid, planId);
         bindingRepository.save(binding);
-        return new CreateServiceInstanceAppBindingResponse().withCredentials(credentials);
+        return new CreateServiceInstanceAppBindingResponse().withCredentials(serviceInstanceCredentials);
 	}
 
 	@Override
