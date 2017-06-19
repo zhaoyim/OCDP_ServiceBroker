@@ -67,7 +67,7 @@ public class yarnClient{
 
     }
 
-    public void getClusterMetrics() throws IOException {
+    public void getClusterMetrics()  {
         URI uri = buildUri("","","ws/v1/cluster/metrics",this.baseUris.get(0));
         URI uri2 = buildUri("","","ws/v1/cluster/metrics",this.baseUris.get(1));
 
@@ -122,7 +122,7 @@ public class yarnClient{
             }
             if (responseDef != null) return responseDef;
         }
-        throw new IOException("Connection to Yarn Resource Manager failed!");
+//        throw new IOException("Connection to Yarn Resource Manager failed!");
     }
 
     private URI buildUri(String prefix, String key, String suffix, URI baseUri) {

@@ -1,6 +1,7 @@
 package com.asiainfo.bdx.ldp.datafoundry.servicebroker.ocdp.service.common;
 
 import java.lang.Thread;
+import java.util.HashMap;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Map;
@@ -8,12 +9,12 @@ import java.util.concurrent.Future;
 
 import com.asiainfo.bdx.ldp.datafoundry.servicebroker.ocdp.client.etcdClient;
 import com.asiainfo.bdx.ldp.datafoundry.servicebroker.ocdp.config.ClusterConfig;
+import com.asiainfo.bdx.ldp.datafoundry.servicebroker.ocdp.model.OCDPUpdateServiceInstanceResponse;
 import com.asiainfo.bdx.ldp.datafoundry.servicebroker.ocdp.service.OCDPAdminService;
 import com.asiainfo.bdx.ldp.datafoundry.servicebroker.ocdp.utils.BrokerUtil;
-import org.springframework.cloud.servicebroker.model.CreateServiceInstanceRequest;
+import org.springframework.cloud.servicebroker.exception.ServiceInstanceDoesNotExistException;
+import org.springframework.cloud.servicebroker.model.*;
 import com.asiainfo.bdx.ldp.datafoundry.servicebroker.ocdp.model.OCDPCreateServiceInstanceResponse;
-import org.springframework.cloud.servicebroker.model.DeleteServiceInstanceRequest;
-import org.springframework.cloud.servicebroker.model.DeleteServiceInstanceResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import com.asiainfo.bdx.ldp.datafoundry.servicebroker.ocdp.exception.*;
@@ -28,7 +29,6 @@ import org.springframework.ldap.core.LdapTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.AsyncResult;
-import org.springframework.cloud.servicebroker.model.CreateServiceInstanceResponse;
 
 /**
  * OCDP impl to manage hadoop service instances.  Creating a service does the following:
@@ -82,7 +82,6 @@ public class OCDPServiceInstanceCommonService {
         String tenantName = request.getSpaceGuid();
         Map<String, Object> params = request.getParameters();
         OCDPAdminService ocdp = getOCDPAdminService(serviceDefinitionId);
-        String serviceType = ocdp.getServiceType();
 
         // 1) Create internal LDAP user for tenant if it not exist
         createLDAPUser(tenantName);
@@ -92,17 +91,18 @@ public class OCDPServiceInstanceCommonService {
                 ocdp, serviceDefinitionId, planId, serviceInstanceId, params);
 
         // 3) Create Ranger policy for tenant or append resource to exist tenant ranger policy.
-        String tenantPolicyId = etcdClient.readToString("/servicebroker/ocdp/tenants/" + tenantName + "/" + serviceType);
+        String tenantPolicyId = etcdClient.readToString(
+                "/servicebroker/ocdp/tenants/" + tenantName + "/" + serviceDefinitionId);
         if(tenantPolicyId == null){
             tenantPolicyId = createPolicyForTenant(ocdp, serviceInstanceResource, tenantName);
-            etcdClient.write("/servicebroker/ocdp/tenants/" + tenantName + "/" + serviceType, tenantPolicyId);
+            etcdClient.write("/servicebroker/ocdp/tenants/" + tenantName + "/" + serviceDefinitionId, tenantPolicyId);
         } else {
             ocdp.appendResourceToTenantPolicy(tenantPolicyId, serviceInstanceResource);
         }
 
         // 4) Generate service instance credential info
         Map<String, Object> credentials = ocdp.generateCredentialsInfo(serviceInstanceId);
-        String serviceResourceType = ocdp.getServiceResourceType();
+        String serviceResourceType = OCDPAdminServiceMapper.getOCDPResourceType(serviceDefinitionId);
         // For spark/mr instance provision, need append queue name into credentials,
         // because function generateCredentialsInfo not append it
         if(! credentials.containsKey(serviceResourceType))
@@ -133,8 +133,7 @@ public class OCDPServiceInstanceCommonService {
         OCDPAdminService ocdp = getOCDPAdminService(serviceDefinitionId);
         String serviceInstanceId = request.getServiceInstanceId();
         Map<String, Object> Credential = instance.getServiceInstanceCredentials();
-        String serviceResourceType = ocdp.getServiceResourceType();
-        String serviceType = ocdp.getServiceType();
+        String serviceResourceType = OCDPAdminServiceMapper.getOCDPResourceType(serviceDefinitionId);
         String serviceInstanceResource = (String)Credential.get(serviceResourceType);
         String tenantName = (String)Credential.get("tenantName");
         String tenantPolicyId = (String)Credential.get("rangerPolicyId");
@@ -148,7 +147,7 @@ public class OCDPServiceInstanceCommonService {
                 logger.error("Ranger policy delete fail.");
                 throw new OCDPServiceException("Ranger policy delete fail.");
             }
-            etcdClient.delete("/servicebroker/ocdp/tenants/" + tenantName  + "/" + serviceType);
+            etcdClient.delete("/servicebroker/ocdp/tenants/" + tenantName  + "/" + serviceDefinitionId);
         } else {
             ocdp.removeResourceFromTenantPolicy(tenantPolicyId, serviceInstanceResource);
         }
@@ -161,6 +160,100 @@ public class OCDPServiceInstanceCommonService {
 
 		return new DeleteServiceInstanceResponse().withAsync(false);
 	}
+
+    @Async
+    public Future<UpdateServiceInstanceResponse> doUpdateServiceInstanceAsync(
+            UpdateServiceInstanceRequest request, String password) throws OCDPServiceException {
+        return new AsyncResult<UpdateServiceInstanceResponse>(doUpdateServiceInstance(request, password));
+    }
+
+    public UpdateServiceInstanceResponse doUpdateServiceInstance(
+            UpdateServiceInstanceRequest request, String password) throws OCDPServiceException {
+        String serviceDefinitionId = request.getServiceDefinitionId();
+        OCDPAdminService ocdp = getOCDPAdminService(serviceDefinitionId);
+        Map<String, Object> params = request.getParameters();
+        UpdateServiceInstanceResponse response;
+        if(params.get("user_name") != null && params.get("tenant_name") != null){
+            String accountName = (String) params.get("user_name");
+            String tenantName = (String) params.get("tenant_name");
+            if(params.get("accesses") != null) {
+                // Assign role to tenant user
+                Map<String, Object> accesses = (Map<String, Object>)params.get("accesses");
+                addUserToTenant(ocdp, accountName, password, tenantName, accesses);
+                Map<String, Object> credentials = new HashMap<String, Object>() {
+                    {
+                        put("username", accountName);
+                        put("password", password);
+                    }
+                };
+                response = new OCDPUpdateServiceInstanceResponse().withCredential(credentials).withAsync(false);
+            } else {
+                // Revoke role from tenant user
+                removeUserFromTenant(ocdp, accountName, tenantName);
+                response = new OCDPUpdateServiceInstanceResponse().withAsync(false);
+            }
+        } else {
+            // Service instance resize
+            String serviceInstanceId = request.getServiceInstanceId();
+            ServiceInstance instance = repository.findOne(serviceInstanceId);
+            if (instance == null) {
+                throw new ServiceInstanceDoesNotExistException(serviceInstanceId);
+            }
+            resizeServiceInstance(ocdp, instance, params);
+            response = new OCDPUpdateServiceInstanceResponse().withAsync(false);
+        }
+        return response;
+    }
+
+    private void addUserToTenant(OCDPAdminService ocdp, String accountName,
+                                 String password, String tenantName, Map<String, Object> accesses) {
+        //Create LDAP user and krb principal for tenant user if it not exits
+        if (createLDAPUser(accountName)){
+            createKrbPrinc(accountName, password);
+        }
+        //Assgin permissions/role to tenant user
+        for(String serviceDefinitionId : accesses.keySet()){
+            String tenantPolicyId = etcdClient.readToString(
+                    "/servicebroker/ocdp/tenants/" + tenantName + "/" + serviceDefinitionId);
+            List<String> permissions = (List<String>)accesses.get(serviceDefinitionId);
+            int i = 0;
+            boolean policyUpdateResult = false;
+            logger.info("Try to update ranger policy...");
+            while(i++ <= 40){
+                policyUpdateResult = ocdp.appendUserToTenantPolicy(
+                        tenantPolicyId, this.clusterConfig.getLdapGroup(), accountName, permissions);
+                if (!policyUpdateResult){
+                    try{
+                        Thread.sleep(3000);
+                    }catch (InterruptedException e){
+                        e.printStackTrace();
+                    }
+                }else{
+                    logger.info("Ranger policy updated.");
+                    break;
+                }
+            }
+            if (! policyUpdateResult){
+                rollbackLDAPUser(accountName);
+                rollbackKrb(accountName + "@" + clusterConfig.getKrbRealm());
+                throw new OCDPServiceException("Ranger policy update fail.");
+            }
+        }
+    }
+
+    private void removeUserFromTenant(OCDPAdminService ocdp, String accountName, String tenantName) {
+        //Unassign permissions/role from tenant user
+        for(String id : OCDPAdminServiceMapper.getOCDPServiceIds()){
+            String tenantPolicyId = etcdClient.readToString(
+                    "/servicebroker/ocdp/tenants/" + tenantName + "/" + id);
+            if(id != null){
+                ocdp.removeUserFromTenantPolicy(tenantPolicyId, accountName);
+            }
+        }
+    }
+
+    private void resizeServiceInstance(OCDPAdminService ocdp, ServiceInstance instance, Map<String, Object> cuzQuota) {
+    }
 
     public Map<String, Object> getOCDPServiceCredential(
             String serviceDefinitionId, String serviceInstanceId){

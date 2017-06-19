@@ -30,10 +30,6 @@ public class SparkAdminService implements OCDPAdminService {
 
     private HDFSAdminService hdfsAdminService;
 
-    private String serviceType = "Spark";
-
-    private String serviceResourceType = "Yarn Queue";
-
     @Autowired
     public SparkAdminService(ClusterConfig clusterConfig,
                              YarnCommonService yarnCommonService, HDFSAdminService hdfsAdminService){
@@ -118,16 +114,6 @@ public class SparkAdminService implements OCDPAdminService {
                 put("port", clusterConfig.getYarnRMPort());
             }
         };
-    }
-
-    @Override
-    public String getServiceResourceType(){
-        return serviceResourceType;
-    }
-
-    @Override
-    public String getServiceType(){
-        return serviceType;
     }
 
     @Override

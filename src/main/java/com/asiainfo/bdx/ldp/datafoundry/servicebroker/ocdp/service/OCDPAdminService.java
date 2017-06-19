@@ -34,7 +34,4 @@ public interface OCDPAdminService {
 
     void resizeResourceQuota(String serviceInstanceId, Map<String, Object> cuzQuota);
 
-    String getServiceType();
-
-    String getServiceResourceType();
 }

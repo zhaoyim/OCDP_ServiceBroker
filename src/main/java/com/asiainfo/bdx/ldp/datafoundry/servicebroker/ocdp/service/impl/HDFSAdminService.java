@@ -60,10 +60,6 @@ public class HDFSAdminService implements OCDPAdminService{
 
     private String webHdfsUrl;
 
-    private String serviceType = "HDFS";
-
-    private String serviceResourceType = "HDFS Path";
-
     @Autowired
     public HDFSAdminService(ClusterConfig clusterConfig){
         this.clusterConfig = clusterConfig;
@@ -225,23 +221,12 @@ public class HDFSAdminService implements OCDPAdminService{
     }
 
     @Override
-    public String getServiceResourceType(){
-        return serviceResourceType;
-    }
-
-    @Override
-    public String getServiceType(){
-        return serviceType;
-    }
-
-    @Override
     public  List<String> getResourceFromTenantPolicy(String policyId){
         return rc.getResourcsFromV2Policy(policyId, "path");
     }
 
     @Override
     public void resizeResourceQuota(String serviceInstanceId, Map<String, Object> cuzQuota){
-
     }
 
     private Map<String, Long> getQuotaFromPlan(String serviceDefinitionId, String planId, Map<String, Object> cuzQuota){
