@@ -229,7 +229,7 @@ public class KafkaAdminService implements OCDPAdminService{
 		long planMax = planItem.getMax();
 		long cuzLong = Long.valueOf((String)cuzValue);
 		String result = cuzLong > planMax ? String.valueOf(planItem.getDefault()) : String.valueOf(cuzLong);
-		LOG.info("Kafka quota values(custom/maximum/default): []/[]/[]", cuzLong, planMax, planItem.getDefault());
+		LOG.info("Kafka quota values(custom/maximum/default): [{}]/[{}]/[{}]", cuzLong, planMax, planItem.getDefault());
 		return result;
 	}
 
