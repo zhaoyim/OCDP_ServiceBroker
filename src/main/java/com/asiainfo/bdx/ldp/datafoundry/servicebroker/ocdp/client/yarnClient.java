@@ -107,7 +107,7 @@ public class yarnClient{
     public String getAvailableMemory(){ return  this.availableMemory;}
     public String getAllocateMemory(){ return this.allocateMemory;}
 
-    private String executeRequest(List<HttpGet> requests) throws IOException {
+    private String executeRequest(List<HttpGet> requests) {
         String responseDef = null;
         for (int i=0; i<requests.size(); i++) {
             try {
@@ -123,6 +123,7 @@ public class yarnClient{
             if (responseDef != null) return responseDef;
         }
 //        throw new IOException("Connection to Yarn Resource Manager failed!");
+        return null;
     }
 
     private URI buildUri(String prefix, String key, String suffix, URI baseUri) {

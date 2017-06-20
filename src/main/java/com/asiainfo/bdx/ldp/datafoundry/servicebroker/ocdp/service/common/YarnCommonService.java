@@ -65,7 +65,7 @@ public class YarnCommonService {
         logger.info("Try to calculate queue capacity using quota.");
         try {
             renewCapacityCaculater();
-            provisionedQueue = capacityCaculater.applyQueue(new Long(quota));
+            provisionedQueue = capacityCalculator.applyQueue(new Long(quota));
             if(provisionedQueue == null)
                 throw new OCDPServiceException("Not Enough Queue Capacity to apply!");
             queuePath = "root."+provisionedQueue;
@@ -104,7 +104,7 @@ public class YarnCommonService {
             List<String> users = rc.getUsersFromV2Policy(policyId);
             if(users.size() >= 1){
                 for (String user : users){
-                    capacityCaculater.addQueueMapping(user, queueName);
+                    capacityCalculator.addQueueMapping(user, queueName);
                 }
                 ambClient.updateCapacitySchedulerConfig(this.capacityCalculator.getProperties(),clusterConfig.getClusterName());
                 ambClient.refreshYarnQueue(clusterConfig.getYarnRMHost());
@@ -133,9 +133,9 @@ public class YarnCommonService {
             capacityCalculator.removeQueueMapping(queueName);
             ambClient.updateCapacitySchedulerConfig(capacityCalculator.getProperties(),clusterConfig.getClusterName());
             renewCapacityCaculater();
-            capacityCaculater.revokeQueue(queueName);
-            capacityCaculater.removeQueueMapping(queueName);
-            ambClient.updateCapacitySchedulerConfig(capacityCaculater.getProperties(),clusterConfig.getClusterName());
+            capacityCalculator.revokeQueue(queueName);
+            capacityCalculator.removeQueueMapping(queueName);
+            ambClient.updateCapacitySchedulerConfig(capacityCalculator.getProperties(),clusterConfig.getClusterName());
             ambClient.refreshYarnQueue(clusterConfig.getYarnRMHost());
             logger.info("Complete refresh yarn queues.");
         }catch (Exception e){
