@@ -75,6 +75,16 @@ public class ClusterConfig implements EnvironmentAware{
 
     private String hdfs_userKeytab;
 
+    private String hdfs_nameservices;
+
+    private String hdfs_nameNode1;
+
+    private String hdfs_nameNode2;
+
+    private String hdfs_nameNode1_addr;
+
+    private String hdfs_nameNode2_addr;
+
     // Hadoop HBase connectivity properties
     private String hbase_masterUrl;
 
@@ -114,6 +124,7 @@ public class ClusterConfig implements EnvironmentAware{
     private String yarn_rm_port;
 
     private String yarn_rm_url;
+    private String yarn_rm_url2;
 
     private String yarn_superUser;
 
@@ -156,6 +167,13 @@ public class ClusterConfig implements EnvironmentAware{
         this.hdfs_port = env.getProperty("HDFS_PORT");
         this.hdfs_superUser = env.getProperty("HDFS_SUPER_USER");
         this.hdfs_userKeytab = env.getProperty("HDFS_USER_KEYTAB");
+        this.hdfs_nameservices = env.getProperty("HDFS_NAMESERVICES");
+        this.hdfs_nameNode1 = env.getProperty("HDFS_NAMENODE1");
+        this.hdfs_nameNode2 = env.getProperty("HDFS_NAMENODE2");
+        this.hdfs_nameNode1_addr = env.getProperty("HDFS_NAMENODE1_ADDR");
+        this.hdfs_nameNode2_addr = env.getProperty("HDFS_NAMENODE2_ADDR");
+
+
         this.hbase_masterUrl = env.getProperty("HBASE_MASTER_URL");
         this.hbase_masterPrincipal = env.getProperty("HBASE_MASTER_PRINCIPAL");
         this.hbase_masterUserKeytab = env.getProperty("HBASE_MASTER_USER_KEYTAB");
@@ -174,6 +192,7 @@ public class ClusterConfig implements EnvironmentAware{
         this.yarn_rm_host = env.getProperty("YARN_RESOURCEMANAGER_HOST");
         this.yarn_rm_port = env.getProperty("YARN_RESOURCEMANAGER_PORT");
         this.yarn_rm_url = env.getProperty("YARN_RESOURCEMANAGER_URL");
+        this.yarn_rm_url2 = env.getProperty("YARN_RESOURCEMANAGER_URL2");
         this.yarn_superUser = env.getProperty("YARN_SUPER_USER");
         this.yarn_superUserKeytab = env.getProperty("YARN_SUPER_USER_KEYTAB");
         this.mr_history_url = env.getProperty("MR_HISTORY_URL");
@@ -211,6 +230,23 @@ public class ClusterConfig implements EnvironmentAware{
     public String getHdfsPort() { return hdfs_port; }
     public String getHdfsSuperUser() { return hdfs_superUser; }
     public String getHdfsUserKeytab() { return hdfs_userKeytab; }
+    public String getHdfsNameservices() { return hdfs_nameservices; }
+
+    public String getHdfs_nameNode1() {
+        return hdfs_nameNode1;
+    }
+
+    public String getHdfs_nameNode2() {
+        return hdfs_nameNode2;
+    }
+
+    public String getHdfs_nameNode1_addr() {
+        return hdfs_nameNode1_addr;
+    }
+
+    public String getHdfs_nameNode2_addr() {
+        return hdfs_nameNode2_addr;
+    }
 
     public String getHbaseMasterUrl() { return hbase_masterUrl; }
     public String getHbaseMasterPrincipal() { return hbase_masterPrincipal; }
@@ -266,12 +302,15 @@ public class ClusterConfig implements EnvironmentAware{
 
     @Bean
     public ambariClient getAmbariClient(){
-        return new ambariClient(ambari_host,ambari_adminUser,ambari_adminPwd);
+        return new ambariClient(ambari_host,ambari_adminUser,ambari_adminPwd, cluster_name);
     }
 
     @Bean
     public yarnClient getYarnClient(){
-        return new yarnClient(yarn_rm_url);
+        if (yarn_rm_url2 != null)
+            return new yarnClient(yarn_rm_url,yarn_rm_url2);
+        else
+            return new yarnClient(yarn_rm_url);
     }
     
     public String getZk_connection() {

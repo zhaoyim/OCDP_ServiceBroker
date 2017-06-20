@@ -52,10 +52,6 @@ public class HBaseAdminService implements OCDPAdminService{
 
     private Connection connection;
 
-    private String serviceType = "HBase";
-
-    private String serviceResourceType = "HBase NameSpace";
-
     @Autowired
     public HBaseAdminService(ClusterConfig clusterConfig){
         this.clusterConfig = clusterConfig;
@@ -188,16 +184,6 @@ public class HBaseAdminService implements OCDPAdminService{
                 put("HBase NameSpace", serviceInstanceId.replaceAll("-", ""));
             }
         };
-    }
-
-    @Override
-    public String getServiceResourceType(){
-        return serviceResourceType;
-    }
-
-    @Override
-    public String getServiceType(){
-        return serviceType;
     }
 
     @Override

@@ -32,10 +32,6 @@ public class MapReduceAdminService implements OCDPAdminService{
 
     private HDFSAdminService hdfsAdminService;
 
-    private String serviceType = "MapReduce";
-
-    private String serviceResourceType = "Yarn Queue";
-
     @Autowired
     public MapReduceAdminService(ClusterConfig clusterConfig, YarnCommonService yarnCommonService, HDFSAdminService hdfsAdminService){
         this.clusterConfig = clusterConfig;
@@ -119,16 +115,6 @@ public class MapReduceAdminService implements OCDPAdminService{
                 put("port", clusterConfig.getYarnRMPort());
             }
         };
-    }
-
-    @Override
-    public String getServiceResourceType(){
-        return serviceResourceType;
-    }
-
-    @Override
-    public String getServiceType(){
-        return serviceType;
     }
 
     @Override

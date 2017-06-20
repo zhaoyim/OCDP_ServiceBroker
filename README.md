@@ -111,6 +111,42 @@ HDFS service instance provision:
       "parameters": {"ami_id":"ami-ecb68a84","nameSpaceQuota":"100000000000","storageSpaceQuota":"10000"}
     }' -H "Content-Type: application/json"
 
+HDFS service instance update for assign role to tenant user
+
+    curl -i -X PATCH http://<broker.username>:<broker.password>@localhost:8080/v2/service_instances/hdfs-shared-001 -d '{
+       "service_id":"ae67d4ba-5c4e-4937-a68b-5b47cfe356d8",
+       "plan_id":"72150b09-1025-4533-8bae-0e04ef68ac13",
+       "parameters":{
+           "tenant_name": "tenant1",
+            "user_name": "user1",
+            "accesses": {
+               "ae67d4ba-5c4e-4937-a68b-5b47cfe356d8": ["read", "write", "execute”]
+            }
+       }
+    }' -H "Content-Type: application/json"
+
+HDFS service instance update for unassgin role from tenant user
+
+    curl -i -X PATCH http://<broker.username>:<broker.password>@localhost:8080/v2/service_instances/hdfs-shared-001 -d '{
+           "service_id":"ae67d4ba-5c4e-4937-a68b-5b47cfe356d8",
+           "plan_id":"72150b09-1025-4533-8bae-0e04ef68ac13",
+           "parameters":{
+               "tenant_name": "tenant1",
+                "user_name": "user1"
+           }
+    }' -H "Content-Type: application/json"
+
+HDFS service instance update for resize/scale
+
+    curl -i -X PATCH http://<broker.username>:<broker.password>@localhost:8080/v2/service_instances/hdfs-shared-001 -d '{
+               "service_id":"ae67d4ba-5c4e-4937-a68b-5b47cfe356d8",
+               "plan_id":"72150b09-1025-4533-8bae-0e04ef68ac13",
+               "parameters":{
+                    "nameSpaceQuota":"100000000000",
+                    "storageSpaceQuota":"10000"
+               }
+    }' -H "Content-Type: application/json"
+
 HDFS service instance binding:
 
     curl -i -X PUT http://<broker.username>:<broker.password>@localhost:8080/v2/service_instances/hdfs-shared-003/service_bindings/hdfs-binding-001 -d '{

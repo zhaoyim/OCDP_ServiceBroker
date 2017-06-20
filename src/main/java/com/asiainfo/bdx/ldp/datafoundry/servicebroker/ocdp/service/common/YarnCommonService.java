@@ -9,7 +9,7 @@ import com.asiainfo.bdx.ldp.datafoundry.servicebroker.ocdp.exception.OCDPService
 import com.asiainfo.bdx.ldp.datafoundry.servicebroker.ocdp.model.CapacitySchedulerConfig;
 import com.asiainfo.bdx.ldp.datafoundry.servicebroker.ocdp.model.CustomizeQuotaItem;
 import com.asiainfo.bdx.ldp.datafoundry.servicebroker.ocdp.model.RangerV2Policy;
-import com.asiainfo.bdx.ldp.datafoundry.servicebroker.ocdp.utils.YarnCapacityCaculater;
+import com.asiainfo.bdx.ldp.datafoundry.servicebroker.ocdp.utils.YarnCapacityCalculator;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import org.slf4j.Logger;
@@ -19,6 +19,7 @@ import org.springframework.cloud.servicebroker.model.Plan;
 import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Service;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -45,10 +46,10 @@ public class YarnCommonService {
 
     private yarnClient yClient;
 
-    private YarnCapacityCaculater capacityCaculater;
+    private YarnCapacityCalculator capacityCalculator;
 
     @Autowired
-    public YarnCommonService(ClusterConfig clusterConfig){
+    public YarnCommonService (ClusterConfig clusterConfig) throws IOException{
         this.clusterConfig = clusterConfig;
 
         this.rc = clusterConfig.getRangerClient();
@@ -56,21 +57,23 @@ public class YarnCommonService {
         this.ambClient = clusterConfig.getAmbariClient();
 
         this.yClient = clusterConfig.getYarnClient();
-
-        initCpacityCaculater();
     }
 
-    public synchronized String createQueue(String quota){
+    public synchronized String createQueue(String quota) throws IOException{
         String provisionedQueue;
-        String queuePath = null;
+        String queuePath;
+        logger.info("Try to calculate queue capacity using quota.");
         try {
+            renewCapacityCaculater();
             provisionedQueue = capacityCaculater.applyQueue(new Long(quota));
             if(provisionedQueue == null)
-                throw new OCDPServiceException("Not Enough Capacity to apply!");
+                throw new OCDPServiceException("Not Enough Queue Capacity to apply!");
             queuePath = "root."+provisionedQueue;
         }catch (Exception e){
             e.printStackTrace();
+            throw e;
         }
+        logger.info("Queue capacity calculated successfully!");
         return queuePath;
     }
 
@@ -97,12 +100,13 @@ public class YarnCommonService {
     public boolean appendResourceToQueuePermission(String policyId, String queueName) {
         boolean updateResult = rc.appendResourceToV2Policy(policyId, queueName, "queue");
         if(updateResult){
+            renewCapacityCaculater();
             List<String> users = rc.getUsersFromV2Policy(policyId);
             if(users.size() >= 1){
                 for (String user : users){
-                    this.capacityCaculater.addQueueMapping(user, queueName);
+                    capacityCaculater.addQueueMapping(user, queueName);
                 }
-                ambClient.updateCapacitySchedulerConfig(this.capacityCaculater.getProperties(),clusterConfig.getClusterName());
+                ambClient.updateCapacitySchedulerConfig(this.capacityCalculator.getProperties(),clusterConfig.getClusterName());
                 ambClient.refreshYarnQueue(clusterConfig.getYarnRMHost());
             }
         }
@@ -112,11 +116,12 @@ public class YarnCommonService {
     public boolean appendUserToQueuePermission(String policyId, String groupName, String accountName, List<String> permissions){
         boolean updateResult = rc.appendUserToV2Policy(policyId, groupName, accountName, permissions);
         if(updateResult){
+            renewCapacityCaculater();
             List<String> queues = rc.getResourcsFromV2Policy(policyId, "queue");
             for(String queue : queues) {
-                capacityCaculater.addQueueMapping(accountName, queue);
+                capacityCalculator.addQueueMapping(accountName, queue);
             }
-            ambClient.updateCapacitySchedulerConfig(capacityCaculater.getProperties(),clusterConfig.getClusterName());
+            ambClient.updateCapacitySchedulerConfig(capacityCalculator.getProperties(),clusterConfig.getClusterName());
             ambClient.refreshYarnQueue(clusterConfig.getYarnRMHost());
         }
         return updateResult;
@@ -124,6 +129,10 @@ public class YarnCommonService {
 
     public synchronized void deleteQueue(String queueName){
         try{
+            capacityCalculator.revokeQueue(queueName);
+            capacityCalculator.removeQueueMapping(queueName);
+            ambClient.updateCapacitySchedulerConfig(capacityCalculator.getProperties(),clusterConfig.getClusterName());
+            renewCapacityCaculater();
             capacityCaculater.revokeQueue(queueName);
             capacityCaculater.removeQueueMapping(queueName);
             ambClient.updateCapacitySchedulerConfig(capacityCaculater.getProperties(),clusterConfig.getClusterName());
@@ -142,12 +151,13 @@ public class YarnCommonService {
     public boolean removeResourceFromQueuePermission(String policyId, String queueName){
         boolean updateResult = rc.removeResourceFromV2Policy(policyId, queueName, "queue");
         if(updateResult){
+            renewCapacityCaculater();
             List<String> users = rc.getUsersFromV2Policy(policyId);
             if(users.size() >= 1){
                 for (String user : users){
-                    this.capacityCaculater.removeQueueMapping(user, queueName);
+                    this.capacityCalculator.removeQueueMapping(user, queueName);
                 }
-                ambClient.updateCapacitySchedulerConfig(this.capacityCaculater.getProperties(),clusterConfig.getClusterName());
+                ambClient.updateCapacitySchedulerConfig(this.capacityCalculator.getProperties(),clusterConfig.getClusterName());
                 ambClient.refreshYarnQueue(clusterConfig.getYarnRMHost());
             }
         }
@@ -157,11 +167,12 @@ public class YarnCommonService {
     public boolean removeUserFromQueuePermission(String policyId, String accountName){
         boolean updateResult = rc.removeUserFromV2Policy(policyId, accountName);
         if(updateResult){
+            renewCapacityCaculater();
             List<String> queues = rc.getResourcsFromV2Policy(policyId, "queue");
             for(String queue : queues) {
-                capacityCaculater.removeQueueMapping(accountName, queue);
+                capacityCalculator.removeQueueMapping(accountName, queue);
             }
-            ambClient.updateCapacitySchedulerConfig(capacityCaculater.getProperties(),clusterConfig.getClusterName());
+            ambClient.updateCapacitySchedulerConfig(capacityCalculator.getProperties(),clusterConfig.getClusterName());
             ambClient.refreshYarnQueue(clusterConfig.getYarnRMHost());
         }
         return updateResult;
@@ -230,12 +241,12 @@ public class YarnCommonService {
         return quota;
     }
 
-    private void initCpacityCaculater(){
+    private void renewCapacityCaculater(){
         String csConfig = ambClient.getCapacitySchedulerConfig(clusterConfig.getYarnRMHost());
         CapacitySchedulerConfig csActualConfig = gson.fromJson(csConfig, CapacitySchedulerConfig.class);
         yClient.getClusterMetrics();
         String clusterTotalMemory = yClient.getTotalMemory();
-        this.capacityCaculater = new YarnCapacityCaculater(clusterTotalMemory,csActualConfig);
+        this.capacityCalculator = new YarnCapacityCalculator(clusterTotalMemory,csActualConfig);
     }
 
 }

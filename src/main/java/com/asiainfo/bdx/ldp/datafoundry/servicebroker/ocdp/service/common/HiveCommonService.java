@@ -65,7 +65,7 @@ public class HiveCommonService {
         try{
             BrokerUtil.authentication(
                     this.conf, this.clusterConfig.getHiveSuperUser(), this.clusterConfig.getHiveSuperUserKeytab());
-            Class.forName(this.driverName);
+            Class.forName(driverName);
             this.conn = DriverManager.getConnection(this.hiveJDBCUrl);
             Statement stmt = conn.createStatement();
             stmt.execute("create database " + databaseName);
@@ -122,7 +122,7 @@ public class HiveCommonService {
         try{
             BrokerUtil.authentication(
                     this.conf, this.clusterConfig.getHiveSuperUser(), this.clusterConfig.getHiveSuperUserKeytab());
-            Class.forName(this.driverName);
+            Class.forName(driverName);
             this.conn = DriverManager.getConnection(this.hiveJDBCUrl);
             Statement stmt = conn.createStatement();
             stmt.execute("drop database if exists " + dbName + " cascade");

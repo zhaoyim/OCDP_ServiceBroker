@@ -1,6 +1,5 @@
 package com.asiainfo.bdx.ldp.datafoundry.servicebroker.ocdp.client;
 
-import com.asiainfo.bdx.ldp.datafoundry.servicebroker.ocdp.config.ClusterConfig;
 import com.google.common.base.Splitter;
 import com.google.gson.internal.LinkedTreeMap;
 import org.apache.http.HttpHost;
@@ -30,8 +29,6 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.ApplicationContext;
 
 /**
  * Created by Aaron on 16/7/20.
@@ -42,14 +39,13 @@ public class ambariClient {
     private CloseableHttpClient httpClient;
     private HttpClientContext context;
     private URI baseUri;
+    private String clusterName;
     //@Autowired
     //private ApplicationContext appContext;
-    @Autowired
-    private ClusterConfig config;
 
     static final Gson gson = new GsonBuilder().create();
 
-    public ambariClient(String uri, String username, String password){
+    public ambariClient(String uri, String username, String password, String clusterName){
 
         if(! uri.endsWith("/")){
             uri += "/";
@@ -68,29 +64,30 @@ public class ambariClient {
         context.setCredentialsProvider(provider);
         context.setAuthCache(authCache);
         this.context = context;
+        this.clusterName = clusterName;
         //this.config = (ClusterConfig)this.appContext.getBean("clusterConfig");
     }
 
     private String getCapacitySchedulerTag(String rmHost){
-
-        URI uri = buildUri("api/v1/clusters/" + this.config.getClusterName() + "/hosts",rmHost,
+        URI uri = buildUri("api/v1/clusters/" + this.clusterName + "/hosts",rmHost,
                 "/host_components/RESOURCEMANAGER?fields=HostRoles/actual_configs/capacity-scheduler");
+
         HttpGet request = new HttpGet(uri);
 
-        String jsonStr = excuteRequest(request);
+        String jsonStr = executeRequest(request);
 
-        return getVersionTagfromJson(jsonStr);
+        return getVersionTagFromJson(jsonStr);
     }
 
     public String getCapacitySchedulerConfig(String rmHost){
 
         String versionTag = getCapacitySchedulerTag(rmHost);
 
-        URI uri = buildUri("api/v1/clusters/" + this.config.getClusterName(),"","configurations?type=capacity-scheduler&tag="+versionTag);
+        URI uri = buildUri("api/v1/clusters/" + this.clusterName,"","configurations?type=capacity-scheduler&tag="+versionTag);
 
         HttpGet request = new HttpGet(uri);
 
-        return excuteRequest(request);
+        return executeRequest(request);
 
     }
 
@@ -118,7 +115,7 @@ public class ambariClient {
         request.setEntity(entity);
         request.setHeader("X-Requested-By","ambari");
 
-        return excuteRequest(request);
+        return executeRequest(request);
 
     }
 
@@ -131,7 +128,7 @@ public class ambariClient {
         String refreshRequestEntity = buildRequestEntity("YARN",rmHost,"RESOURCEMANAGER",
                 "capacity-scheduler","Refresh YARN Capacity Scheduler","REFRESHQUEUES");
 
-        URI uri = buildUri("api/v1/clusters/" + this.config.getClusterName() + "/requests/","","");
+        URI uri = buildUri("api/v1/clusters/" + this.clusterName + "/requests/","","");
 
         HttpPost request = new HttpPost(uri);
 
@@ -140,7 +137,7 @@ public class ambariClient {
         request.setEntity(entity);
         request.setHeader("X-Requested-By","ambari");
 
-        return excuteRequest(request);
+        return executeRequest(request);
 
 //        return null;
     }
@@ -206,7 +203,7 @@ public class ambariClient {
      * @param jsonStr
      * @return versionTag
      */
-    private String getVersionTagfromJson(String jsonStr)
+    private String getVersionTagFromJson(String jsonStr)
     {
         String finalStr = null;
         try {
@@ -229,7 +226,7 @@ public class ambariClient {
 
     }
 
-    private String excuteRequest(HttpUriRequest request)
+    private String executeRequest(HttpUriRequest request)
     {
         String responseDef = null;
         try{

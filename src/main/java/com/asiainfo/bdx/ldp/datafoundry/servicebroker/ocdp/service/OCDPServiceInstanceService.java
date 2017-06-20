@@ -8,6 +8,8 @@ import com.asiainfo.bdx.ldp.datafoundry.servicebroker.ocdp.repository.OCDPServic
 import com.asiainfo.bdx.ldp.datafoundry.servicebroker.ocdp.service.common.OCDPServiceInstanceCommonService;
 import com.asiainfo.bdx.ldp.datafoundry.servicebroker.ocdp.utils.BrokerUtil;
 import com.asiainfo.bdx.ldp.datafoundry.servicebroker.ocdp.utils.OCDPAdminServiceMapper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cloud.servicebroker.exception.ServiceBrokerInvalidParametersException;
 import org.springframework.cloud.servicebroker.exception.ServiceInstanceDoesNotExistException;
@@ -30,6 +32,8 @@ import java.util.concurrent.Future;
 @Service
 public class OCDPServiceInstanceService implements ServiceInstanceService {
 
+    private Logger logger = LoggerFactory.getLogger(OCDPServiceInstanceService.class);
+
     @Autowired
     private ApplicationContext context;
 
@@ -42,6 +46,8 @@ public class OCDPServiceInstanceService implements ServiceInstanceService {
     private Map<String, Future<CreateServiceInstanceResponse>> instanceProvisionStateMap;
 
     private Map<String, Future<DeleteServiceInstanceResponse>> instanceDeleteStateMap;
+
+    private Map<String, Future<UpdateServiceInstanceResponse>> instanceUpdateStateMap;
 
     private LdapTemplate ldap;
 
@@ -57,7 +63,8 @@ public class OCDPServiceInstanceService implements ServiceInstanceService {
     }
 
     @Override
-    public CreateServiceInstanceResponse createServiceInstance(CreateServiceInstanceRequest request) throws OCDPServiceException {
+    public CreateServiceInstanceResponse createServiceInstance(
+            CreateServiceInstanceRequest request) throws OCDPServiceException {
         String serviceDefinitionId = request.getServiceDefinitionId();
         String serviceInstanceId = request.getServiceInstanceId();
         String planId = request.getPlanId();
@@ -84,7 +91,8 @@ public class OCDPServiceInstanceService implements ServiceInstanceService {
     }
 
     @Override
-    public GetLastServiceOperationResponse getLastOperation(GetLastServiceOperationRequest request) throws OCDPServiceException {
+    public GetLastServiceOperationResponse getLastOperation(
+            GetLastServiceOperationRequest request) throws OCDPServiceException {
         String serviceInstanceId = request.getServiceInstanceId();
         // Determine operation type: provision or delete
         OperationType operationType = getOperationType(serviceInstanceId);
@@ -117,18 +125,16 @@ public class OCDPServiceInstanceService implements ServiceInstanceService {
     public DeleteServiceInstanceResponse deleteServiceInstance(DeleteServiceInstanceRequest request)
             throws OCDPServiceException {
         String serviceInstanceId = request.getServiceInstanceId();
-        String planId = request.getPlanId();
         ServiceInstance instance = repository.findOne(serviceInstanceId);
-        // Check service instance and plan id
+        // Check service instance id
         if (instance == null) {
             throw new ServiceInstanceDoesNotExistException(serviceInstanceId);
-        }else if(! planId.equals(instance.getPlanId())){
-            throw new ServiceBrokerInvalidParametersException("Unknown plan id: " + planId);
         }
         DeleteServiceInstanceResponse response;
         OCDPServiceInstanceCommonService service = getOCDPServiceInstanceCommonService();
         if(request.isAsyncAccepted()){
-            Future<DeleteServiceInstanceResponse> responseFuture = service.doDeleteServiceInstanceAsync(request, instance);
+            Future<DeleteServiceInstanceResponse> responseFuture = service.doDeleteServiceInstanceAsync(
+                    request, instance);
             this.instanceDeleteStateMap.put(request.getServiceInstanceId(), responseFuture);
             response = new DeleteServiceInstanceResponse().withAsync(true);
         } else {
@@ -138,9 +144,34 @@ public class OCDPServiceInstanceService implements ServiceInstanceService {
     }
 
     @Override
-    public UpdateServiceInstanceResponse updateServiceInstance(UpdateServiceInstanceRequest request) {
-        // TODO OCDP service instance update
-        return new UpdateServiceInstanceResponse();
+    public UpdateServiceInstanceResponse updateServiceInstance(UpdateServiceInstanceRequest request)
+            throws OCDPServiceException {
+        Map<String, Object> params = request.getParameters();
+        String accountName = (String)params.get("user_name");
+        String password;
+        if(! BrokerUtil.isLDAPUserExist(ldap, accountName)){
+            password = UUID.randomUUID().toString();
+        }else {
+            password = etcdClient.readToString(
+                    "/servicebroker/ocdp/user/krb/" + accountName + "@" + clusterConfig.getKrbRealm());
+        }
+        UpdateServiceInstanceResponse response;
+        OCDPServiceInstanceCommonService service = getOCDPServiceInstanceCommonService();
+        if (request.isAsyncAccepted()){
+            Future<UpdateServiceInstanceResponse> responseFuture = service.doUpdateServiceInstanceAsync(
+                    request, password);
+            this.instanceUpdateStateMap.put(request.getServiceInstanceId(), responseFuture);
+             Map<String, Object> credentials = new HashMap<String, Object>() {
+                 {
+                     put("username", accountName);
+                     put("password", password);
+                 }
+             };
+             response = new OCDPUpdateServiceInstanceResponse().withCredential(credentials).withAsync(true);
+        }else {
+            response = service.doUpdateServiceInstance(request, password);
+        }
+        return response;
     }
 
     private OCDPServiceInstanceCommonService getOCDPServiceInstanceCommonService() {
