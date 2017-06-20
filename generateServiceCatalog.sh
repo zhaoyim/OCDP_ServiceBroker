@@ -146,3 +146,30 @@ curl http://$etcdUsername:$etcdUserpwd@$etcdHost:$etcdPort/v2/keys/servicebroker
 curl http://$etcdUsername:$etcdUserpwd@$etcdHost:$etcdPort/v2/keys/servicebroker/ocdp/catalog/d3b9a485-f038-4605-9b9b-29792f5c61d1/plan/5c3d471d-f94a-4bb8-b340-f783f3c15ba1/name -XPUT -d value='shared'
 
 curl http://$etcdUsername:$etcdUserpwd@$etcdHost:$etcdPort/v2/keys/servicebroker/ocdp/catalog/d3b9a485-f038-4605-9b9b-29792f5c61d1/plan/5c3d471d-f94a-4bb8-b340-f783f3c15ba1/metadata -XPUT -d value='{"costs":[{"amount":{"usd":0.0},"unit":"MONTHLY"}],"bullets":["Yarn Queue Quota (GB):4"],"customize":{"yarnQueueQuota":{"default":10,"max":100,"price":10,"unit":"GB","step":10,"desc":"Yarn队列的最大容量"}}}'
+
+#kafka
+curl http://$etcdUsername:$etcdUserpwd@$etcdHost:$etcdPort/v2/keys/servicebroker/ocdp/catalog/7b738c78-d412-422b-ac3e-43a9fc72a4a7 -XPUT -d dir=true
+
+curl http://$etcdUsername:$etcdUserpwd@$etcdHost:$etcdPort/v2/keys/servicebroker/ocdp/catalog/7b738c78-d412-422b-ac3e-43a9fc72a4a7/metadata -XPUT -d value='{"longDescription":"Apache Kafka 是一种支持分布式、高吞吐的消息系统。","documentationUrl":"https://kafka.apache.org/","providerDisplayName":"Asiainfo","displayName":"Kafka","imageUrl":"https://spark.apache.org/images/spark-logo.png","supportUrl":"https://kafka.apache.org/documentation/"}'
+
+curl http://$etcdUsername:$etcdUserpwd@$etcdHost:$etcdPort/v2/keys/servicebroker/ocdp/catalog/7b738c78-d412-422b-ac3e-43a9fc72a4a7/plan -XPUT -d dir=true
+
+curl http://$etcdUsername:$etcdUserpwd@$etcdHost:$etcdPort/v2/keys/servicebroker/ocdp/catalog/7b738c78-d412-422b-ac3e-43a9fc72a4a7/name -XPUT -d value='Kafka'
+
+curl http://$etcdUsername:$etcdUserpwd@$etcdHost:$etcdPort/v2/keys/servicebroker/ocdp/catalog/7b738c78-d412-422b-ac3e-43a9fc72a4a7/description -XPUT -d value='Apache Kafka 是一种支持分布式、高吞吐的消息系统。版本：v0.9.0'
+
+curl http://$etcdUsername:$etcdUserpwd@$etcdHost:$etcdPort/v2/keys/servicebroker/ocdp/catalog/7b738c78-d412-422b-ac3e-43a9fc72a4a7/bindable -XPUT -d value='true'
+
+curl http://$etcdUsername:$etcdUserpwd@$etcdHost:$etcdPort/v2/keys/servicebroker/ocdp/catalog/7b738c78-d412-422b-ac3e-43a9fc72a4a7/planupdatable -XPUT -d value='false'
+
+curl http://$etcdUsername:$etcdUserpwd@$etcdHost:$etcdPort/v2/keys/servicebroker/ocdp/catalog/7b738c78-d412-422b-ac3e-43a9fc72a4a7/tags  -XPUT -d value='kafka,streaming'
+
+curl http://$etcdUsername:$etcdUserpwd@$etcdHost:$etcdPort/v2/keys/servicebroker/ocdp/catalog/7b738c78-d412-422b-ac3e-43a9fc72a4a7/plan/68ee85c2-5b1a-4f51-89e9-5b111c251f0d -XPUT -d dir=true
+
+curl http://$etcdUsername:$etcdUserpwd@$etcdHost:$etcdPort/v2/keys/servicebroker/ocdp/catalog/7b738c78-d412-422b-ac3e-43a9fc72a4a7/plan/68ee85c2-5b1a-4f51-89e9-5b111c251f0d/description -XPUT -d value='共享Kafka实例'
+
+curl http://$etcdUsername:$etcdUserpwd@$etcdHost:$etcdPort/v2/keys/servicebroker/ocdp/catalog/7b738c78-d412-422b-ac3e-43a9fc72a4a7/plan/68ee85c2-5b1a-4f51-89e9-5b111c251f0d/free -XPUT -d value='false'
+
+curl http://$etcdUsername:$etcdUserpwd@$etcdHost:$etcdPort/v2/keys/servicebroker/ocdp/catalog/7b738c78-d412-422b-ac3e-43a9fc72a4a7/plan/68ee85c2-5b1a-4f51-89e9-5b111c251f0d/name -XPUT -d value='shared'
+
+curl http://$etcdUsername:$etcdUserpwd@$etcdHost:$etcdPort/v2/keys/servicebroker/ocdp/catalog/7b738c78-d412-422b-ac3e-43a9fc72a4a7/plan/68ee85c2-5b1a-4f51-89e9-5b111c251f0d/metadata -XPUT -d value='{"costs":[{"amount":{"usd":0.0},"unit":"MONTHLY"}],"bullets":["topicQuota:1", "partitionSize:-1", "topicTTL:604800000"],"customize":{"topicTTL":{"default":604800000,"max":-1,"price":10,"unit":"ms","step":10,"desc":"Topic TTL."},"topicQuota":{"default": 1,"max": -1,"price": 10,"unit": "","step": 10,"desc": "Number of partitions in a topic."},"partitionSize": {"default": -1,"max": -1,"price": 10,"unit": "Bytes","step": 10,"desc": "Storage(Bytes) of one partition in a topic."}}}'
