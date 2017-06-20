@@ -135,8 +135,12 @@ public class ClusterConfig implements EnvironmentAware{
 
     //Hadoop Spark History server
     private String spark_history_url;
-
-    @Override
+    
+    private String zk_connection; // eg: ochadoop111.jcloud.local:2181
+    
+    private String kafka_jaas_path;
+    
+	@Override
     public void setEnvironment(Environment env){
         this.etcd_host = env.getProperty("ETCD_HOST");
         this.etcd_port = env.getProperty("ETCD_PORT");
@@ -193,6 +197,8 @@ public class ClusterConfig implements EnvironmentAware{
         this.yarn_superUserKeytab = env.getProperty("YARN_SUPER_USER_KEYTAB");
         this.mr_history_url = env.getProperty("MR_HISTORY_URL");
         this.spark_history_url = env.getProperty("SPARK_HISTORY_URL");
+        this.zk_connection = env.getProperty("OC_ZK_CONNECTION");
+        this.kafka_jaas_path = env.getProperty("KAFKA_JAAS_PATH");
     }
 
     public String getEtcdHost() { return etcd_host; }
@@ -306,5 +312,12 @@ public class ClusterConfig implements EnvironmentAware{
         else
             return new yarnClient(yarn_rm_url);
     }
-
+    
+    public String getZk_connection() {
+		return zk_connection;
+	}
+    
+	public String getKafka_jaas_path() {
+		return kafka_jaas_path;
+	}
 }
