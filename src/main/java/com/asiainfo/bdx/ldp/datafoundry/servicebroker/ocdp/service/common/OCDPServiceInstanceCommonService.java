@@ -200,7 +200,7 @@ public class OCDPServiceInstanceCommonService {
             if (instance == null) {
                 throw new ServiceInstanceDoesNotExistException(serviceInstanceId);
             }
-            resizeServiceInstance(ocdp, instance, params);
+            ocdp.resizeResourceQuota(instance, params);
             response = new OCDPUpdateServiceInstanceResponse().withAsync(false);
         }
         return response;
@@ -251,9 +251,6 @@ public class OCDPServiceInstanceCommonService {
                 ocdp.removeUserFromTenantPolicy(tenantPolicyId, accountName);
             }
         }
-    }
-
-    private void resizeServiceInstance(OCDPAdminService ocdp, ServiceInstance instance, Map<String, Object> cuzQuota) {
     }
 
     public Map<String, Object> getOCDPServiceCredential(
