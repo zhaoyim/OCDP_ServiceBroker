@@ -73,6 +73,9 @@ Configure connectivity properties (e.g. LDAP, kerberos, Hadoop ...) in system en
      export MR_HISTORY_URL=<MapReduce History server URL>
 
      export SPARK_HISTORY_URL=<Spark History server URL>
+     
+     export OC_ZK_CONNECTION=<Zookeeper host and port>
+     export KAFKA_JAAS_PATH=<KafkaJaas conf file path>
 
 ### 2 Run OCDP service broker in VM:
 Build OCDP service broker by gradle command:
