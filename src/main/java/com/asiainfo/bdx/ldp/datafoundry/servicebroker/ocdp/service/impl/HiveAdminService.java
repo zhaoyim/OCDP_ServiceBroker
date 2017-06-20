@@ -5,6 +5,7 @@ import com.asiainfo.bdx.ldp.datafoundry.servicebroker.ocdp.config.CatalogConfig;
 import com.asiainfo.bdx.ldp.datafoundry.servicebroker.ocdp.config.ClusterConfig;
 import com.asiainfo.bdx.ldp.datafoundry.servicebroker.ocdp.model.CustomizeQuotaItem;
 import com.asiainfo.bdx.ldp.datafoundry.servicebroker.ocdp.model.RangerV2Policy;
+import com.asiainfo.bdx.ldp.datafoundry.servicebroker.ocdp.model.ServiceInstance;
 import com.asiainfo.bdx.ldp.datafoundry.servicebroker.ocdp.service.common.HiveCommonService;
 import com.asiainfo.bdx.ldp.datafoundry.servicebroker.ocdp.service.common.YarnCommonService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -151,7 +152,7 @@ public class HiveAdminService implements OCDPAdminService {
     }
 
     @Override
-    public void resizeResourceQuota(String serviceInstanceId, Map<String, Object> cuzQuota){
+    public void resizeResourceQuota(ServiceInstance instance, Map<String, Object> cuzQuota){
 
     }
 

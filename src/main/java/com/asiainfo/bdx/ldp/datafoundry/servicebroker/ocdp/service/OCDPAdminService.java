@@ -1,5 +1,7 @@
 package com.asiainfo.bdx.ldp.datafoundry.servicebroker.ocdp.service;
 
+import com.asiainfo.bdx.ldp.datafoundry.servicebroker.ocdp.model.ServiceInstance;
+
 import java.util.List;
 import java.util.Map;
 
@@ -32,6 +34,6 @@ public interface OCDPAdminService {
 
     Map<String, Object> generateCredentialsInfo(String serviceInstanceId);
 
-    void resizeResourceQuota(String serviceInstanceId, Map<String, Object> cuzQuota);
+    void resizeResourceQuota(ServiceInstance instance, Map<String, Object> cuzQuota);
 
 }
