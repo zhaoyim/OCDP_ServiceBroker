@@ -64,7 +64,7 @@ curl http://$etcdUsername:$etcdUserpwd@$etcdHost:$etcdPort/v2/keys/servicebroker
 
 curl http://$etcdUsername:$etcdUserpwd@$etcdHost:$etcdPort/v2/keys/servicebroker/ocdp/catalog/d9845ade-9410-4c7f-8689-4e032c1a8450/plan/f658e391-b7d6-4b72-9e4c-c754e4943ae1/name -XPUT -d value='shared' 
 
-curl http://$etcdUsername:$etcdUserpwd@$etcdHost:$etcdPort/v2/keys/servicebroker/ocdp/catalog/d9845ade-9410-4c7f-8689-4e032c1a8450/plan/f658e391-b7d6-4b72-9e4c-c754e4943ae1/metadata -XPUT -d value='{"costs":[{"amount":{"usd":0.0},"unit":"MONTHLY"}],"bullets":["HBase Maximun Tables:10", "HBase Maximun Regions:10"], "customize":{"maximumTablesQuota":{"default":10,"max":100,"price":10,"unit":"","step":10,"desc":"HBase命名空间允许的最大的表数目"}, "maximumRegionsQuota":{"default":100,"max":1000,"price":10,"unit":"","step":10,"desc":"HBase命名空间允许的最大的region数目"}'
+curl http://$etcdUsername:$etcdUserpwd@$etcdHost:$etcdPort/v2/keys/servicebroker/ocdp/catalog/d9845ade-9410-4c7f-8689-4e032c1a8450/plan/f658e391-b7d6-4b72-9e4c-c754e4943ae1/metadata -XPUT -d value='{"costs":[{"amount":{"usd":0.0},"unit":"MONTHLY"}],"bullets":["HBase Maximun Tables:10", "HBase Maximun Regions:10"], "customize":{"maximumTablesQuota":{"default":10,"max":100,"price":10,"unit":"","step":10,"desc":"HBase命名空间允许的最大的表数目"}, "maximumRegionsQuota":{"default":100,"max":1000,"price":10,"unit":"","step":10,"desc":"HBase命名空间允许的最大的region数目"}}}'
 
 #hive
 curl http://$etcdUsername:$etcdUserpwd@$etcdHost:$etcdPort/v2/keys/servicebroker/ocdp/catalog/2ef26018-003d-4b2b-b786-0481d4ee9fa3 -XPUT -d dir=true
@@ -91,7 +91,7 @@ curl http://$etcdUsername:$etcdUserpwd@$etcdHost:$etcdPort/v2/keys/servicebroker
 
 curl http://$etcdUsername:$etcdUserpwd@$etcdHost:$etcdPort/v2/keys/servicebroker/ocdp/catalog/2ef26018-003d-4b2b-b786-0481d4ee9fa3/plan/aa7e364f-fdbf-4187-b60a-218b6fa398ed/name -XPUT -d value='shared' 
 
-curl http://$etcdUsername:$etcdUserpwd@$etcdHost:$etcdPort/v2/keys/servicebroker/ocdp/catalog/2ef26018-003d-4b2b-b786-0481d4ee9fa3/plan/aa7e364f-fdbf-4187-b60a-218b6fa398ed/metadata -XPUT -d value='{"costs":[{"amount":{"usd":0.0},"unit":"MONTHLY"}],"bullets":["Shared Hive Server (GB):20", "Yarn Queue Quota (GB):4"], "customize":{"hiveStorageQuota": {"default":1024,"max":102400,"price":10,"unit":"GB","step":10,"desc":"Hive数据库的最大存储容量"}, "yarnQueueQuota":{"default":10,"max":100,"price":10,"unit":"GB","step":10,"desc":"Yarn队列的最大容量"}}'
+curl http://$etcdUsername:$etcdUserpwd@$etcdHost:$etcdPort/v2/keys/servicebroker/ocdp/catalog/2ef26018-003d-4b2b-b786-0481d4ee9fa3/plan/aa7e364f-fdbf-4187-b60a-218b6fa398ed/metadata -XPUT -d value='{"costs":[{"amount":{"usd":0.0},"unit":"MONTHLY"}],"bullets":["Shared Hive Server (GB):20", "Yarn Queue Quota (GB):4"], "customize":{"hiveStorageQuota": {"default":1024,"max":102400,"price":10,"unit":"GB","step":10,"desc":"Hive数据库的最大存储容量"}, "yarnQueueQuota":{"default":10,"max":100,"price":10,"unit":"GB","step":10,"desc":"Yarn队列的最大容量"}}}'
 
 #mr2
 curl http://$etcdUsername:$etcdUserpwd@$etcdHost:$etcdPort/v2/keys/servicebroker/ocdp/catalog/ae0f2324-27a8-415b-9c7f-64ab6cd88d40 -XPUT -d dir=true

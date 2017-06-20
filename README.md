@@ -59,7 +59,7 @@ Configure connectivity properties (e.g. LDAP, kerberos, Hadoop ...) in system en
      export HIVE_SUPER_USER=<Hive admin user>
      export HIVE_SUPER_USER_KEYTAB=<Hive admin user keytab>
 
-     export AMBARI_HOST=<Amabari server>
+     export AMBARI_HOST=<Amabari server URL>
      export AMBARI_ADMIN_USER=<Ambari admin username>
      export AMBARI_ADMIN_PWD=<Ambari admin password>
 
@@ -73,6 +73,18 @@ Configure connectivity properties (e.g. LDAP, kerberos, Hadoop ...) in system en
      export MR_HISTORY_URL=<MapReduce History server URL>
 
      export SPARK_HISTORY_URL=<Spark History server URL>
+
+If NameNode and ResourceManager HA enabled, you need to configure following environment variables.
+
+    export HDFS_NAMESERVICES=<dfs.nameservices in custom hdfs-site if HA enabled>
+    export HDFS_NAMENODE1_ADDR=<dfs.namenode.http-address in custom hdfs-site if HA enabled>
+    export HDFS_NAMENODE2_ADDR=<dfs.namenode.http-address in custom hdfs-site if HA enabled>
+    export HDFS_NAMENODE1=<dfs.ha.namenodes in custom hdfs-site if HA enabled(e.g. nn1)>
+    export HDFS_NAMENODE2=<dfs.ha.namenodes in custom hdfs-site if HA enabled(e.g. nn2)>
+    export YARN_RESOURCEMANAGER_URL2=<Yarn Standby Resource Manager URL>
+
+
+
 
 ### 2 Run OCDP service broker in VM:
 Build OCDP service broker by gradle command:
