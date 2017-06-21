@@ -65,113 +65,137 @@ public class OCDPServiceInstanceService implements ServiceInstanceService {
     @Override
     public CreateServiceInstanceResponse createServiceInstance(
             CreateServiceInstanceRequest request) throws OCDPServiceException {
-        String serviceDefinitionId = request.getServiceDefinitionId();
-        String serviceInstanceId = request.getServiceInstanceId();
-        String planId = request.getPlanId();
+    	try {
+            String serviceDefinitionId = request.getServiceDefinitionId();
+            String serviceInstanceId = request.getServiceInstanceId();
+            String planId = request.getPlanId();
 
-        ServiceInstance instance = repository.findOne(serviceInstanceId);
-        // Check service instance and planid
-        if (instance != null) {
-            throw new ServiceInstanceExistsException(serviceInstanceId, serviceDefinitionId);
-        }else if(! planId.equals(OCDPAdminServiceMapper.getOCDPServicePlan(serviceDefinitionId))){
-            throw new ServiceBrokerInvalidParametersException("Unknown plan id: " + planId);
-        }
-        CreateServiceInstanceResponse response;
-        OCDPServiceInstanceCommonService service = getOCDPServiceInstanceCommonService();
-        if(request.isAsyncAccepted()){
-            Future<CreateServiceInstanceResponse> responseFuture = service.doCreateServiceInstanceAsync(request);
-            this.instanceProvisionStateMap.put(request.getServiceInstanceId(), responseFuture);
-            //CITIC case: return service credential info in provision response body
-            Map<String, Object> credential = service.getOCDPServiceCredential(serviceDefinitionId, serviceInstanceId);
-            response = new OCDPCreateServiceInstanceResponse().withCredential(credential).withAsync(true);
-        } else {
-            response = service.doCreateServiceInstance(request);
-        }
-        return response;
+            ServiceInstance instance = repository.findOne(serviceInstanceId);
+            // Check service instance and planid
+            if (instance != null) {
+                throw new ServiceInstanceExistsException(serviceInstanceId, serviceDefinitionId);
+            }else if(! planId.equals(OCDPAdminServiceMapper.getOCDPServicePlan(serviceDefinitionId))){
+                throw new ServiceBrokerInvalidParametersException("Unknown plan id: " + planId);
+            }
+            CreateServiceInstanceResponse response;
+            OCDPServiceInstanceCommonService service = getOCDPServiceInstanceCommonService();
+            if(request.isAsyncAccepted()){
+                Future<CreateServiceInstanceResponse> responseFuture = service.doCreateServiceInstanceAsync(request);
+                this.instanceProvisionStateMap.put(request.getServiceInstanceId(), responseFuture);
+                //CITIC case: return service credential info in provision response body
+                Map<String, Object> credential = service.getOCDPServiceCredential(serviceDefinitionId, serviceInstanceId);
+                response = new OCDPCreateServiceInstanceResponse().withCredential(credential).withAsync(true);
+            } else {
+                response = service.doCreateServiceInstance(request);
+            }
+            return response;
+		} catch (Exception e) {
+			logger.error("Create service instance error: ", e);
+			throw new RuntimeException(e);
+		}
+
     }
 
     @Override
     public GetLastServiceOperationResponse getLastOperation(
             GetLastServiceOperationRequest request) throws OCDPServiceException {
-        String serviceInstanceId = request.getServiceInstanceId();
-        // Determine operation type: provision or delete
-        OperationType operationType = getOperationType(serviceInstanceId);
-        if (operationType == null){
-            throw new OCDPServiceException("Service instance " + serviceInstanceId + " not exist.");
-        }
-        // Get Last operation response object from cache
-        boolean is_operation_done = false;
-        if( operationType == OperationType.PROVISION){
-            Future<CreateServiceInstanceResponse> responseFuture = this.instanceProvisionStateMap.get(serviceInstanceId);
-            is_operation_done = responseFuture.isDone();
-        } else if( operationType == OperationType.DELETE){
-            Future<DeleteServiceInstanceResponse> responseFuture = this.instanceDeleteStateMap.get(serviceInstanceId);
-            is_operation_done = responseFuture.isDone();
-        }
-        // Return operation type
-        if(is_operation_done){
-            removeOperationState(serviceInstanceId, operationType);
-            if (checkOperationResult(serviceInstanceId, operationType)){
-                return new GetLastServiceOperationResponse().withOperationState(OperationState.SUCCEEDED);
-            } else {
-                return new GetLastServiceOperationResponse().withOperationState(OperationState.FAILED);
+    	try {
+            String serviceInstanceId = request.getServiceInstanceId();
+            // Determine operation type: provision or delete
+            OperationType operationType = getOperationType(serviceInstanceId);
+            if (operationType == null){
+                throw new OCDPServiceException("Service instance " + serviceInstanceId + " not exist.");
             }
-        }else{
-            return new GetLastServiceOperationResponse().withOperationState(OperationState.IN_PROGRESS);
-        }
+            // Get Last operation response object from cache
+            boolean is_operation_done = false;
+            if( operationType == OperationType.PROVISION){
+                Future<CreateServiceInstanceResponse> responseFuture = this.instanceProvisionStateMap.get(serviceInstanceId);
+                is_operation_done = responseFuture.isDone();
+            } else if( operationType == OperationType.DELETE){
+                Future<DeleteServiceInstanceResponse> responseFuture = this.instanceDeleteStateMap.get(serviceInstanceId);
+                is_operation_done = responseFuture.isDone();
+            }
+            // Return operation type
+            if(is_operation_done){
+                removeOperationState(serviceInstanceId, operationType);
+                if (checkOperationResult(serviceInstanceId, operationType)){
+                    return new GetLastServiceOperationResponse().withOperationState(OperationState.SUCCEEDED);
+                } else {
+                    return new GetLastServiceOperationResponse().withOperationState(OperationState.FAILED);
+                }
+            }else{
+                return new GetLastServiceOperationResponse().withOperationState(OperationState.IN_PROGRESS);
+            }
+		} catch (Exception e) {
+			logger.error("getLastOperation error: ", e);
+			throw new RuntimeException(e);
+		}
+
     }
 
     @Override
     public DeleteServiceInstanceResponse deleteServiceInstance(DeleteServiceInstanceRequest request)
             throws OCDPServiceException {
-        String serviceInstanceId = request.getServiceInstanceId();
-        ServiceInstance instance = repository.findOne(serviceInstanceId);
-        // Check service instance id
-        if (instance == null) {
-            throw new ServiceInstanceDoesNotExistException(serviceInstanceId);
-        }
-        DeleteServiceInstanceResponse response;
-        OCDPServiceInstanceCommonService service = getOCDPServiceInstanceCommonService();
-        if(request.isAsyncAccepted()){
-            Future<DeleteServiceInstanceResponse> responseFuture = service.doDeleteServiceInstanceAsync(
-                    request, instance);
-            this.instanceDeleteStateMap.put(request.getServiceInstanceId(), responseFuture);
-            response = new DeleteServiceInstanceResponse().withAsync(true);
-        } else {
-            response = service.doDeleteServiceInstance(request, instance);
-        }
-        return response;
+    	try {
+            String serviceInstanceId = request.getServiceInstanceId();
+            ServiceInstance instance = repository.findOne(serviceInstanceId);
+            // Check service instance id
+            if (instance == null) {
+                throw new ServiceInstanceDoesNotExistException(serviceInstanceId);
+            }
+            DeleteServiceInstanceResponse response;
+            OCDPServiceInstanceCommonService service = getOCDPServiceInstanceCommonService();
+            if(request.isAsyncAccepted()){
+                Future<DeleteServiceInstanceResponse> responseFuture = service.doDeleteServiceInstanceAsync(
+                        request, instance);
+                this.instanceDeleteStateMap.put(request.getServiceInstanceId(), responseFuture);
+                response = new DeleteServiceInstanceResponse().withAsync(true);
+            } else {
+                response = service.doDeleteServiceInstance(request, instance);
+            }
+            return response;
+		} catch (Exception e) {
+			logger.error("Delete ServiceInstance error: ", e);
+			throw new RuntimeException(e);
+		}
+
     }
 
     @Override
     public UpdateServiceInstanceResponse updateServiceInstance(UpdateServiceInstanceRequest request)
             throws OCDPServiceException {
-        Map<String, Object> params = request.getParameters();
-        String accountName = (String)params.get("user_name");
-        String password;
-        if(! BrokerUtil.isLDAPUserExist(ldap, accountName)){
-            password = UUID.randomUUID().toString();
-        }else {
-            password = etcdClient.readToString(
-                    "/servicebroker/ocdp/user/krb/" + accountName + "@" + clusterConfig.getKrbRealm());
-        }
-        UpdateServiceInstanceResponse response;
-        OCDPServiceInstanceCommonService service = getOCDPServiceInstanceCommonService();
-        if (request.isAsyncAccepted()){
-            Future<UpdateServiceInstanceResponse> responseFuture = service.doUpdateServiceInstanceAsync(
-                    request, password);
-            this.instanceUpdateStateMap.put(request.getServiceInstanceId(), responseFuture);
-             Map<String, Object> credentials = new HashMap<String, Object>() {
-                 {
-                     put("username", accountName);
-                     put("password", password);
-                 }
-             };
-             response = new OCDPUpdateServiceInstanceResponse().withCredential(credentials).withAsync(true);
-        }else {
-            response = service.doUpdateServiceInstance(request, password);
-        }
-        return response;
+    	try {
+            Map<String, Object> params = request.getParameters();
+            String accountName = (String)params.get("user_name");
+            String password;
+            if(! BrokerUtil.isLDAPUserExist(ldap, accountName)){
+                password = UUID.randomUUID().toString();
+            }else {
+                password = etcdClient.readToString(
+                        "/servicebroker/ocdp/user/krb/" + accountName + "@" + clusterConfig.getKrbRealm());
+            }
+            UpdateServiceInstanceResponse response;
+            OCDPServiceInstanceCommonService service = getOCDPServiceInstanceCommonService();
+            if (request.isAsyncAccepted()){
+                Future<UpdateServiceInstanceResponse> responseFuture = service.doUpdateServiceInstanceAsync(
+                        request, password);
+                this.instanceUpdateStateMap.put(request.getServiceInstanceId(), responseFuture);
+                 Map<String, Object> credentials = new HashMap<String, Object>() {
+                     {
+                         put("username", accountName);
+                         put("password", password);
+                     }
+                 };
+                 response = new OCDPUpdateServiceInstanceResponse().withCredential(credentials).withAsync(true);
+            }else {
+                response = service.doUpdateServiceInstance(request, password);
+            }
+            return response;
+		} catch (Exception e) {
+			logger.error("Update ServiceInstance error: ", e);
+			throw new RuntimeException(e);
+		}
+
     }
 
     private OCDPServiceInstanceCommonService getOCDPServiceInstanceCommonService() {

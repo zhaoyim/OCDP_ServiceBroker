@@ -35,13 +35,20 @@ public class KafkaAdminService implements OCDPAdminService{
 	
 	private static final String ZK_CONN_KEY = "ZooKeeper_URI";
 	
-    private static final List<String> ACCESSES = Lists.newArrayList("publish", "consume", "configure", "describe", "create", "delete", "kafka admin");
+    private static final List<String> ACCESSES = Lists.newArrayList("publish", "consume", "configure", "describe", "create", "delete", "kafka_admin");
 	
     private Gson gson = new GsonBuilder().create();
     
 	private ClusterConfig sys_env;
 	
 	private rangerClient ranger;
+	
+	@SuppressWarnings("serial")
+	private Map<String, String> keyMapping = new HashMap<String, String>(){{
+		put(Constants.PAR_QUOTA, Constants.CONFIG_PAR_SIZE);
+		put(Constants.TOPIC_TTL, Constants.CONFIG_TTL);
+		put(Constants.TOPIC_QUOTA, Constants.CONFIG_PAR_NUM);
+	}};
 	
     @Autowired
     private ApplicationContext context;
@@ -65,7 +72,7 @@ public class KafkaAdminService implements OCDPAdminService{
 			String groupName) {
         String policyId = null;
         RangerV2Policy policy = newPolicy(policyName);
-        policy.addResources2(Constants.REROURCE_TYPE, resources, false, true);
+        policy.addResources2(Constants.REROURCE_TYPE, resources, false, false);
         policy.addPolicyItems(Lists.newArrayList(defaultUser), Lists.newArrayList(groupName), Lists.newArrayList(), false, ACCESSES);
         String newPolicyString = ranger.createV2Policy(policy);
         if (newPolicyString != null){
@@ -96,7 +103,7 @@ public class KafkaAdminService implements OCDPAdminService{
 	@Override
 	public boolean deletePolicyForTenant(String policyId) {
 		boolean deleted = ranger.removeV2Policy(policyId);
-		LOG.info("Delete kafka policy [{}] from ranger with result: " + deleted);
+		LOG.info("Delete kafka policy [{}] from ranger with result: [{}]", policyId, deleted);
 		return deleted;
 	}
 
@@ -112,7 +119,7 @@ public class KafkaAdminService implements OCDPAdminService{
 		String topic = getTopic(instance);
 		try {
 			KafkaClient.getClient().changeConfig(topic, trans(cuzQuota));
-			LOG.info("Resize kafka quota for topic [{}] successful.");
+			LOG.info("Resizing kafka quota for topic [{}] successful with config [{}].", topic, cuzQuota);
 		} catch (OCKafkaException e) {
 			LOG.error("Change kafka topic [{}] config failed: {}", topic, e);
 			throw new RuntimeException(e);
@@ -148,7 +155,7 @@ public class KafkaAdminService implements OCDPAdminService{
 
 	private RangerV2Policy newPolicy(String policyName)
 	{
-		return new RangerV2Policy(policyName, "", "This is Kafka Policy", sys_env.getClusterName()+"kafka", true, true);
+		return new RangerV2Policy(policyName, "", "This is Kafka Policy", sys_env.getClusterName()+"_kafka", true, true);
 	}
 
 	private String createResources(OCTopic topic, Map<String, Object> quota) {
@@ -290,7 +297,9 @@ public class KafkaAdminService implements OCDPAdminService{
 	private Map<String, String> trans(Map<String, Object> cuzQuota) {
 		Map<String, String> result = Maps.newHashMap();
 		for (Entry<String, Object> entry : cuzQuota.entrySet()) {
-			result.put(entry.getKey(), (String)entry.getValue());
+			if (keyMapping.containsKey(entry.getKey())) {
+				result.put(keyMapping.get(entry.getKey()), (String)entry.getValue());
+			}
 		}
 		return result;
 	}
@@ -361,6 +370,8 @@ public class KafkaAdminService implements OCDPAdminService{
 		public static final String CONFIG_TTL = "retention.ms";
 		
 		public static final String CONFIG_PAR_SIZE = "retention.bytes";
+		
+		public static final String CONFIG_PAR_NUM = "";
 
 	}
 
