@@ -5,6 +5,7 @@ import java.util.Properties;
 
 import org.I0Itec.zkclient.ZkClient;
 import org.I0Itec.zkclient.ZkConnection;
+import org.apache.kafka.common.security.JaasUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -197,8 +198,9 @@ public class KafkaClient {
 	
 	private KafkaClient()
 	{
-		isSecure = Boolean.valueOf(getEnv("OC_ZK_ISSECURITY", "true"));
-		LOG.info("System environment OC_ZK_ISSECURITY : " + isSecure);
+		isSecure = JaasUtils.isZkSecurityEnabled();
+//		Boolean.valueOf(getEnv("OC_ZK_ISSECURITY", "true"));
+		LOG.info("Zookeeper isZkSecurityEnabled : " + isSecure);
 		zkClient = new ZKClient(isSecure);
 	}
 	

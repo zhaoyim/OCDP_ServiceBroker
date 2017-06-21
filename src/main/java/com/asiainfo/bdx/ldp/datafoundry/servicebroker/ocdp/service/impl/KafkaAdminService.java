@@ -211,7 +211,7 @@ public class KafkaAdminService implements OCDPAdminService{
 		CustomizeQuotaItem plan_parQuota = (CustomizeQuotaItem)planQuota.get(Constants.PAR_QUOTA);
 		quota.put(Constants.TOPIC_QUOTA, validate(plan_topicQuota, cuzQuota.get(Constants.TOPIC_QUOTA)));
 		quota.put(Constants.TOPIC_TTL, validate(plan_topicTTL, cuzQuota.get(Constants.TOPIC_TTL)));
-		quota.put(Constants.PAR_QUOTA, validate(plan_parQuota, cuzQuota.get(Constants.TOPIC_QUOTA)));
+		quota.put(Constants.PAR_QUOTA, validate(plan_parQuota, cuzQuota.get(Constants.PAR_QUOTA)));
 	}
 
 	/**
@@ -228,9 +228,13 @@ public class KafkaAdminService implements OCDPAdminService{
 		}
 		long planMax = planItem.getMax();
 		long cuzLong = Long.valueOf((String)cuzValue);
-		String result = cuzLong > planMax ? String.valueOf(planItem.getDefault()) : String.valueOf(cuzLong);
 		LOG.info("Kafka quota values(custom/maximum/default): [{}]/[{}]/[{}]", cuzLong, planMax, planItem.getDefault());
-		return result;
+		if (planMax > 0) {
+			return cuzLong > planMax ? String.valueOf(planItem.getDefault()) : String.valueOf(cuzLong);
+		} else {
+			// when theres no maximum limit, return custom value
+			return String.valueOf(cuzLong);
+		}
 	}
 
 	/**
@@ -297,10 +301,6 @@ public class KafkaAdminService implements OCDPAdminService{
 	}
 	
 	private void initSysProperties() {
-		if (!KafkaClient.getClient().isSecure()) {
-			LOG.info("Kerbros not enabled. Skipping JVM System-Properties-Settings of [krb5.conf, jaas].");
-			return;
-		}
         System.setProperty("java.security.krb5.conf", this.sys_env.getKrb5FilePath());
 		System.setProperty("java.security.auth.login.config", this.sys_env.getKafka_jaas_path());
 		LOG.info("Krb conf and Jaas files been set to {}, {}", this.sys_env.getKrb5FilePath(), this.sys_env.getKafka_jaas_path());
