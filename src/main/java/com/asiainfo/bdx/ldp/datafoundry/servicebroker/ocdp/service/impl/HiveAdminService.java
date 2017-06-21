@@ -50,15 +50,14 @@ public class HiveAdminService implements OCDPAdminService {
     @Override
     public String provisionResources(String serviceDefinitionId, String planId, String serviceInstanceId, String bindingId,
                                      Map<String, Object> cuzQuota) throws Exception{
-//        Map<String, String> quota = this.getQuotaFromPlan(serviceDefinitionId, planId, cuzQuota);
-//        String dbName = hiveCommonService.createDatabase(serviceInstanceId);
-//        // Set database storage quota
-//        if(dbName != null){
-//            hdfsAdminService.setQuota("/apps/hive/warehouse/" + dbName + ".db", "1000", quota.get("storageSpaceQuota"));
-//        }
-//        String queueName = yarnCommonService.createQueue(quota.get("yarnQueueQuota"));
-//        return dbName + ":" + queueName;
-    	return "hive-shared-001";
+        Map<String, String> quota = this.getQuotaFromPlan(serviceDefinitionId, planId, cuzQuota);
+        String dbName = hiveCommonService.createDatabase(serviceInstanceId);
+        // Set database storage quota
+        if(dbName != null){
+            hdfsAdminService.setQuota("/apps/hive/warehouse/" + dbName + ".db", "1000", quota.get("storageSpaceQuota"));
+        }
+        String queueName = yarnCommonService.createQueue(quota.get("yarnQueueQuota"));
+        return dbName + ":" + queueName;
     }
 
     @Override
