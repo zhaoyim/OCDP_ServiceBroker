@@ -7,15 +7,15 @@ import com.asiainfo.bdx.ldp.datafoundry.servicebroker.ocdp.config.CatalogConfig;
 import com.asiainfo.bdx.ldp.datafoundry.servicebroker.ocdp.config.ClusterConfig;
 import com.asiainfo.bdx.ldp.datafoundry.servicebroker.ocdp.exception.OCDPServiceException;
 import com.asiainfo.bdx.ldp.datafoundry.servicebroker.ocdp.model.CapacitySchedulerConfig;
-import com.asiainfo.bdx.ldp.datafoundry.servicebroker.ocdp.model.CustomizeQuotaItem;
 import com.asiainfo.bdx.ldp.datafoundry.servicebroker.ocdp.model.RangerV2Policy;
+import com.asiainfo.bdx.ldp.datafoundry.servicebroker.ocdp.model.ServiceInstance;
+import com.asiainfo.bdx.ldp.datafoundry.servicebroker.ocdp.utils.OCDPAdminServiceMapper;
 import com.asiainfo.bdx.ldp.datafoundry.servicebroker.ocdp.utils.YarnCapacityCalculator;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.cloud.servicebroker.model.Plan;
 import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Service;
 
@@ -184,61 +184,18 @@ public class YarnCommonService {
 
     public Map<String, String> getQuotaFromPlan(String serviceDefinitionId, String planId, Map<String, Object> cuzQuota){
         CatalogConfig catalogConfig = (CatalogConfig) this.context.getBean("catalogConfig");
-        Plan plan = catalogConfig.getServicePlan(serviceDefinitionId, planId);
-        Map<String, Object> metadata = plan.getMetadata();
-        Object customize = metadata.get("customize");
-        String yarnQueueQuota, nameSpaceQuota, storageSpaceQuota;
-        if(customize != null){
-            // Customize quota case
-            Map<String, Object> customizeMap = (Map<String,Object>)customize;
+        List<String> quotaKeys = new ArrayList<String>(){{add("yarnQueueQuota");}};
+        return catalogConfig.getQuotaFromPlan(serviceDefinitionId, planId, cuzQuota, quotaKeys);
+    }
 
-            CustomizeQuotaItem yarnQueueQuotaItem = (CustomizeQuotaItem) customizeMap.get("yarnQueueQuota");
-            long defaultYarnQueueQuota = yarnQueueQuotaItem.getDefault();
-            long maxYarnQueueQuota = yarnQueueQuotaItem.getMax();
-
-            CustomizeQuotaItem nameSpaceQuotaItem = (CustomizeQuotaItem) customizeMap.get("nameSpaceQuota");
-            long defaultNameSpaceQuota = nameSpaceQuotaItem.getDefault();
-            long maxNameSpaceQuota = nameSpaceQuotaItem.getMax();
-
-            CustomizeQuotaItem storageSpaceQuotaItem = (CustomizeQuotaItem) customizeMap.get("storageSpaceQuota");
-            long defaultStorageSpaceQuota = storageSpaceQuotaItem.getDefault();
-            long maxStorageSpaceQuota = storageSpaceQuotaItem.getMax();
-
-            if (cuzQuota.get("yarnQueueQuota") != null && cuzQuota.get("nameSpaceQuota") != null &&
-                    cuzQuota.get("storageSpaceQuota") != null){
-                // customize quota have input value
-                yarnQueueQuota = (String)cuzQuota.get("yarnQueueQuota");
-                nameSpaceQuota = (String)cuzQuota.get("nameSpaceQuota");
-                storageSpaceQuota = (String)cuzQuota.get("storageSpaceQuota");
-                // If customize quota exceeds plan limitation, use default value
-                if (Long.parseLong(yarnQueueQuota) > maxYarnQueueQuota){
-                    yarnQueueQuota = Long.toString(defaultYarnQueueQuota);
-                }
-                if (Long.parseLong(nameSpaceQuota) > maxNameSpaceQuota){
-                    nameSpaceQuota = Long.toString(defaultNameSpaceQuota);
-                }
-                if(Long.parseLong(storageSpaceQuota) > maxStorageSpaceQuota){
-                    storageSpaceQuota = Long.toString(defaultStorageSpaceQuota);
-                }
-
-            }else {
-                // customize quota have not input value, use default value
-                yarnQueueQuota =  Long.toString(defaultYarnQueueQuota);
-                nameSpaceQuota = Long.toString(defaultNameSpaceQuota);
-                storageSpaceQuota = Long.toString(defaultStorageSpaceQuota);
-            }
-        }else{
-            // Non customize quota case, use plan.metadata.bullets
-            List<String> bullets = (ArrayList)metadata.get("bullets");
-            yarnQueueQuota = bullets.get(0).split(":")[1];
-            nameSpaceQuota = bullets.get(1).split(":")[1];
-            storageSpaceQuota = bullets.get(2).split(":")[1];
-        }
-        Map<String, String> quota = new HashMap<>();
-        quota.put("yarnQueueQuota", yarnQueueQuota);
-        quota.put("nameSpaceQuota", nameSpaceQuota);
-        quota.put("storageSpaceQuota", storageSpaceQuota);
-        return quota;
+    public void resizeResourceQuota(ServiceInstance instance, Map<String, Object> cuzQuota){
+        renewCapacityCaculater();
+        String serviceDefinitionId = instance.getServiceDefinitionId();
+        String planId = instance.getPlanId();
+        Map<String, String> quota = getQuotaFromPlan(serviceDefinitionId, planId, cuzQuota);
+        String resourceType = OCDPAdminServiceMapper.getOCDPResourceType(serviceDefinitionId);
+        String queueName = (String)instance.getServiceInstanceCredentials().get(resourceType);
+        capacityCalculator.updateQueue(queueName, new Long(quota.get("yarnQueueQuota")));
     }
 
     private void renewCapacityCaculater(){

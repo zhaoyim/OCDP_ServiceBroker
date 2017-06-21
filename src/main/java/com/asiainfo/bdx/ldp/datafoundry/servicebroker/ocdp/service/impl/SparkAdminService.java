@@ -10,6 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Service;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -118,8 +119,8 @@ public class SparkAdminService implements OCDPAdminService {
     }
 
     @Override
-    public void resizeResourceQuota(ServiceInstance instance, Map<String, Object> cuzQuota){
-
+    public void resizeResourceQuota(ServiceInstance instance, Map<String, Object> cuzQuota) throws IOException{
+        yarnCommonService.resizeResourceQuota(instance, cuzQuota);
     }
 
 }

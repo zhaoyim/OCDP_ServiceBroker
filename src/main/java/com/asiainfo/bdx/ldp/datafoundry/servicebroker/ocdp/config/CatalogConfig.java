@@ -3,6 +3,7 @@ package com.asiainfo.bdx.ldp.datafoundry.servicebroker.ocdp.config;
 import java.nio.charset.Charset;
 import java.util.*;
 
+import com.asiainfo.bdx.ldp.datafoundry.servicebroker.ocdp.model.CustomizeQuotaItem;
 import org.springframework.cloud.servicebroker.model.Catalog;
 import org.springframework.cloud.servicebroker.model.Plan;
 import org.springframework.cloud.servicebroker.model.ServiceDefinition;
@@ -58,6 +59,50 @@ public class CatalogConfig {
             }
         }
         return plan;
+    }
+
+    public Map<String, String> getQuotaFromPlan(
+            String serviceDefinitionId, String planId, Map<String, Object> cuzQuota, List<String> quotaKeys){
+        Plan plan = getServicePlan(serviceDefinitionId, planId);
+        Map<String, Object> metadata = plan.getMetadata();
+        List<String> bullets = (ArrayList)metadata.get("bullets");
+        Object customize = metadata.get("customize");
+        Map<String, Object> customizeMap = new HashMap<>();
+        if (customize != null){
+            customizeMap = (Map<String,Object>)customize;
+        }
+        Map<String, String> quotas = new HashMap<>();
+        String quota;
+        for (String quotaKey : quotaKeys){
+            if(customize != null){
+                // Customize quota case
+                CustomizeQuotaItem quotaItem = (CustomizeQuotaItem)customizeMap.get(quotaKey);
+                long defaultQuota = quotaItem.getDefault();
+                long maxQuota = quotaItem.getMax();
+                if(cuzQuota.get(quotaKey) != null){
+                    // customize quota have input value
+                    quota = (String)cuzQuota.get(quotaKey);
+                    // If customize quota exceeds plan limitation, use default value
+                    if(Long.parseLong(quota) > maxQuota){
+                        quota = Long.toString(defaultQuota);
+                    }
+                } else {
+                    // customize quota have not input value, use default value
+                    quota = Long.toString(defaultQuota);
+                }
+            }else {
+                // Non customize quota case, use plan.metadata.bullets
+                int index  = quotaKeys.indexOf(quotaKey);
+                quota = bullets.get(index).split(":")[1];
+            }
+            if(quotaKey.equals("storageSpaceQuota")){
+                quota = Long.toString(Long.parseLong(quota) * 1000000000);
+                quotas.put(quotaKey, quota);
+            }else{
+                quotas.put(quotaKey, quota);
+            }
+        }
+        return quotas;
     }
 
     private Catalog getServiceCatalog(){

@@ -1,5 +1,6 @@
 package com.asiainfo.bdx.ldp.datafoundry.servicebroker.ocdp.service.common;
 
+import java.io.IOException;
 import java.lang.Thread;
 import java.util.HashMap;
 import java.util.List;
@@ -10,7 +11,6 @@ import java.util.concurrent.Future;
 import com.asiainfo.bdx.ldp.datafoundry.servicebroker.ocdp.client.etcdClient;
 import com.asiainfo.bdx.ldp.datafoundry.servicebroker.ocdp.config.ClusterConfig;
 import com.asiainfo.bdx.ldp.datafoundry.servicebroker.ocdp.model.OCDPUpdateServiceInstanceResponse;
-import com.asiainfo.bdx.ldp.datafoundry.servicebroker.ocdp.service.OCDPAdminService;
 import com.asiainfo.bdx.ldp.datafoundry.servicebroker.ocdp.service.OCDPAdminService;
 import com.asiainfo.bdx.ldp.datafoundry.servicebroker.ocdp.utils.BrokerUtil;
 import org.springframework.cloud.servicebroker.exception.ServiceInstanceDoesNotExistException;
@@ -200,7 +200,11 @@ public class OCDPServiceInstanceCommonService {
             if (instance == null) {
                 throw new ServiceInstanceDoesNotExistException(serviceInstanceId);
             }
-            ocdp.resizeResourceQuota(instance, params);
+            try{
+                ocdp.resizeResourceQuota(instance, params);
+            } catch (IOException e){
+                e.printStackTrace();
+            }
             response = new OCDPUpdateServiceInstanceResponse().withAsync(false);
         }
         return response;

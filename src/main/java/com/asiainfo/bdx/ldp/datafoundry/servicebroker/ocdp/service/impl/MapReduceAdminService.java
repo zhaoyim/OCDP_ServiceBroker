@@ -1,5 +1,6 @@
 package com.asiainfo.bdx.ldp.datafoundry.servicebroker.ocdp.service.impl;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -119,8 +120,8 @@ public class MapReduceAdminService implements OCDPAdminService{
     }
 
     @Override
-    public void resizeResourceQuota(ServiceInstance instance, Map<String, Object> cuzQuota){
-
+    public void resizeResourceQuota(ServiceInstance instance, Map<String, Object> cuzQuota) throws IOException{
+        yarnCommonService.resizeResourceQuota(instance, cuzQuota);
     }
 
 

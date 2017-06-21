@@ -41,7 +41,8 @@ public class YarnCapacityCalculator {
     public String applyQueue(Long quota){
 
         String emptyQueue = null;
-        //To make sure that the sum of all the queues capacity equals 100%, the patch for ambari server to support two decimal places in capacity scheduler should be installed.
+        //To make sure that the sum of all the queues capacity equals 100%, the patch for ambari server to support
+        // two decimal places in capacity scheduler should be installed.
         String targetQueueCapacity = String.format("%.2f", ((100 * quota) / (totalMemory / 1024)));
         String resourcePoolCapacity = String.format("%.2f", (availableCapacity - (Double.parseDouble(targetQueueCapacity))));
 
@@ -67,6 +68,18 @@ public class YarnCapacityCalculator {
 
         return emptyQueue;
 
+    }
+
+    public void updateQueue(String queueName, Long quota) {
+        // Re-calculate new capacity
+        String targetQueueCapacity = String.format("%.2f", ((100 * quota) / (totalMemory / 1024)));
+        String resourcePoolCapacity = String.format("%.2f", (availableCapacity - (Double.parseDouble(targetQueueCapacity))));
+        // Update queue
+        properties.put("yarn.scheduler.capacity.root."+queueName+".capacity", targetQueueCapacity);
+        properties.put("yarn.scheduler.capacity.root."+queueName+".maximum-capacity",targetQueueCapacity);
+        // Update default queue
+        properties.replace("yarn.scheduler.capacity.root.default.capacity",resourcePoolCapacity);
+        properties.replace("yarn.scheduler.capacity.root.default.maximum-capacity",resourcePoolCapacity);
     }
 
     /**

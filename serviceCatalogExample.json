@@ -95,7 +95,7 @@
           "costs":[{"amount":{"usd":0.0},"unit":"MONTHLY"}],
           "bullets":["Shared hive instance:20 GB Storage (not enforced)"],
           "customize": {
-            "hiveStorageQuota": {
+            "storageSpaceQuota": {
               "default": 1024,
               "max": 102400,
               "price": 10,

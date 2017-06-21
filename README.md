@@ -211,7 +211,7 @@ Hive service instance provision:
       "plan_id":"aa7e364f-fdbf-4187-b60a-218b6fa398ed",
       "organization_guid": "org-guid",
       "space_guid":"baikai",
-      "parameters": {"ami_id":"ami-ecb68a84","hiveStorageQuota":"1","yarnQueueQuota":"1"}
+      "parameters": {"ami_id":"ami-ecb68a84","storageSpaceQuota":"1","yarnQueueQuota":"1"}
     }' -H "Content-Type: application/json"
 
 Hive service instance binding:

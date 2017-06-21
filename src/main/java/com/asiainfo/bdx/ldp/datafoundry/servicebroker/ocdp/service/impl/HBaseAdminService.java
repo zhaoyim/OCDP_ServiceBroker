@@ -6,6 +6,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import com.asiainfo.bdx.ldp.datafoundry.servicebroker.ocdp.utils.OCDPAdminServiceMapper;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hbase.HBaseConfiguration;
 import org.apache.hadoop.hbase.HConstants;
@@ -17,14 +18,12 @@ import org.apache.hadoop.hbase.client.ConnectionFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.cloud.servicebroker.model.Plan;
 import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Service;
 
 import com.asiainfo.bdx.ldp.datafoundry.servicebroker.ocdp.client.rangerClient;
 import com.asiainfo.bdx.ldp.datafoundry.servicebroker.ocdp.config.CatalogConfig;
 import com.asiainfo.bdx.ldp.datafoundry.servicebroker.ocdp.config.ClusterConfig;
-import com.asiainfo.bdx.ldp.datafoundry.servicebroker.ocdp.model.CustomizeQuotaItem;
 import com.asiainfo.bdx.ldp.datafoundry.servicebroker.ocdp.model.RangerV2Policy;
 import com.asiainfo.bdx.ldp.datafoundry.servicebroker.ocdp.model.ServiceInstance;
 import com.asiainfo.bdx.ldp.datafoundry.servicebroker.ocdp.service.OCDPAdminService;
@@ -130,7 +129,8 @@ public class HBaseAdminService implements OCDPAdminService{
     }
 
     @Override
-    public boolean appendUserToTenantPolicy(String policyId, String groupName, String accountName, List<String> permissions){
+    public boolean appendUserToTenantPolicy(
+            String policyId, String groupName, String accountName, List<String> permissions){
         return rc.appendUserToV2Policy(policyId, groupName, accountName, permissions);
     }
 
@@ -138,7 +138,8 @@ public class HBaseAdminService implements OCDPAdminService{
     public void deprovisionResources(String serviceInstanceResuorceName) throws Exception{
         try{
             BrokerUtil.authentication(
-                    this.conf, this.clusterConfig.getHbaseMasterPrincipal(), this.clusterConfig.getHbaseMasterUserKeytab());
+                    this.conf, this.clusterConfig.getHbaseMasterPrincipal(),
+                    this.clusterConfig.getHbaseMasterUserKeytab());
             this.connection = ConnectionFactory.createConnection(conf);
             Admin admin = this.connection.getAdmin();
             // Should drop all tables under such namespace
@@ -193,54 +194,34 @@ public class HBaseAdminService implements OCDPAdminService{
     }
 
     @Override
-    public void resizeResourceQuota(ServiceInstance instance, Map<String, Object> cuzQuota) {
-
+    public void resizeResourceQuota(ServiceInstance instance, Map<String, Object> cuzQuota) throws IOException{
+        String serviceDefinitionId = instance.getServiceDefinitionId();
+        String planId = instance.getPlanId();
+        Map<String, String> quota = getQuotaFromPlan(serviceDefinitionId, planId, cuzQuota);
+        String resourceType = OCDPAdminServiceMapper.getOCDPResourceType(serviceDefinitionId);
+        String ns = (String)instance.getServiceInstanceCredentials().get(resourceType);
+        try{
+            BrokerUtil.authentication(conf, clusterConfig.getHbaseMasterPrincipal(),
+                    clusterConfig.getHbaseMasterUserKeytab());
+            this.connection = ConnectionFactory.createConnection(conf);
+            Admin admin = connection.getAdmin();
+            NamespaceDescriptor namespaceDescriptor = admin.getNamespaceDescriptor(ns);
+            namespaceDescriptor.setConfiguration("hbase.namespace.quota.maxtables", quota.get("maximumTableQuota"));
+            namespaceDescriptor.setConfiguration("hbase.namespace.quota.maxregion", quota.get("maximunRegionQuota"));
+            admin.modifyNamespace(namespaceDescriptor);
+            admin.close();
+        } catch (IOException e){
+            e.printStackTrace();
+            throw e;
+        } finally {
+            connection.close();
+        }
     }
 
     private Map<String, String> getQuotaFromPlan(String serviceDefinitionId, String planId, Map<String, Object> cuzQuota){
         CatalogConfig catalogConfig = (CatalogConfig) this.context.getBean("catalogConfig");
-        Plan plan = catalogConfig.getServicePlan(serviceDefinitionId, planId);
-        Map<String, Object> metadata = plan.getMetadata();
-        Object customize = metadata.get("customize");
-        String maximumTableQuota, maximumRegionQuota;
-        if(customize != null){
-            // Customize quota case
-            Map<String, Object> customizeMap = (Map<String,Object>)customize;
-
-            CustomizeQuotaItem maximumTableQuotaItem = (CustomizeQuotaItem)customizeMap.get("maximumTablesQuota");
-            long defaultMaximumTableQuota= maximumTableQuotaItem.getDefault();
-            long maxMaximumTableQuota = maximumTableQuotaItem.getMax();
-
-            CustomizeQuotaItem maximumRegionQuotaItem = (CustomizeQuotaItem)customizeMap.get("maximumRegionsQuota");
-            long defaultMaximumRegionQuota = maximumRegionQuotaItem.getDefault();
-            long maxMaximumRegionQuota = maximumRegionQuotaItem.getMax();
-
-            if (cuzQuota.get("maximumTablesQuota") != null && cuzQuota.get("maximumRegionsQuota") != null){
-                // customize quota have input value
-                maximumTableQuota = (String)cuzQuota.get("maximumTablesQuota");
-                maximumRegionQuota = (String)cuzQuota.get("maximumRegionsQuota");
-                // If customize quota exceeds plan limitation, use default value
-                if (Long.parseLong(maximumTableQuota) > maxMaximumTableQuota){
-                    maximumTableQuota = Long.toString(defaultMaximumTableQuota);
-                }
-                if(Long.parseLong(maximumRegionQuota) > maxMaximumRegionQuota){
-                    maximumRegionQuota = Long.toString(defaultMaximumRegionQuota);
-                }
-
-            }else {
-                // customize quota have not input value, use default value
-                maximumTableQuota =  Long.toString(defaultMaximumTableQuota);
-                maximumRegionQuota =  Long.toString(defaultMaximumRegionQuota);
-            }
-        }else{
-            // Non customize quota case, use plan.metadata.bullets
-            List<String> bullets = (ArrayList)metadata.get("bullets");
-            maximumTableQuota = bullets.get(0).split(":")[1];
-            maximumRegionQuota = bullets.get(1).split(":")[1];
-        }
-        Map<String, String> quota = new HashMap<>();
-        quota.put("maximumTablesQuota", maximumTableQuota);
-        quota.put("maximumRegionsQuota", maximumRegionQuota);
-        return quota;
+        List<String> quotaKeys = new ArrayList<String>(){{add("maximumTablesQuota"); add("maximumRegionsQuota");}};
+        return catalogConfig.getQuotaFromPlan(serviceDefinitionId, planId, cuzQuota, quotaKeys);
     }
+
 }

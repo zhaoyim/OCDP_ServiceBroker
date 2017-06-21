@@ -10,11 +10,9 @@ import java.net.URI;
 import com.asiainfo.bdx.ldp.datafoundry.servicebroker.ocdp.config.CatalogConfig;
 import com.asiainfo.bdx.ldp.datafoundry.servicebroker.ocdp.config.ClusterConfig;
 import com.asiainfo.bdx.ldp.datafoundry.servicebroker.ocdp.model.RangerV2Policy;
-import com.asiainfo.bdx.ldp.datafoundry.servicebroker.ocdp.model.CustomizeQuotaItem;
 import com.asiainfo.bdx.ldp.datafoundry.servicebroker.ocdp.model.ServiceInstance;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import org.springframework.cloud.servicebroker.model.Plan;
 import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Service;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -61,6 +59,8 @@ public class HDFSAdminService implements OCDPAdminService{
 
     private String webHdfsUrl;
 
+    private static final String HDFS_NAME_SPACE_QUOTA = "1000";
+
     @Autowired
     public HDFSAdminService(ClusterConfig clusterConfig){
         this.clusterConfig = clusterConfig;
@@ -105,19 +105,20 @@ public class HDFSAdminService implements OCDPAdminService{
     public String provisionResources(String serviceDefinitionId, String planId, String serviceInstanceId,
                                      String bindingId, Map<String, Object> cuzQuota) throws Exception{
         String pathName = "/servicebroker/" + serviceInstanceId;
-        Map<String, Long> quota = this.getQuotaFromPlan(serviceDefinitionId, planId, cuzQuota);
+        Map<String, String> quota = this.getQuotaFromPlan(serviceDefinitionId, planId, cuzQuota);
         this.createHDFSDir(pathName, quota.get("nameSpaceQuota"), quota.get("storageSpaceQuota"));
         return pathName;
     }
 
-    public void createHDFSDir(String pathName, Long nameSpaceQuota, Long storageSpaceQuota) throws IOException{
+    public void createHDFSDir(String pathName, String nameSpaceQuota, String storageSpaceQuota) throws IOException{
         try{
             BrokerUtil.authentication(
                     this.conf, this.clusterConfig.getHdfsSuperUser(), this.clusterConfig.getHdfsUserKeytab());
             this.dfs.initialize(URI.create(this.hdfsRPCUrl), this.conf);
             if (! this.dfs.exists(new Path(pathName))){
                 this.dfs.mkdirs(new Path(pathName), FS_PERMISSION);
-                this.dfs.setQuota(new Path(pathName), nameSpaceQuota, storageSpaceQuota);
+                this.dfs.setQuota(new Path(pathName),
+                        Long.parseLong(nameSpaceQuota), Long.parseLong(storageSpaceQuota));
                 logger.info("Create hdfs folder successful.");
             } else {
                 logger.info("HDFS folder exists, not need to create again.");
@@ -131,12 +132,16 @@ public class HDFSAdminService implements OCDPAdminService{
         }
     }
 
-    public void setQuota(String pathName, Long nameSpaceQuota, Long storageSpaceQuota) throws IOException {
+    public void setQuota(String pathName, String nameSpaceQuota, String storageSpaceQuota) throws IOException {
         try{
             BrokerUtil.authentication(
                     this.conf, this.clusterConfig.getHdfsSuperUser(), this.clusterConfig.getHdfsUserKeytab());
             this.dfs.initialize(URI.create(this.hdfsRPCUrl), this.conf);
-            this.dfs.setQuota(new Path(pathName), nameSpaceQuota, storageSpaceQuota);
+            if(nameSpaceQuota == null || nameSpaceQuota.equals("")){
+                // Use default namespacequota if not pass.
+                nameSpaceQuota = HDFS_NAME_SPACE_QUOTA;
+            }
+            this.dfs.setQuota(new Path(pathName), Long.parseLong(nameSpaceQuota), Long.parseLong(storageSpaceQuota));
         }catch (Exception e){
             logger.error("Set HDFS folder quota fails due to: " + e.getLocalizedMessage());
             e.printStackTrace();
@@ -227,54 +232,24 @@ public class HDFSAdminService implements OCDPAdminService{
     }
 
     @Override
-    public void resizeResourceQuota(ServiceInstance instance, Map<String, Object> cuzQuota){
-    }
-
-    private Map<String, Long> getQuotaFromPlan(String serviceDefinitionId, String planId, Map<String, Object> cuzQuota){
-        CatalogConfig catalogConfig = (CatalogConfig) this.context.getBean("catalogConfig");
-        Plan plan = catalogConfig.getServicePlan(serviceDefinitionId, planId);
-        Map<String, Object> metadata = plan.getMetadata();
-        Object customize = metadata.get("customize");
-        long nameSpaceQuota, storageSpaceQuota;
-        if(customize != null){
-            // Customize quota case
-            Map<String, Object> customizeMap = (Map<String,Object>)customize;
-
-            CustomizeQuotaItem nameSpaceQuotaItem = (CustomizeQuotaItem)customizeMap.get("nameSpaceQuota");
-            long defaultNameSpaceQuota = nameSpaceQuotaItem.getDefault();
-            long maxNameSpaceQuota = nameSpaceQuotaItem.getMax();
-
-            CustomizeQuotaItem storageSpaceQuotaItem = (CustomizeQuotaItem)customizeMap.get("storageSpaceQuota");
-            long defaultStorageSpaceQuota = storageSpaceQuotaItem.getDefault();
-            long maxStorageSpaceQuota = storageSpaceQuotaItem.getMax();
-
-            logger.info(cuzQuota.toString());
-            logger.info(cuzQuota.get("nameSpaceQuota") + " " + cuzQuota.get("storageSpaceQuota"));
-            if (cuzQuota.get("nameSpaceQuota") != null && cuzQuota.get("storageSpaceQuota") != null){
-                // customize quota have input value
-                nameSpaceQuota = Long.parseLong((String)cuzQuota.get("nameSpaceQuota"));
-                storageSpaceQuota =  Long.parseLong((String)cuzQuota.get("storageSpaceQuota"));
-                // If customize quota exceeds plan limitation, use default value
-                if(nameSpaceQuota > maxNameSpaceQuota){
-                    nameSpaceQuota = defaultNameSpaceQuota;
-                }
-                if(storageSpaceQuota > maxStorageSpaceQuota){
-                    storageSpaceQuota = defaultStorageSpaceQuota;
-                }
-            }else {
-                // customize quota have not input value, use default value
-                nameSpaceQuota = defaultNameSpaceQuota;
-                storageSpaceQuota = defaultStorageSpaceQuota;
-            }
-        }else{
-            // Non customize quota case, use plan.metadata.bullets
-            List<String> bullets = (ArrayList)metadata.get("bullets");
-            nameSpaceQuota = new Long(bullets.get(0).split(":")[1]);
-            storageSpaceQuota = new Long(bullets.get(1).split(":")[1]);
+    public void resizeResourceQuota(ServiceInstance instance, Map<String, Object> cuzQuota) throws IOException{
+        String serviceDefinitionId = instance.getServiceDefinitionId();
+        String planId = instance.getPlanId();
+        Map<String, String> quota = getQuotaFromPlan(serviceDefinitionId, planId, cuzQuota);
+        String resourceType = OCDPAdminServiceMapper.getOCDPResourceType(serviceDefinitionId);
+        String path = (String)instance.getServiceInstanceCredentials().get(resourceType);
+        try{
+            setQuota(path, quota.get("nameSpaceQuota"), quota.get("storageSpaceQuota"));
+        } catch (IOException e){
+            e.printStackTrace();
+            throw e;
         }
-        Map<String, Long> quota = new HashMap<>();
-        quota.put("nameSpaceQuota", nameSpaceQuota);
-        quota.put("storageSpaceQuota", storageSpaceQuota * 1000000000);
-        return quota;
     }
+
+    private Map<String, String> getQuotaFromPlan(String serviceDefinitionId, String planId, Map<String, Object> cuzQuota){
+        CatalogConfig catalogConfig = (CatalogConfig) this.context.getBean("catalogConfig");
+        List<String> quotaKeys = new ArrayList<String>(){{add("nameSpaceQuota"); add("storageSpaceQuota");}};
+        return catalogConfig.getQuotaFromPlan(serviceDefinitionId, planId, cuzQuota, quotaKeys);
+    }
+
 }
