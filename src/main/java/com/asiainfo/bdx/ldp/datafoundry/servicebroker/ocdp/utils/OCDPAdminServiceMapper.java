@@ -30,7 +30,7 @@ public class OCDPAdminServiceMapper {
             put("2ef26018-003d-4b2b-b786-0481d4ee9fa3", "hiveAdminService");
             put("ae0f2324-27a8-415b-9c7f-64ab6cd88d40", "mapReduceAdminService");
             put("d3b9a485-f038-4605-9b9b-29792f5c61d1", "sparkAdminService");
-            put("7b738c78-d412-422b-ac3e-43a9fc72a4a7", "KafkaAdminService");
+            put("7b738c78-d412-422b-ac3e-43a9fc72a4a7", "kafkaAdminService");
         }
     };
 
