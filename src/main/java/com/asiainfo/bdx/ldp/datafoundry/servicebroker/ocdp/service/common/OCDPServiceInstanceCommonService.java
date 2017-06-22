@@ -119,6 +119,7 @@ public class OCDPServiceInstanceCommonService {
         CreateServiceInstanceResponse response = new OCDPCreateServiceInstanceResponse()
                 .withCredential(credentials)
                 .withAsync(false);
+        logger.info("Create service instance " + serviceInstanceId + " successfully!");
         return response;
     }
 

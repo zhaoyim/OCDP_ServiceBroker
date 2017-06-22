@@ -75,7 +75,6 @@ public class HDFSAdminService implements OCDPAdminService{
             String nameservices = this.clusterConfig.getHdfsNameservices();
             String[] namenodesAddr = {this.clusterConfig.getHdfs_nameNode1_addr(), this.clusterConfig.getHdfs_nameNode2_addr()};
             String[] namenodes = {this.clusterConfig.getHdfs_nameNode1(), this.clusterConfig.getHdfs_nameNode2()};
-            System.out.println("nameservices = " + nameservices);
             conf.set("fs.defaultFS", "hdfs://" + nameservices);
             conf.set("dfs.nameservices", nameservices);
             conf.set("dfs.ha.namenodes." + nameservices, namenodes[0] + "," + namenodes[1]);

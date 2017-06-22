@@ -74,6 +74,8 @@ public class YarnCommonService {
             e.printStackTrace();
             throw e;
         }
+//        ambClient.updateCapacitySchedulerConfig(this.capacityCalculator.getProperties(),clusterConfig.getClusterName());
+//        ambClient.refreshYarnQueue(clusterConfig.getYarnRMHost());
         logger.info("Queue capacity calculated successfully!");
         return queuePath;
     }

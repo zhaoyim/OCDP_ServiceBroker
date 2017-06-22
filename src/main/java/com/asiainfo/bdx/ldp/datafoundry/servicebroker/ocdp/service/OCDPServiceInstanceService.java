@@ -65,18 +65,21 @@ public class OCDPServiceInstanceService implements ServiceInstanceService {
     @Override
     public CreateServiceInstanceResponse createServiceInstance(
             CreateServiceInstanceRequest request) throws OCDPServiceException {
-    	try {
             String serviceDefinitionId = request.getServiceDefinitionId();
             String serviceInstanceId = request.getServiceInstanceId();
             String planId = request.getPlanId();
+            logger.info("Receive request to create service instance " + serviceInstanceId + ".");
 
             ServiceInstance instance = repository.findOne(serviceInstanceId);
             // Check service instance and planid
             if (instance != null) {
+                logger.warn("Service instance with the given ID already exists: " + serviceInstanceId + ".");
                 throw new ServiceInstanceExistsException(serviceInstanceId, serviceDefinitionId);
             }else if(! planId.equals(OCDPAdminServiceMapper.getOCDPServicePlan(serviceDefinitionId))){
                 throw new ServiceBrokerInvalidParametersException("Unknown plan id: " + planId);
             }
+         try {
+            logger.info("Start to create OCDPServiceInstance: " + serviceInstanceId + "...");
             CreateServiceInstanceResponse response;
             OCDPServiceInstanceCommonService service = getOCDPServiceInstanceCommonService();
             if(request.isAsyncAccepted()){
@@ -90,8 +93,8 @@ public class OCDPServiceInstanceService implements ServiceInstanceService {
             }
             return response;
 		} catch (Exception e) {
-			logger.error("Create service instance error: ", e);
-			throw new RuntimeException(e);
+			logger.error("Create service instance error: " + e.getMessage());
+			throw new OCDPServiceException(e.getMessage());
 		}
 
     }
@@ -138,11 +141,13 @@ public class OCDPServiceInstanceService implements ServiceInstanceService {
             throws OCDPServiceException {
     	try {
             String serviceInstanceId = request.getServiceInstanceId();
+            logger.info("Receive request to delete service instance " + serviceInstanceId + " .");
             ServiceInstance instance = repository.findOne(serviceInstanceId);
             // Check service instance id
             if (instance == null) {
                 throw new ServiceInstanceDoesNotExistException(serviceInstanceId);
             }
+            logger.info("Start to delete OCDPServiceInstance: " + serviceInstanceId + "...");
             DeleteServiceInstanceResponse response;
             OCDPServiceInstanceCommonService service = getOCDPServiceInstanceCommonService();
             if(request.isAsyncAccepted()){
@@ -153,6 +158,7 @@ public class OCDPServiceInstanceService implements ServiceInstanceService {
             } else {
                 response = service.doDeleteServiceInstance(request, instance);
             }
+            logger.info("Delete service instance " + serviceInstanceId + " successfully!");
             return response;
 		} catch (Exception e) {
 			logger.error("Delete ServiceInstance error: ", e);
