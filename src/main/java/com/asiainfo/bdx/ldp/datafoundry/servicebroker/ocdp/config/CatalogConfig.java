@@ -68,15 +68,12 @@ public class CatalogConfig {
         Plan plan = getServicePlan(serviceDefinitionId, planId);
         Map<String, Object> metadata = plan.getMetadata();
         List<String> bullets = (List<String>)metadata.get("bullets");
-        Object customize = metadata.get("customize");
-        Map<String, Object> customizeMap = new HashMap<>();
-        if (customize != null){
-            customizeMap = (Map<String,Object>)customize;
-        }
+    //    Object customize = metadata.get("customize");
+        Map<String, Object> customizeMap = (Map<String,Object>)metadata.get("customize");
         Map<String, String> quotas = new HashMap<>();
         String quota = "";
         for (String quotaKey : cuzQuota.keySet()){
-            if(customize != null){
+            if(customizeMap != null){
                 // Customize quota case
                 CustomizeQuotaItem quotaItem = (CustomizeQuotaItem)customizeMap.get(quotaKey);
                 // Skip for invalid quota key
