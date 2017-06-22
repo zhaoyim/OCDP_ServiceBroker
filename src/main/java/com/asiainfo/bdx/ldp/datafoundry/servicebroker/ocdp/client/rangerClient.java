@@ -178,7 +178,7 @@ public class rangerClient {
     public boolean appendResourceToV2Policy(String policyId, String serviceInstanceResource, String resourceType) {
         String currentPolicy = getV2Policy(policyId);
         RangerV2Policy rp = gson.fromJson(currentPolicy, RangerV2Policy.class);
-        rp.addResources2(resourceType, new ArrayList<String>(){{add(serviceInstanceResource);}}, false, true);
+        rp.updateResource(resourceType, serviceInstanceResource);
         return updateV2Policy(policyId, rp);
     }
 

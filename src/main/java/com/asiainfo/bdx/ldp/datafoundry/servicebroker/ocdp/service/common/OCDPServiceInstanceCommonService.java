@@ -98,7 +98,10 @@ public class OCDPServiceInstanceCommonService {
             tenantPolicyId = createPolicyForTenant(ocdp, serviceInstanceResource, tenantName);
             etcdClient.write("/servicebroker/ocdp/tenants/" + tenantName + "/" + serviceDefinitionId, tenantPolicyId);
         } else {
-            ocdp.appendResourceToTenantPolicy(tenantPolicyId, serviceInstanceResource);
+            if(! ocdp.appendResourceToTenantPolicy(tenantPolicyId, serviceInstanceResource)){
+                logger.error("Fail to append resource [{}] to ranger policy [{}].", serviceInstanceResource, tenantPolicyId);
+                throw new OCDPServiceException("Fail to append resource to ranger policy.");
+            }
         }
 
         // 4) Generate service instance credential info
