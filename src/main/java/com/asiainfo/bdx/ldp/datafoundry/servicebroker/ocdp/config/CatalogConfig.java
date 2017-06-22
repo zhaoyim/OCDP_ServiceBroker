@@ -79,6 +79,9 @@ public class CatalogConfig {
             if(customize != null){
                 // Customize quota case
                 CustomizeQuotaItem quotaItem = (CustomizeQuotaItem)customizeMap.get(quotaKey);
+                // Skip for invalid quota key
+                if(quotaItem == null)
+                    continue;
                 long defaultQuota = quotaItem.getDefault();
                 long maxQuota = quotaItem.getMax();
                 if(cuzQuota.get(quotaKey) != null){
