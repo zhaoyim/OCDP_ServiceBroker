@@ -185,12 +185,7 @@ public class YarnCommonService {
 
     public Map<String, String> getQuotaFromPlan(String serviceDefinitionId, String planId, Map<String, Object> cuzQuota){
         CatalogConfig catalogConfig = (CatalogConfig) this.context.getBean("catalogConfig");
-        List<String> quotaKeys = new ArrayList<String>(){
-            {
-                add(OCDPConstants.YARN_QUEUE_QUOTA);
-            }
-        };
-        return catalogConfig.getQuotaFromPlan(serviceDefinitionId, planId, cuzQuota, quotaKeys);
+        return catalogConfig.getQuotaFromPlan(serviceDefinitionId, planId, cuzQuota);
     }
 
     public void resizeResourceQuota(ServiceInstance instance, Map<String, Object> cuzQuota){

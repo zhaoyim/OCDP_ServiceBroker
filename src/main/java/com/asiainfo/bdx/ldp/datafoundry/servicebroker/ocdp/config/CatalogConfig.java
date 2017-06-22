@@ -4,6 +4,7 @@ import java.nio.charset.Charset;
 import java.util.*;
 
 import com.asiainfo.bdx.ldp.datafoundry.servicebroker.ocdp.model.CustomizeQuotaItem;
+import com.asiainfo.bdx.ldp.datafoundry.servicebroker.ocdp.utils.OCDPConstants;
 import org.springframework.cloud.servicebroker.model.Catalog;
 import org.springframework.cloud.servicebroker.model.Plan;
 import org.springframework.cloud.servicebroker.model.ServiceDefinition;
@@ -61,19 +62,20 @@ public class CatalogConfig {
         return plan;
     }
 
+    @SuppressWarnings("unchecked")
     public Map<String, String> getQuotaFromPlan(
-            String serviceDefinitionId, String planId, Map<String, Object> cuzQuota, List<String> quotaKeys){
+            String serviceDefinitionId, String planId, Map<String, Object> cuzQuota){
         Plan plan = getServicePlan(serviceDefinitionId, planId);
         Map<String, Object> metadata = plan.getMetadata();
-        List<String> bullets = (ArrayList)metadata.get("bullets");
+        List<String> bullets = (List<String>)metadata.get("bullets");
         Object customize = metadata.get("customize");
         Map<String, Object> customizeMap = new HashMap<>();
         if (customize != null){
             customizeMap = (Map<String,Object>)customize;
         }
         Map<String, String> quotas = new HashMap<>();
-        String quota;
-        for (String quotaKey : quotaKeys){
+        String quota = "";
+        for (String quotaKey : cuzQuota.keySet()){
             if(customize != null){
                 // Customize quota case
                 CustomizeQuotaItem quotaItem = (CustomizeQuotaItem)customizeMap.get(quotaKey);
@@ -90,14 +92,18 @@ public class CatalogConfig {
                     // customize quota have not input value, use default value
                     quota = Long.toString(defaultQuota);
                 }
-            }else {
+            } else {
                 // Non customize quota case, use plan.metadata.bullets
-                int index  = quotaKeys.indexOf(quotaKey);
-                quota = bullets.get(index).split(":")[1];
+                Iterator<String> it = bullets.iterator();
+                while (it.hasNext()) {
+                    String str = it.next();
+                    if (str.startsWith(quotaKey)) {
+                        quota = str.split(":")[1];
+                    }
+                }
             }
-            if(quotaKey.equals("storageSpaceQuota")){
-                quota = Long.toString(Long.parseLong(quota) * 1000000000);
-                quotas.put(quotaKey, quota);
+            if(quotaKey.equals(OCDPConstants.HDFS_STORAGE_QUOTA)){
+                quotas.put(quotaKey, Long.toString(Long.parseLong(quota) * 1000000000));
             }else{
                 quotas.put(quotaKey, quota);
             }

@@ -226,13 +226,7 @@ public class HBaseAdminService implements OCDPAdminService{
 
     private Map<String, String> getQuotaFromPlan(String serviceDefinitionId, String planId, Map<String, Object> cuzQuota){
         CatalogConfig catalogConfig = (CatalogConfig) this.context.getBean("catalogConfig");
-        List<String> quotaKeys = new ArrayList<String>(){
-            {
-                add(OCDPConstants.HBASE_NAMESPACE_TABLE_QUOTA);
-                add(OCDPConstants.HBASE_NAMESPACE_REGION_QUOTA);
-            }
-        };
-        return catalogConfig.getQuotaFromPlan(serviceDefinitionId, planId, cuzQuota, quotaKeys);
+        return catalogConfig.getQuotaFromPlan(serviceDefinitionId, planId, cuzQuota);
     }
 
 }
