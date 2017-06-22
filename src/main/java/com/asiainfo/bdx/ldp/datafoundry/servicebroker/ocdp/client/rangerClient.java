@@ -153,6 +153,9 @@ public class rangerClient {
         try{
             CloseableHttpResponse response = this.httpClient.execute(request, this.context);
             status = (response.getStatusLine().getStatusCode() == 200);
+            if (!status) {
+                logger.error("Update policy failed: " + response.getStatusLine().getReasonPhrase());
+			}
             response.close();
         }catch (IOException e){
             e.printStackTrace();
