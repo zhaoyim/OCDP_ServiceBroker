@@ -86,7 +86,12 @@ public class HiveAdminService implements OCDPAdminService {
 
     @Override
     public boolean appendResourceToTenantPolicy(String policyId, String serviceInstanceResource){
-        return hiveCommonService.appendResourceToDatabasePermission(policyId, serviceInstanceResource);
+        String[] resourcesList = serviceInstanceResource.split(":");
+        boolean appendResourceToHivePolicy = hiveCommonService.appendResourceToDatabasePermission(
+                policyId, resourcesList[0]);
+        boolean appendResourceToYarnPolicy = yarnCommonService.appendResourceToQueuePermission(
+                policyId, resourcesList[1]);
+        return appendResourceToHivePolicy && appendResourceToYarnPolicy;
     }
 
     @Override
@@ -123,7 +128,12 @@ public class HiveAdminService implements OCDPAdminService {
 
     @Override
     public boolean removeResourceFromTenantPolicy(String policyId, String serviceInstanceResource){
-        return hiveCommonService.removeResourceFromDatabasePermission(policyId, serviceInstanceResource);
+        String[] resourcesList = serviceInstanceResource.split(":");
+        boolean removeResourceFromHivePolicy = hiveCommonService.removeResourceFromDatabasePermission(
+                policyId, resourcesList[0]);
+        boolean removeResourceFromYarnPolicy = yarnCommonService.removeResourceFromQueuePermission(
+                policyId, resourcesList[1]);
+        return removeResourceFromHivePolicy && removeResourceFromYarnPolicy;
     }
 
     @Override
@@ -152,7 +162,9 @@ public class HiveAdminService implements OCDPAdminService {
     }
 
     @Override
-    public  List<String> getResourceFromTenantPolicy(String policyId){
+    public List<String> getResourceFromTenantPolicy(String policyId){
+        // Get hive ranger policy id
+        policyId = policyId.split(":")[0];
         return hiveCommonService.getResourceFromDatabasePolicy(policyId);
     }
 

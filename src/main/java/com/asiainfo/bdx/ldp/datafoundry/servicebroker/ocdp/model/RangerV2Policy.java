@@ -61,6 +61,7 @@ public class RangerV2Policy{
         this.policyItems = new ArrayList<>();
     }
 
+    // For HBase/Hive/Yarn ranger policy
     public void addResources(String resourceType, List<String> resourceList, boolean isExcludes){
         RangerResource rr = new RangerResource();
         rr.values.addAll(resourceList);
@@ -68,12 +69,18 @@ public class RangerV2Policy{
         resources.put(resourceType, rr);
     }
 
+    // For HDFS/Kafka ranger policy
     public void addResources2(String resourceType, List<String> resourceList, boolean isExcludes, boolean isRecursive){
         RangerResource2 rr = new RangerResource2();
         rr.values.addAll(resourceList);
         rr.isExcludes = isExcludes;
         rr.isRecursive = isRecursive;
         resources.put(resourceType, rr);
+    }
+
+    public void updateResource(String resourceType, String resourceName) {
+        RangerResource rr = resources.get(resourceType);
+        rr.values.add(resourceName);
     }
 
     public void removeResource(String resourceType, String resourceName) {
