@@ -47,7 +47,7 @@ public class KafkaAdminService implements OCDPAdminService{
 	private Map<String, String> keyMapping = new HashMap<String, String>(){{
 		put(Constants.PAR_QUOTA, Constants.CONFIG_PAR_SIZE);
 		put(Constants.TOPIC_TTL, Constants.CONFIG_TTL);
-		put(Constants.TOPIC_QUOTA, Constants.CONFIG_PAR_NUM);
+//		put(Constants.TOPIC_QUOTA, Constants.CONFIG_PAR_NUM);
 	}};
 	
     @Autowired
@@ -85,7 +85,9 @@ public class KafkaAdminService implements OCDPAdminService{
 	
 	@Override
 	public boolean appendResourceToTenantPolicy(String policyId, String serviceInstanceResource) {
-		return ranger.appendResourceToV2Policy(policyId, serviceInstanceResource, Constants.REROURCE_TYPE);
+		boolean result = ranger.appendResourceToV2Policy(policyId, serviceInstanceResource, Constants.REROURCE_TYPE);
+		LOG.info("Append kafka resource [{}] to policy [{}] returned by result [{}]", serviceInstanceResource, policyId, result);
+		return result;
 	}
 	
 	@Override
@@ -150,7 +152,9 @@ public class KafkaAdminService implements OCDPAdminService{
 	
 	@Override
 	public List<String> getResourceFromTenantPolicy(String policyId) {
-        return ranger.getResourcsFromV2Policy(policyId, Constants.REROURCE_TYPE);
+		List<String> resources = ranger.getResourcsFromV2Policy(policyId, Constants.REROURCE_TYPE);
+		LOG.info("Kafka Resources from policy [{}]: [{}]", policyId, resources);
+        return resources;
 	}
 
 	private RangerV2Policy newPolicy(String policyName)
@@ -371,7 +375,7 @@ public class KafkaAdminService implements OCDPAdminService{
 		
 		public static final String CONFIG_PAR_SIZE = "retention.bytes";
 		
-		public static final String CONFIG_PAR_NUM = "";
+		public static final String CONFIG_PAR_NUM = "num.partitions";
 
 	}
 
