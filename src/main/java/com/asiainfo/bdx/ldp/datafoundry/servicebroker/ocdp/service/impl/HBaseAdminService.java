@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Map;
 
 import com.asiainfo.bdx.ldp.datafoundry.servicebroker.ocdp.utils.OCDPAdminServiceMapper;
+import com.asiainfo.bdx.ldp.datafoundry.servicebroker.ocdp.utils.OCDPConstants;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hbase.HBaseConfiguration;
 import org.apache.hadoop.hbase.HConstants;
@@ -80,8 +81,10 @@ public class HBaseAdminService implements OCDPAdminService{
             this.connection = ConnectionFactory.createConnection(conf);
             Admin admin = this.connection.getAdmin();
             NamespaceDescriptor namespaceDescriptor = NamespaceDescriptor.create(nsName).build();
-            namespaceDescriptor.setConfiguration("hbase.namespace.quota.maxtables", quota.get("maximumTableQuota"));
-            namespaceDescriptor.setConfiguration("hbase.namespace.quota.maxregion", quota.get("maximunRegionQuota"));
+            namespaceDescriptor.setConfiguration(
+                    "hbase.namespace.quota.maxtables", quota.get(OCDPConstants.HBASE_NAMESPACE_TABLE_QUOTA));
+            namespaceDescriptor.setConfiguration(
+                    "hbase.namespace.quota.maxregion", quota.get(OCDPConstants.HBASE_NAMESPACE_REGION_QUOTA));
             admin.createNamespace(namespaceDescriptor);
             admin.close();
         }catch(IOException e){
@@ -111,7 +114,7 @@ public class HBaseAdminService implements OCDPAdminService{
         for (String e : tableList){
             nsList.add(e + ":*");
         }
-        rp.addResources("table", nsList, false);
+        rp.addResources(OCDPConstants.HBASE_RANGER_RESOURCE_TYPE, nsList, false);
         rp.addResources("column-family", cfList, false);
         rp.addResources("column", cList, false);
         rp.addPolicyItems(userList,groupList,conditions,false,types);
@@ -125,7 +128,7 @@ public class HBaseAdminService implements OCDPAdminService{
 
     @Override
     public boolean appendResourceToTenantPolicy(String policyId, String serviceInstanceResource){
-        return rc.appendResourceToV2Policy(policyId, serviceInstanceResource, "table");
+        return rc.appendResourceToV2Policy(policyId, serviceInstanceResource, OCDPConstants.HBASE_RANGER_RESOURCE_TYPE);
     }
 
     @Override
@@ -168,7 +171,8 @@ public class HBaseAdminService implements OCDPAdminService{
 
     @Override
     public boolean removeResourceFromTenantPolicy(String policyId, String serviceInstanceResource){
-        return rc.removeResourceFromV2Policy(policyId, serviceInstanceResource, "table");
+        return rc.removeResourceFromV2Policy(
+                policyId, serviceInstanceResource, OCDPConstants.HBASE_RANGER_RESOURCE_TYPE);
     }
 
     @Override
@@ -183,14 +187,14 @@ public class HBaseAdminService implements OCDPAdminService{
                 put("uri", "http://" + clusterConfig.getHbaseMaster() + ":" + clusterConfig.getHbaseRestPort());
                 put("host", clusterConfig.getHbaseMaster());
                 put("port", clusterConfig.getHbaseRestPort());
-                put("HBase NameSpace", serviceInstanceId.replaceAll("-", ""));
+                put(OCDPConstants.HBASE_RESOURCE_TYPE, serviceInstanceId.replaceAll("-", ""));
             }
         };
     }
 
     @Override
     public  List<String> getResourceFromTenantPolicy(String policyId){
-        return rc.getResourcsFromV2Policy(policyId, "table");
+        return rc.getResourcsFromV2Policy(policyId, OCDPConstants.HBASE_RANGER_RESOURCE_TYPE);
     }
 
     @Override
@@ -206,8 +210,10 @@ public class HBaseAdminService implements OCDPAdminService{
             this.connection = ConnectionFactory.createConnection(conf);
             Admin admin = connection.getAdmin();
             NamespaceDescriptor namespaceDescriptor = admin.getNamespaceDescriptor(ns);
-            namespaceDescriptor.setConfiguration("hbase.namespace.quota.maxtables", quota.get("maximumTableQuota"));
-            namespaceDescriptor.setConfiguration("hbase.namespace.quota.maxregion", quota.get("maximunRegionQuota"));
+            namespaceDescriptor.setConfiguration(
+                    "hbase.namespace.quota.maxtables", quota.get(OCDPConstants.HBASE_NAMESPACE_TABLE_QUOTA));
+            namespaceDescriptor.setConfiguration(
+                    "hbase.namespace.quota.maxregion", quota.get(OCDPConstants.HBASE_NAMESPACE_REGION_QUOTA));
             admin.modifyNamespace(namespaceDescriptor);
             admin.close();
         } catch (IOException e){
@@ -220,7 +226,12 @@ public class HBaseAdminService implements OCDPAdminService{
 
     private Map<String, String> getQuotaFromPlan(String serviceDefinitionId, String planId, Map<String, Object> cuzQuota){
         CatalogConfig catalogConfig = (CatalogConfig) this.context.getBean("catalogConfig");
-        List<String> quotaKeys = new ArrayList<String>(){{add("maximumTablesQuota"); add("maximumRegionsQuota");}};
+        List<String> quotaKeys = new ArrayList<String>(){
+            {
+                add(OCDPConstants.HBASE_NAMESPACE_TABLE_QUOTA);
+                add(OCDPConstants.HBASE_NAMESPACE_REGION_QUOTA);
+            }
+        };
         return catalogConfig.getQuotaFromPlan(serviceDefinitionId, planId, cuzQuota, quotaKeys);
     }
 

@@ -10,6 +10,7 @@ import com.asiainfo.bdx.ldp.datafoundry.servicebroker.ocdp.model.CapacitySchedul
 import com.asiainfo.bdx.ldp.datafoundry.servicebroker.ocdp.model.RangerV2Policy;
 import com.asiainfo.bdx.ldp.datafoundry.servicebroker.ocdp.model.ServiceInstance;
 import com.asiainfo.bdx.ldp.datafoundry.servicebroker.ocdp.utils.OCDPAdminServiceMapper;
+import com.asiainfo.bdx.ldp.datafoundry.servicebroker.ocdp.utils.OCDPConstants;
 import com.asiainfo.bdx.ldp.datafoundry.servicebroker.ocdp.utils.YarnCapacityCalculator;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -87,7 +88,7 @@ public class YarnCommonService {
         ArrayList<String> conditions = new ArrayList<String>();
         RangerV2Policy rp = new RangerV2Policy(
                 policyName,"","This is Yarn Policy",clusterConfig.getClusterName()+"_yarn",true,true);
-        rp.addResources2("queue", queueList,false,true);
+        rp.addResources2(OCDPConstants.YARN_RANGER_RESOURCE_TYPE, queueList,false,true);
         rp.addPolicyItems(userList,groupList,conditions,false,types);
         String newPolicyString = rc.createV2Policy(rp);
         if (newPolicyString != null){
@@ -98,7 +99,7 @@ public class YarnCommonService {
     }
 
     public boolean appendResourceToQueuePermission(String policyId, String queueName) {
-        boolean updateResult = rc.appendResourceToV2Policy(policyId, queueName, "queue");
+        boolean updateResult = rc.appendResourceToV2Policy(policyId, queueName, OCDPConstants.YARN_RANGER_RESOURCE_TYPE);
         if(updateResult){
             renewCapacityCaculater();
             List<String> users = rc.getUsersFromV2Policy(policyId);
@@ -117,7 +118,7 @@ public class YarnCommonService {
         boolean updateResult = rc.appendUserToV2Policy(policyId, groupName, accountName, permissions);
         if(updateResult){
             renewCapacityCaculater();
-            List<String> queues = rc.getResourcsFromV2Policy(policyId, "queue");
+            List<String> queues = rc.getResourcsFromV2Policy(policyId, OCDPConstants.YARN_RANGER_RESOURCE_TYPE);
             for(String queue : queues) {
                 capacityCalculator.addQueueMapping(accountName, queue);
             }
@@ -149,7 +150,7 @@ public class YarnCommonService {
     }
 
     public boolean removeResourceFromQueuePermission(String policyId, String queueName){
-        boolean updateResult = rc.removeResourceFromV2Policy(policyId, queueName, "queue");
+        boolean updateResult = rc.removeResourceFromV2Policy(policyId, queueName, OCDPConstants.YARN_RANGER_RESOURCE_TYPE);
         if(updateResult){
             renewCapacityCaculater();
             List<String> users = rc.getUsersFromV2Policy(policyId);
@@ -168,7 +169,7 @@ public class YarnCommonService {
         boolean updateResult = rc.removeUserFromV2Policy(policyId, accountName);
         if(updateResult){
             renewCapacityCaculater();
-            List<String> queues = rc.getResourcsFromV2Policy(policyId, "queue");
+            List<String> queues = rc.getResourcsFromV2Policy(policyId, OCDPConstants.YARN_RANGER_RESOURCE_TYPE);
             for(String queue : queues) {
                 capacityCalculator.removeQueueMapping(accountName, queue);
             }
@@ -179,12 +180,16 @@ public class YarnCommonService {
     }
 
     public  List<String> getResourceFromQueuePolicy(String policyId){
-        return rc.getResourcsFromV2Policy(policyId, "queue");
+        return rc.getResourcsFromV2Policy(policyId, OCDPConstants.YARN_RANGER_RESOURCE_TYPE);
     }
 
     public Map<String, String> getQuotaFromPlan(String serviceDefinitionId, String planId, Map<String, Object> cuzQuota){
         CatalogConfig catalogConfig = (CatalogConfig) this.context.getBean("catalogConfig");
-        List<String> quotaKeys = new ArrayList<String>(){{add("yarnQueueQuota");}};
+        List<String> quotaKeys = new ArrayList<String>(){
+            {
+                add(OCDPConstants.YARN_QUEUE_QUOTA);
+            }
+        };
         return catalogConfig.getQuotaFromPlan(serviceDefinitionId, planId, cuzQuota, quotaKeys);
     }
 
@@ -195,7 +200,7 @@ public class YarnCommonService {
         Map<String, String> quota = getQuotaFromPlan(serviceDefinitionId, planId, cuzQuota);
         String resourceType = OCDPAdminServiceMapper.getOCDPResourceType(serviceDefinitionId);
         String queueName = (String)instance.getServiceInstanceCredentials().get(resourceType);
-        capacityCalculator.updateQueue(queueName, new Long(quota.get("yarnQueueQuota")));
+        capacityCalculator.updateQueue(queueName, new Long(quota.get(OCDPConstants.YARN_QUEUE_QUOTA)));
     }
 
     private void renewCapacityCaculater(){

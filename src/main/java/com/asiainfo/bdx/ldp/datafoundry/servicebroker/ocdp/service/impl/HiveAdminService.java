@@ -6,6 +6,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import com.asiainfo.bdx.ldp.datafoundry.servicebroker.ocdp.utils.OCDPConstants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -54,16 +55,18 @@ public class HiveAdminService implements OCDPAdminService {
         String dbName = hiveCommonService.createDatabase(serviceInstanceId);
         // Set database storage quota
         if(dbName != null){
-            hdfsAdminService.setQuota("/apps/hive/warehouse/" + dbName + ".db", "1000", quota.get("storageSpaceQuota"));
+            hdfsAdminService.setQuota(
+                    "/apps/hive/warehouse/" + dbName + ".db", "1000", quota.get(OCDPConstants.HDFS_STORAGE_QUOTA));
         }
-        String queueName = yarnCommonService.createQueue(quota.get("yarnQueueQuota"));
+        String queueName = yarnCommonService.createQueue(quota.get(OCDPConstants.YARN_QUEUE_QUOTA));
         return dbName + ":" + queueName;
     }
 
     @Override
     public String createPolicyForTenant(String policyName, List<String> resources, String tenantName, String groupName){
         String[] resourcesList = resources.get(0).split(":");
-        String hivePolicyId = this.hiveCommonService.assignPermissionToDatabase(policyName, resourcesList[0], tenantName, groupName);
+        String hivePolicyId = this.hiveCommonService.assignPermissionToDatabase(
+                policyName, resourcesList[0], tenantName, groupName);
         logger.info("Create corresponding hdfs policy for hive tenant");
         List<String> hdfsFolders = new ArrayList<String>(){
             {
@@ -73,9 +76,11 @@ public class HiveAdminService implements OCDPAdminService {
                 add("/ats/active");
             }
         };
-        String hdfsPolicyId = this.hdfsAdminService.createPolicyForTenant("hive_" + policyName, hdfsFolders, tenantName, groupName);
+        String hdfsPolicyId = this.hdfsAdminService.createPolicyForTenant(
+                "hive_" + policyName, hdfsFolders, tenantName, groupName);
         logger.info("Create corresponding yarn policy for hive tenant");
-        String yarnPolicyId = this.yarnCommonService.assignPermissionToQueue("hive_" + policyName, resourcesList[1], tenantName, groupName);
+        String yarnPolicyId = this.yarnCommonService.assignPermissionToQueue(
+                "hive_" + policyName, resourcesList[1], tenantName, groupName);
         return (hivePolicyId != null && hdfsPolicyId != null && yarnPolicyId != null) ? hivePolicyId + ":" + hdfsPolicyId + ":" + yarnPolicyId : null;
     }
 
@@ -124,9 +129,11 @@ public class HiveAdminService implements OCDPAdminService {
     @Override
     public boolean removeUserFromTenantPolicy(String policyId, String accountName){
         String[] policyIds = policyId.split(":");
-        boolean userRemovedFromHivePolicy = this.hiveCommonService.removeUserFromDatabasePermission(policyIds[0], accountName);
+        boolean userRemovedFromHivePolicy = this.hiveCommonService.removeUserFromDatabasePermission(
+                policyIds[0], accountName);
         boolean userRemovedFromHDFSPolicy = this.hdfsAdminService.removeUserFromTenantPolicy(policyIds[1], accountName);
-        boolean userRemovedFromYarnPolicy = this.yarnCommonService.removeUserFromQueuePermission(policyIds[2], accountName);
+        boolean userRemovedFromYarnPolicy = this.yarnCommonService.removeUserFromQueuePermission(
+                policyIds[2], accountName);
         return userRemovedFromHivePolicy && userRemovedFromHDFSPolicy && userRemovedFromYarnPolicy;
     }
 
@@ -139,7 +146,7 @@ public class HiveAdminService implements OCDPAdminService {
                         clusterConfig.getHivePort() + "/" + dbName + ";principal=" + clusterConfig.getHiveSuperUser());
                 put("host", clusterConfig.getHiveHost());
                 put("port", clusterConfig.getHivePort());
-                put("Hive database", dbName);
+                put(OCDPConstants.HIVE_RESOURCE_TYPE, dbName);
             }
         };
     }
@@ -157,9 +164,15 @@ public class HiveAdminService implements OCDPAdminService {
         hdfsAdminService.resizeResourceQuota(instance, cuzQuota);
     }
 
-    private Map<String, String> getQuotaFromPlan(String serviceDefinitionId, String planId, Map<String, Object> cuzQuota){
+    private Map<String, String> getQuotaFromPlan(String serviceDefinitionId, String planId,
+                                                 Map<String, Object> cuzQuota){
         CatalogConfig catalogConfig = (CatalogConfig) this.context.getBean("catalogConfig");
-        List<String> quotaKeys = new ArrayList<String>(){{add("storageSpaceQuota"); add("yarnQueueQuota");}};
+        List<String> quotaKeys = new ArrayList<String>(){
+            {
+                add(OCDPConstants.HDFS_STORAGE_QUOTA);
+                add(OCDPConstants.YARN_QUEUE_QUOTA);
+            }
+        };
         return catalogConfig.getQuotaFromPlan(serviceDefinitionId, planId, cuzQuota, quotaKeys);
     }
 

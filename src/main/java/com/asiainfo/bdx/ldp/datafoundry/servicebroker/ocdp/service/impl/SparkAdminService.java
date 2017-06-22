@@ -4,6 +4,7 @@ import com.asiainfo.bdx.ldp.datafoundry.servicebroker.ocdp.config.ClusterConfig;
 import com.asiainfo.bdx.ldp.datafoundry.servicebroker.ocdp.model.ServiceInstance;
 import com.asiainfo.bdx.ldp.datafoundry.servicebroker.ocdp.service.OCDPAdminService;
 import com.asiainfo.bdx.ldp.datafoundry.servicebroker.ocdp.service.common.YarnCommonService;
+import com.asiainfo.bdx.ldp.datafoundry.servicebroker.ocdp.utils.OCDPConstants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -44,7 +45,7 @@ public class SparkAdminService implements OCDPAdminService {
     public String provisionResources(String serviceDefinitionId, String planId, String serviceInstanceId,
                                      String bindingId, Map<String, Object> cuzQuota) throws Exception {
         Map<String, String> quota = this.yarnCommonService.getQuotaFromPlan(serviceDefinitionId, planId, cuzQuota);
-        return yarnCommonService.createQueue(quota.get("yarnQueueQuota"));
+        return yarnCommonService.createQueue(quota.get(OCDPConstants.YARN_QUEUE_QUOTA));
     }
 
     @Override

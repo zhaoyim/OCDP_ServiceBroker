@@ -6,6 +6,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import com.asiainfo.bdx.ldp.datafoundry.servicebroker.ocdp.utils.OCDPConstants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -45,7 +46,7 @@ public class MapReduceAdminService implements OCDPAdminService{
     public String provisionResources(String serviceDefinitionId, String planId, String serviceInstanceId,
                                      String bindingId, Map<String, Object> cuzQuota) throws Exception {
         Map<String, String> quota = this.yarnCommonService.getQuotaFromPlan(serviceDefinitionId, planId, cuzQuota);
-        return this.yarnCommonService.createQueue(quota.get("yarnQueueQuota"));
+        return this.yarnCommonService.createQueue(quota.get(OCDPConstants.YARN_QUEUE_QUOTA));
     }
 
     @Override

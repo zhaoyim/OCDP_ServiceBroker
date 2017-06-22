@@ -4,6 +4,7 @@ import com.asiainfo.bdx.ldp.datafoundry.servicebroker.ocdp.client.rangerClient;
 import com.asiainfo.bdx.ldp.datafoundry.servicebroker.ocdp.config.ClusterConfig;
 import com.asiainfo.bdx.ldp.datafoundry.servicebroker.ocdp.model.RangerV2Policy;
 import com.asiainfo.bdx.ldp.datafoundry.servicebroker.ocdp.utils.BrokerUtil;
+import com.asiainfo.bdx.ldp.datafoundry.servicebroker.ocdp.utils.OCDPConstants;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import org.apache.hadoop.conf.Configuration;
@@ -97,7 +98,7 @@ public class HiveCommonService {
         ArrayList<String> conditions = new ArrayList<String>();
         RangerV2Policy rp = new RangerV2Policy(
                 policyName,"","This is Hive Policy",clusterConfig.getClusterName()+"_hive",true,true);
-        rp.addResources("database", dbList, false);
+        rp.addResources(OCDPConstants.HIVE_RANGER_RESOURCE_TYPE, dbList, false);
         rp.addResources("table", tbList, false);
         rp.addResources("column", cList, false);
         rp.addPolicyItems(userList,groupList,conditions,false,types);
@@ -110,7 +111,7 @@ public class HiveCommonService {
     }
 
     public boolean appendResourceToDatabasePermission(String policyId, String databaseName){
-        return rc.appendResourceToV2Policy(policyId, databaseName, "database");
+        return rc.appendResourceToV2Policy(policyId, databaseName, OCDPConstants.HIVE_RANGER_RESOURCE_TYPE);
     }
 
     public boolean appendUserToDatabasePermission(
@@ -144,7 +145,7 @@ public class HiveCommonService {
     }
 
     public boolean removeResourceFromDatabasePermission(String policyId, String databaseName){
-        return rc.removeResourceFromV2Policy(policyId, databaseName, "database");
+        return rc.removeResourceFromV2Policy(policyId, databaseName, OCDPConstants.HIVE_RANGER_RESOURCE_TYPE);
     }
 
     public boolean removeUserFromDatabasePermission(String policyId, String accountName){
@@ -152,7 +153,7 @@ public class HiveCommonService {
     }
 
     public  List<String> getResourceFromDatabasePolicy(String policyId){
-        return rc.getResourcsFromV2Policy(policyId, "database");
+        return rc.getResourcsFromV2Policy(policyId, OCDPConstants.HIVE_RANGER_RESOURCE_TYPE);
     }
 
 }

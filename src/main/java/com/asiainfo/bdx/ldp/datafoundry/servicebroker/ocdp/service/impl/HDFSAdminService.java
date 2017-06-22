@@ -106,7 +106,8 @@ public class HDFSAdminService implements OCDPAdminService{
                                      String bindingId, Map<String, Object> cuzQuota) throws Exception{
         String pathName = "/servicebroker/" + serviceInstanceId;
         Map<String, String> quota = this.getQuotaFromPlan(serviceDefinitionId, planId, cuzQuota);
-        this.createHDFSDir(pathName, quota.get("nameSpaceQuota"), quota.get("storageSpaceQuota"));
+        this.createHDFSDir(
+                pathName, quota.get(OCDPConstants.HDFS_NAMESPACE_QUOTA), quota.get(OCDPConstants.HDFS_STORAGE_QUOTA));
         return pathName;
     }
 
@@ -161,7 +162,7 @@ public class HDFSAdminService implements OCDPAdminService{
         ArrayList<String> conditions = new ArrayList<>();
         RangerV2Policy rp = new RangerV2Policy(
                 policyName,"","This is HDFS Policy", clusterConfig.getClusterName()+"_hadoop",true,true);
-        rp.addResources2("path", resources,false,true);
+        rp.addResources2(OCDPConstants.HDFS_RANGER_RESOURCE_TYPE, resources,false,true);
         rp.addPolicyItems(userList,groupList,conditions,false,types);
         String newPolicyString = rc.createV2Policy(rp);
         if (newPolicyString != null){
@@ -173,7 +174,7 @@ public class HDFSAdminService implements OCDPAdminService{
 
     @Override
     public boolean appendResourceToTenantPolicy(String policyId, String serviceInstanceResource){
-        return rc.appendResourceToV2Policy(policyId, serviceInstanceResource, "path");
+        return rc.appendResourceToV2Policy(policyId, serviceInstanceResource, OCDPConstants.HDFS_RANGER_RESOURCE_TYPE);
     }
 
     @Override
@@ -206,7 +207,7 @@ public class HDFSAdminService implements OCDPAdminService{
 
     @Override
     public boolean removeResourceFromTenantPolicy(String policyId, String serviceInstanceResource){
-        return rc.removeResourceFromV2Policy(policyId, serviceInstanceResource, "path");
+        return rc.removeResourceFromV2Policy(policyId, serviceInstanceResource, OCDPConstants.HDFS_RANGER_RESOURCE_TYPE);
     }
 
     @Override
@@ -221,14 +222,14 @@ public class HDFSAdminService implements OCDPAdminService{
                 put("uri", webHdfsUrl + "/servicebroker/" + serviceInstanceId);
                 put("host", clusterConfig.getHdfsNameNode());
                 put("port", clusterConfig.getHdfsPort());
-                put("HDFS Path", "/servicebroker/" + serviceInstanceId);
+                put(OCDPConstants.HDFS_RESOURCE_TYPE, "/servicebroker/" + serviceInstanceId);
             }
         };
     }
 
     @Override
     public  List<String> getResourceFromTenantPolicy(String policyId){
-        return rc.getResourcsFromV2Policy(policyId, "path");
+        return rc.getResourcsFromV2Policy(policyId, OCDPConstants.HDFS_RANGER_RESOURCE_TYPE);
     }
 
     @Override
@@ -238,8 +239,12 @@ public class HDFSAdminService implements OCDPAdminService{
         Map<String, String> quota = getQuotaFromPlan(serviceDefinitionId, planId, cuzQuota);
         String resourceType = OCDPAdminServiceMapper.getOCDPResourceType(serviceDefinitionId);
         String path = (String)instance.getServiceInstanceCredentials().get(resourceType);
+        // Construct hive database path for hive case
+        if(resourceType.equals(OCDPConstants.HIVE_RESOURCE_TYPE)){
+            path = "/apps/hive/warehouse/" + path.split(":")[0] + ".db";
+        }
         try{
-            setQuota(path, quota.get("nameSpaceQuota"), quota.get("storageSpaceQuota"));
+            setQuota(path, quota.get(OCDPConstants.HDFS_NAMESPACE_QUOTA), quota.get(OCDPConstants.HDFS_STORAGE_QUOTA));
         } catch (IOException e){
             e.printStackTrace();
             throw e;
@@ -248,7 +253,12 @@ public class HDFSAdminService implements OCDPAdminService{
 
     private Map<String, String> getQuotaFromPlan(String serviceDefinitionId, String planId, Map<String, Object> cuzQuota){
         CatalogConfig catalogConfig = (CatalogConfig) this.context.getBean("catalogConfig");
-        List<String> quotaKeys = new ArrayList<String>(){{add("nameSpaceQuota"); add("storageSpaceQuota");}};
+        List<String> quotaKeys = new ArrayList<String>(){
+            {
+                add(OCDPConstants.HDFS_NAMESPACE_QUOTA);
+                add(OCDPConstants.HDFS_STORAGE_QUOTA);
+            }
+        };
         return catalogConfig.getQuotaFromPlan(serviceDefinitionId, planId, cuzQuota, quotaKeys);
     }
 
