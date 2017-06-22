@@ -34,7 +34,7 @@ public class OCDPServiceInstanceRepositoryImpl implements OCDPServiceInstanceRep
 
     @Override
     public ServiceInstance findOne(String serviceInstanceId) {
-        logger.info("find one OCDPServiceInstance: " + serviceInstanceId);
+        logger.info("Try to find one OCDPServiceInstance: " + serviceInstanceId);
 
         if(etcdClient.read("/servicebroker/ocdp/instance/" + serviceInstanceId) == null){
             return null;
@@ -97,7 +97,7 @@ public class OCDPServiceInstanceRepositoryImpl implements OCDPServiceInstanceRep
         etcdClient.write("/servicebroker/ocdp/instance/" + serviceInstanceId + "/dashboardUrl",
                 instance.getDashboardUrl());
         etcdClient.createDir("/servicebroker/ocdp/instance/" + serviceInstanceId + "/bindings");
-        System.err.println("save OCDPServiceInstance: " + serviceInstanceId);
+        logger.info("save OCDPServiceInstance: " + serviceInstanceId);
     }
 
     @Override
