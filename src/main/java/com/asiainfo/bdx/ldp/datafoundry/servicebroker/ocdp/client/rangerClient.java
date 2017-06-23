@@ -157,6 +157,7 @@ public class rangerClient {
                 logger.error("Update policy [{}] failed: " + response.getStatusLine().getReasonPhrase(), policyID);
 			}
             response.close();
+            logger.info("Update ranger policy successfully!");
         }catch (IOException e){
             e.printStackTrace();
         }
@@ -208,7 +209,7 @@ public class rangerClient {
             return false;
         }
         RangerV2Policy rp = gson.fromJson(currentPolicy, RangerV2Policy.class);
-        rp.removePolicyItem(new ArrayList<String>(){{add(accountName);}});
+        rp.removePolicyItem(accountName);
         return updateV2Policy(policyId, rp);
     }
 

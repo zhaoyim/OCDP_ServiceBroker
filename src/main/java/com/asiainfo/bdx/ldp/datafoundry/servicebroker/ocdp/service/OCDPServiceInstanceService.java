@@ -173,6 +173,7 @@ public class OCDPServiceInstanceService implements ServiceInstanceService {
     	try {
             Map<String, Object> params = request.getParameters();
             String accountName = (String)params.get("user_name");
+            logger.info("Receive request to update service Instance.");
             String password;
             if(! BrokerUtil.isLDAPUserExist(ldap, accountName)){
                 password = UUID.randomUUID().toString();

@@ -97,12 +97,12 @@ public class OCDPServiceInstanceRepositoryImpl implements OCDPServiceInstanceRep
         etcdClient.write("/servicebroker/ocdp/instance/" + serviceInstanceId + "/dashboardUrl",
                 instance.getDashboardUrl());
         etcdClient.createDir("/servicebroker/ocdp/instance/" + serviceInstanceId + "/bindings");
-        logger.info("save OCDPServiceInstance: " + serviceInstanceId);
+        logger.info("Save OCDPServiceInstance: " + serviceInstanceId);
     }
 
     @Override
     public void delete(String serviceInstanceId) {
-        logger.info("delete OCDPServiceInstance: " + serviceInstanceId );
+        logger.info("Delete OCDPServiceInstance: " + serviceInstanceId );
         etcdClient.deleteDir("/servicebroker/ocdp/instance/" + serviceInstanceId, true);
     }
 

@@ -183,6 +183,7 @@ public class OCDPServiceInstanceCommonService {
             String tenantName = (String) params.get("tenant_name");
             if(params.get("accesses") != null) {
                 // Assign role to tenant user
+                logger.info("Assign role, username:  " + accountName + ", tenant name: " + tenantName );
                 Map<String, Object> accesses = (Map<String, Object>)params.get("accesses");
                 addUserToTenant(ocdp, accountName, password, tenantName, accesses);
                 Map<String, Object> credentials = new HashMap<String, Object>() {
@@ -194,12 +195,14 @@ public class OCDPServiceInstanceCommonService {
                 response = new OCDPUpdateServiceInstanceResponse().withCredential(credentials).withAsync(false);
             } else {
                 // Revoke role from tenant user
+                logger.info("Revoke role, username:  " + accountName + ", tenant name: " + tenantName );
                 removeUserFromTenant(ocdp, accountName, tenantName);
                 response = new OCDPUpdateServiceInstanceResponse().withAsync(false);
             }
         } else {
             // Service instance resize
             String serviceInstanceId = request.getServiceInstanceId();
+            logger.info("Resize Service Instance: " + serviceInstanceId);
             ServiceInstance instance = repository.findOne(serviceInstanceId);
             if (instance == null) {
                 throw new ServiceInstanceDoesNotExistException(serviceInstanceId);
@@ -211,6 +214,7 @@ public class OCDPServiceInstanceCommonService {
             }
             response = new OCDPUpdateServiceInstanceResponse().withAsync(false);
         }
+        logger.info("Update service instance successfully!");
         return response;
     }
 
@@ -255,7 +259,8 @@ public class OCDPServiceInstanceCommonService {
         for(String id : OCDPAdminServiceMapper.getOCDPServiceIds()){
             String tenantPolicyId = etcdClient.readToString(
                     "/servicebroker/ocdp/tenants/" + tenantName + "/" + id);
-            if(id != null){
+            if(tenantPolicyId != null){
+                logger.info("remove user " + accountName + " from tenant" + tenantName + ", tenant policy id is " + tenantPolicyId);
                 ocdp.removeUserFromTenantPolicy(tenantPolicyId, accountName);
             }
         }
@@ -277,7 +282,7 @@ public class OCDPServiceInstanceCommonService {
         boolean newCreatedLDAPUser = false;
         try{
             if(! BrokerUtil.isLDAPUserExist(this.ldap, accountName)){
-                logger.info("create new ldap user.");
+                logger.info("create new ldap user: " +  accountName);
                 newCreatedLDAPUser = true;
                 BrokerUtil.createLDAPUser(this.ldap, this.etcdClient, accountName,
                         clusterConfig.getLdapGroup(), clusterConfig.getLdapGroupId());

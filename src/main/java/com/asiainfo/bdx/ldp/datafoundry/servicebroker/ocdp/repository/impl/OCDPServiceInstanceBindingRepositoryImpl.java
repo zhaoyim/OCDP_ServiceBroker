@@ -110,14 +110,12 @@ public class OCDPServiceInstanceBindingRepositoryImpl implements OCDPServiceInst
         etcdClient.write("/servicebroker/ocdp/instance/" + serviceInstanceId + "/bindings/" +
                 bindingId + "/Credentials/rangerPolicyId",
                 (String)binding.getCredentials().get("rangerPolicyId"));
-        System.err.println("save：OCDPServiceInstanceBinding");
-
+        logger.info("Save:OCDPServiceInstanceBinding: " + bindingId);
     }
 
     @Override
     public void delete(String serviceInstanceId, String bindingId) {
-        System.err.println("delete:OCDPServiceInstanceBinding");
-        logger.info("delete:OCDPServiceInstanceBinding: " + bindingId);
+        logger.info("Delete:OCDPServiceInstanceBinding: " + bindingId);
         etcdClient.deleteDir("/servicebroker/ocdp/instance/" + serviceInstanceId + "/bindings/" + bindingId, true);
     }
 

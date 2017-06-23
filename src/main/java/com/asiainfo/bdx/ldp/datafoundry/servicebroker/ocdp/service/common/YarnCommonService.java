@@ -135,12 +135,8 @@ public class YarnCommonService {
             capacityCalculator.revokeQueue(queueName);
             capacityCalculator.removeQueueMapping(queueName);
             ambClient.updateCapacitySchedulerConfig(capacityCalculator.getProperties(),clusterConfig.getClusterName());
-            renewCapacityCaculater();
-            capacityCalculator.revokeQueue(queueName);
-            capacityCalculator.removeQueueMapping(queueName);
-            ambClient.updateCapacitySchedulerConfig(capacityCalculator.getProperties(),clusterConfig.getClusterName());
             ambClient.refreshYarnQueue(clusterConfig.getYarnRMHost());
-            logger.info("Complete refresh yarn queues.");
+            logger.info("Refreshing yarn queues...");
         }catch (Exception e){
             e.printStackTrace();
         }
@@ -198,6 +194,8 @@ public class YarnCommonService {
         String resourceType = OCDPAdminServiceMapper.getOCDPResourceType(serviceDefinitionId);
         String queueName = (String)instance.getServiceInstanceCredentials().get(resourceType);
         capacityCalculator.updateQueue(queueName, new Long(quota.get(OCDPConstants.YARN_QUEUE_QUOTA)));
+        ambClient.updateCapacitySchedulerConfig(capacityCalculator.getProperties(),clusterConfig.getClusterName());
+        ambClient.refreshYarnQueue(clusterConfig.getYarnRMHost());
     }
 
     private void renewCapacityCaculater(){
