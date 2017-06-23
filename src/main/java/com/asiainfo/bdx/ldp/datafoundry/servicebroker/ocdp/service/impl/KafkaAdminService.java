@@ -44,10 +44,9 @@ public class KafkaAdminService implements OCDPAdminService{
 	private rangerClient ranger;
 	
 	@SuppressWarnings("serial")
-	private Map<String, String> keyMapping = new HashMap<String, String>(){{
+	private Map<String, String> parameterMapping = new HashMap<String, String>(){{
 		put(Constants.PAR_QUOTA, Constants.CONFIG_PAR_SIZE);
 		put(Constants.TOPIC_TTL, Constants.CONFIG_TTL);
-//		put(Constants.TOPIC_QUOTA, Constants.CONFIG_PAR_NUM);
 	}};
 	
     @Autowired
@@ -120,6 +119,7 @@ public class KafkaAdminService implements OCDPAdminService{
 	public void resizeResourceQuota(ServiceInstance instance, Map<String, Object> cuzQuota) {
 		String topic = getTopic(instance);
 		try {
+			changePartitions(topic, cuzQuota); 
 			KafkaClient.getClient().changeConfig(topic, trans(cuzQuota));
 			LOG.info("Resizing kafka quota for topic [{}] successful with config [{}].", topic, cuzQuota);
 		} catch (OCKafkaException e) {
@@ -128,6 +128,15 @@ public class KafkaAdminService implements OCDPAdminService{
 		}
 	}
 	
+	private void changePartitions(String topic, Map<String, Object> cuzQuota) throws NumberFormatException, OCKafkaException {
+		if (!cuzQuota.containsKey(Constants.TOPIC_QUOTA)) {
+			return; // no partition changing request found
+		}
+		String par = (String)cuzQuota.get(Constants.TOPIC_QUOTA);
+		KafkaClient.getClient().changePartitions(topic, Integer.valueOf(par));
+		LOG.info("Kafka topic [{}]'s partition changed to [{}]", topic, par);
+	}
+
 	@Override
 	public boolean appendUserToTenantPolicy(String policyId, String groupName, String accountName,
 			List<String> permissions) {
@@ -301,8 +310,8 @@ public class KafkaAdminService implements OCDPAdminService{
 	private Map<String, String> trans(Map<String, Object> cuzQuota) {
 		Map<String, String> result = Maps.newHashMap();
 		for (Entry<String, Object> entry : cuzQuota.entrySet()) {
-			if (keyMapping.containsKey(entry.getKey())) {
-				result.put(keyMapping.get(entry.getKey()), (String)entry.getValue());
+			if (parameterMapping.containsKey(entry.getKey())) {
+				result.put(parameterMapping.get(entry.getKey()), (String)entry.getValue());
 			}
 		}
 		return result;
