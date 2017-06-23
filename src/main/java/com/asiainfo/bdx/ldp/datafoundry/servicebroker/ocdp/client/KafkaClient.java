@@ -13,9 +13,11 @@ import com.asiainfo.bdx.ldp.datafoundry.servicebroker.ocdp.exception.OCKafkaExce
 import com.google.common.base.Strings;
 
 import kafka.admin.AdminUtils;
+import kafka.admin.TopicCommand.TopicCommandOptions;
 import kafka.server.ConfigType;
 import kafka.utils.ZkUtils;
 import scala.Tuple2;
+import scala.collection.mutable.StringBuilder;
 
 /**
  * Client to perform kafka operations. Prior to operations, ensure zookeeper connection-string is 
@@ -136,6 +138,26 @@ public class KafkaClient {
 		reconfigTopic(topic, properties);
 	}
 	
+	/**
+	 * Change the specified topic partitions to target value
+	 * @param topic
+	 * @param par
+	 * @throws OCKafkaException
+	 */
+	public void changePartitions(String topic, int par) throws OCKafkaException
+	{
+		try {
+			if (hasNullOrEmpty(topic)) {
+				LOG.error("Topic name null");
+				throw new OCKafkaException("Topic name null");
+			}
+			changeParAction(topic, par);
+		} catch (Exception e) {
+			LOG.error("Changing kafka topic partitions failed: ", e);
+			throw new RuntimeException(e);
+		}
+	}
+
 	public void deleteTopic(String topicName) throws OCKafkaException
 	{
 		if (hasNullOrEmpty(topicName)) {
@@ -143,6 +165,14 @@ public class KafkaClient {
 			throw new OCKafkaException("Topic name null");
 		}
 		deleteTopicAction(topicName);
+	}
+	
+	public void test()
+	{
+		//--alter --topic mytopic-citic1 --partitions 10
+		String[] options = {"--alter", "--topic", "mytopic-citic1", "--partitions", "6"};
+		kafka.admin.TopicCommand.alterTopic(zkClient, new TopicCommandOptions(options));
+		System.out.println(">>> testfunction end<<<");
 	}
 	
 	private boolean hasNullOrEmpty(String... strings)
@@ -153,6 +183,11 @@ public class KafkaClient {
 			}
 		}
 		return false;
+	}
+	
+	private void changeParAction(String topic, int par){
+		AdminUtils.addPartitions(zkClient, topic, par, "", true);
+		LOG.info("Kafka topic [{}] change partitions to [{}]", topic, par);
 	}
 	
 	private void reconfigTopic(String topic, Map<String, String> properties) {
@@ -202,6 +237,77 @@ public class KafkaClient {
 //		Boolean.valueOf(getEnv("OC_ZK_ISSECURITY", "true"));
 		LOG.info("Zookeeper isZkSecurityEnabled : " + isSecure);
 		zkClient = new ZKClient(isSecure);
+	}
+	
+	@Deprecated
+	public static class TopicCommand
+	{
+		private static final String TOPIC = "--topic";
+		private static final String ZOOKEEPER = "--zookeeper";
+		private static final String PAR = "--partitions";
+		private static final String SEP = " ";
+		
+		private StringBuilder cmd = new StringBuilder("kafka-topics.sh");
+		
+		private TopicCommand(){}
+		
+		/**
+		 * Get alter command
+		 * @return
+		 */
+		public static TopicCommand alter()
+		{
+			return new TopicCommand().alterAction();
+		}
+		
+		private TopicCommand alterAction()
+		{
+			this.cmd.append(SEP).append("--alter");
+			return this;
+		}
+		
+		/**
+		 * Specify the topic name
+		 * @param topic
+		 * @return
+		 */
+		public TopicCommand topic(String topic)
+		{
+			this.cmd.append(SEP).append(TOPIC).append(SEP).append(topic);
+			return this;
+		}
+		
+		/**
+		 * Specify the zookeeper connection string
+		 * @param zkIpPort
+		 * @return
+		 */
+		public TopicCommand zk(String zkIpPort)
+		{
+			this.cmd.append(SEP).append(ZOOKEEPER).append(SEP).append(zkIpPort);
+			return this;
+		}
+		
+		/**
+		 * Specity the partition number
+		 * @param par
+		 * @return
+		 */
+		public TopicCommand partitions(int par)
+		{
+			this.cmd.append(SEP).append(PAR).append(SEP).append(par);
+			return this;
+		}
+		
+		/**
+		 * Generate the command.
+		 * @return
+		 */
+		public String getCommand()
+		{
+			return cmd.toString();
+		}
+		
 	}
 	
 	/**
