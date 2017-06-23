@@ -101,9 +101,9 @@ public class RangerV2Policy{
         policyItems.add(pi);
     }
 
-    public void removePolicyItem(List<String> users) {
+    public void removePolicyItem(String user) {
         for(PolicyItem pi : policyItems){
-            if(pi.getUsers().contains(users)){
+            if(pi.getUsers().contains(user)){
                 policyItems.remove(pi);
                 break;
             }
