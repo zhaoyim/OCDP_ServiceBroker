@@ -74,9 +74,7 @@ public class YarnCommonService {
             e.printStackTrace();
             throw e;
         }
-        ambClient.updateCapacitySchedulerConfig(this.capacityCalculator.getProperties(),clusterConfig.getClusterName());
-        ambClient.refreshYarnQueue(clusterConfig.getYarnRMHost());
-        logger.info("Queue capacity calculated successfully!");
+        logger.info("Name of new queue: " + queuePath);
         return queuePath;
     }
 
@@ -103,14 +101,16 @@ public class YarnCommonService {
     public boolean appendResourceToQueuePermission(String policyId, String queueName) {
         boolean updateResult = rc.appendResourceToV2Policy(policyId, queueName, OCDPConstants.YARN_RANGER_RESOURCE_TYPE);
         if(updateResult){
-            renewCapacityCaculater();
             List<String> users = rc.getUsersFromV2Policy(policyId);
             if(users.size() >= 1){
                 for (String user : users){
                     capacityCalculator.addQueueMapping(user, queueName);
+                    logger.info("Add queue mapping: user = " + user +", queueName = " + queueName);
                 }
                 ambClient.updateCapacitySchedulerConfig(this.capacityCalculator.getProperties(),clusterConfig.getClusterName());
                 ambClient.refreshYarnQueue(clusterConfig.getYarnRMHost());
+                logger.info("Queue capacity refreshing...");
+
             }
         }
         return updateResult;
