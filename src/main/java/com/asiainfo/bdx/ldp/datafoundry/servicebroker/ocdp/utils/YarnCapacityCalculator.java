@@ -72,11 +72,13 @@ public class YarnCapacityCalculator {
 
     public void updateQueue(String queueName, Long quota) {
         // Re-calculate new capacity
+        String originQueueCapacity = properties.get("yarn.scheduler.capacity."+
+                queueName+".capacity");
         String targetQueueCapacity = String.format("%.2f", ((100 * quota) / (totalMemory / 1024)));
-        String resourcePoolCapacity = String.format("%.2f", (availableCapacity - (Double.parseDouble(targetQueueCapacity))));
+        String resourcePoolCapacity = String.format("%.2f", (availableCapacity - (Double.parseDouble(targetQueueCapacity) - Double.parseDouble(originQueueCapacity))));
         // Update queue
-        properties.put("yarn.scheduler.capacity.root."+queueName+".capacity", targetQueueCapacity);
-        properties.put("yarn.scheduler.capacity.root."+queueName+".maximum-capacity",targetQueueCapacity);
+        properties.replace("yarn.scheduler.capacity."+queueName+".capacity", targetQueueCapacity);
+        properties.replace("yarn.scheduler.capacity."+queueName+".maximum-capacity",targetQueueCapacity);
         // Update default queue
         properties.replace("yarn.scheduler.capacity.root.default.capacity",resourcePoolCapacity);
         properties.replace("yarn.scheduler.capacity.root.default.maximum-capacity",resourcePoolCapacity);

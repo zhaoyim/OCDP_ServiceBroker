@@ -183,7 +183,7 @@ public class OCDPServiceInstanceCommonService {
             String tenantName = (String) params.get("tenant_name");
             if(params.get("accesses") != null) {
                 // Assign role to tenant user
-                logger.info("Assign role, username:  " + accountName + " tenant name: " + tenantName );
+                logger.info("Assign role, username:  " + accountName + ", tenant name: " + tenantName );
                 Map<String, Object> accesses = (Map<String, Object>)params.get("accesses");
                 addUserToTenant(ocdp, accountName, password, tenantName, accesses);
                 Map<String, Object> credentials = new HashMap<String, Object>() {
