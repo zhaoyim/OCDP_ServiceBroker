@@ -111,7 +111,7 @@ public class KafkaAdminService implements OCDPAdminService{
 	@Override
 	public boolean removeResourceFromTenantPolicy(String policyId, String serviceInstanceResource) {
 		boolean removed = ranger.removeResourceFromV2Policy(policyId, serviceInstanceResource, Constants.REROURCE_TYPE);
-		LOG.info("Remove resource [{}] from kafka policy [{}] return : " + removed);
+		LOG.info("Remove resource [{}] from kafka policy [{}] return [{}]", serviceInstanceResource, policyId, removed);
 		return removed;
 	}
 
