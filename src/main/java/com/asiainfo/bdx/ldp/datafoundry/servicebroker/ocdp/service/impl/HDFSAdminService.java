@@ -152,11 +152,11 @@ public class HDFSAdminService implements OCDPAdminService{
     }
 
     @Override
-    public String createPolicyForTenant(String policyName, List<String> resources, String tenantName, String groupName){
+    public String createPolicyForResources(String policyName, List<String> resources, String userName, String groupName){
         logger.info("Assign read/write/execute permission to hdfs folder.");
         String policyId = null;
         ArrayList<String> groupList = new ArrayList<String>(){{add(groupName);}};
-        ArrayList<String> userList = new ArrayList<String>(){{add(tenantName);}};
+        ArrayList<String> userList = new ArrayList<String>(){{add(userName);}};
         ArrayList<String> types = new ArrayList<String>(){{add("read");add("write");add("execute");}};
         ArrayList<String> conditions = new ArrayList<>();
         RangerV2Policy rp = new RangerV2Policy(
@@ -172,13 +172,13 @@ public class HDFSAdminService implements OCDPAdminService{
     }
 
     @Override
-    public boolean appendResourceToTenantPolicy(String policyId, String serviceInstanceResource){
+    public boolean appendResourcesToPolicy(String policyId, String serviceInstanceResource){
         return rc.appendResourceToV2Policy(policyId, serviceInstanceResource, OCDPConstants.HDFS_RANGER_RESOURCE_TYPE);
     }
 
     @Override
-    public boolean appendUserToTenantPolicy(String policyId, String groupName, String accountName, List<String> permissions){
-        return rc.appendUserToV2Policy(policyId, groupName, accountName, permissions);
+    public boolean appendUserToPolicy(String policyId, String groupName, String userName, List<String> permissions){
+        return rc.appendUserToV2Policy(policyId, groupName, userName, permissions);
     }
 
     @Override
@@ -199,19 +199,19 @@ public class HDFSAdminService implements OCDPAdminService{
     }
 
     @Override
-    public boolean deletePolicyForTenant(String policyId){
+    public boolean deletePolicyForResources(String policyId){
         logger.info("Unassign read/write/execute permission to hdfs folder.");
         return this.rc.removeV2Policy(policyId);
     }
 
     @Override
-    public boolean removeResourceFromTenantPolicy(String policyId, String serviceInstanceResource){
+    public boolean removeResourceFromPolicy(String policyId, String serviceInstanceResource){
         return rc.removeResourceFromV2Policy(policyId, serviceInstanceResource, OCDPConstants.HDFS_RANGER_RESOURCE_TYPE);
     }
 
     @Override
-    public boolean removeUserFromTenantPolicy(String policyId, String accountName){
-        return rc.removeUserFromV2Policy(policyId, accountName);
+    public boolean removeUserFromPolicy(String policyId, String userName){
+        return rc.removeUserFromV2Policy(policyId, userName);
     }
 
     @Override
@@ -227,7 +227,7 @@ public class HDFSAdminService implements OCDPAdminService{
     }
 
     @Override
-    public  List<String> getResourceFromTenantPolicy(String policyId){
+    public  List<String> getResourceFromPolicy(String policyId){
         return rc.getResourcsFromV2Policy(policyId, OCDPConstants.HDFS_RANGER_RESOURCE_TYPE);
     }
 

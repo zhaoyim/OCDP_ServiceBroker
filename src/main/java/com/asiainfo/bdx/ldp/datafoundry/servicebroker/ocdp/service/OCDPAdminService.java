@@ -17,21 +17,21 @@ public interface OCDPAdminService {
 	String provisionResources(String serviceDefinitionId, String planId, String serviceInstanceId,
                               String bindingId, Map<String, Object> cuzQuota) throws Exception;
 
-    String createPolicyForTenant(String policyName, List<String> resources, String tenantName, String groupName);
+    String createPolicyForResources(String policyName, List<String> resources, String userName, String groupName);
 
-    boolean appendResourceToTenantPolicy(String policyId, String serviceInstanceResource);
+    boolean appendResourcesToPolicy(String policyId, String serviceInstanceResource);
 
-    boolean appendUserToTenantPolicy(String policyId, String groupName, String accountName, List<String> permissions);
+    boolean appendUserToPolicy(String policyId, String groupName, String userName, List<String> permissions);
 
-    void deprovisionResources(String serviceInstanceResuorceName) throws Exception;
+    void deprovisionResources(String serviceInstanceResuorceName) throws  Exception;
 
-    boolean deletePolicyForTenant(String policyId);
+    boolean deletePolicyForResources(String policyId);
 
-    boolean removeResourceFromTenantPolicy(String policyId, String serviceInstanceResource);
+    boolean removeResourceFromPolicy(String policyId, String serviceInstanceResource);
 
-    boolean removeUserFromTenantPolicy(String policyId, String accountName);
+    boolean removeUserFromPolicy(String policyId, String userName);
 
-    List<String> getResourceFromTenantPolicy(String policyId);
+    List<String> getResourceFromPolicy(String policyId);
 
     Map<String, Object> generateCredentialsInfo(String serviceInstanceId);
 
