@@ -128,15 +128,6 @@ public class KafkaAdminService implements OCDPAdminService{
 		}
 	}
 	
-	private void changePartitions(String topic, Map<String, Object> cuzQuota) throws NumberFormatException, OCKafkaException {
-		if (!cuzQuota.containsKey(Constants.TOPIC_QUOTA)) {
-			return; // no partition changing request found
-		}
-		String par = (String)cuzQuota.get(Constants.TOPIC_QUOTA);
-		KafkaClient.getClient().changePartitions(topic, Integer.valueOf(par));
-		LOG.info("Kafka topic [{}]'s partition changed to [{}]", topic, par);
-	}
-
 	@Override
 	public boolean appendUserToTenantPolicy(String policyId, String groupName, String accountName,
 			List<String> permissions) {
@@ -148,7 +139,7 @@ public class KafkaAdminService implements OCDPAdminService{
 	@Override
 	public boolean removeUserFromTenantPolicy(String policyId, String accountName) {
         boolean removed = ranger.removeUserFromV2Policy(policyId, accountName);
-        LOG.info("Remove user [{}] from kafka ranger policy [{}] with result: {}" + accountName, policyId, removed);
+        LOG.info("Remove user [{}] from kafka ranger policy [{}] with result: {}", accountName, policyId, removed);
 		return removed;
 	}
 	
@@ -164,6 +155,15 @@ public class KafkaAdminService implements OCDPAdminService{
 		List<String> resources = ranger.getResourcsFromV2Policy(policyId, Constants.REROURCE_TYPE);
 		LOG.info("Kafka Resources from policy [{}]: [{}]", policyId, resources);
         return resources;
+	}
+	
+	private void changePartitions(String topic, Map<String, Object> cuzQuota) throws NumberFormatException, OCKafkaException {
+		if (!cuzQuota.containsKey(Constants.TOPIC_QUOTA)) {
+			return; // no partition changing request found
+		}
+		String par = (String)cuzQuota.get(Constants.TOPIC_QUOTA);
+		KafkaClient.getClient().changePartitions(topic, Integer.valueOf(par));
+		LOG.info("Kafka topic [{}]'s partition changed to [{}]", topic, par);
 	}
 
 	private RangerV2Policy newPolicy(String policyName)

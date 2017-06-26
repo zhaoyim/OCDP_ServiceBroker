@@ -195,7 +195,7 @@ public class OCDPServiceInstanceCommonService {
                 response = new OCDPUpdateServiceInstanceResponse().withCredential(credentials).withAsync(false);
             } else {
                 // Revoke role from tenant user
-                logger.info("Revoke role, username:  " + accountName + ", tenant name: " + tenantName );
+                logger.info("Revoking privileges of user:  " + accountName + " under tenant: " + tenantName );
                 removeUserFromTenant(ocdp, accountName, tenantName);
                 response = new OCDPUpdateServiceInstanceResponse().withAsync(false);
             }
@@ -260,8 +260,8 @@ public class OCDPServiceInstanceCommonService {
             String tenantPolicyId = etcdClient.readToString(
                     "/servicebroker/ocdp/tenants/" + tenantName + "/" + id);
             if(tenantPolicyId != null){
-                logger.info("remove user " + accountName + " from tenant" + tenantName + ", tenant policy id is " + tenantPolicyId);
-                ocdp.removeUserFromTenantPolicy(tenantPolicyId, accountName);
+                boolean removed= ocdp.removeUserFromTenantPolicy(tenantPolicyId, accountName);
+                logger.info("Revoke user [{}] from tenant [{}] by policy [{}] with result [{}]", accountName, tenantName, tenantPolicyId, removed);
             }
         }
     }
