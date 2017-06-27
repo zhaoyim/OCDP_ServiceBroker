@@ -78,12 +78,12 @@ public class YarnCommonService {
         return queuePath;
     }
 
-    public synchronized String assignPermissionToQueue(String policyName, final String queueName, String accountName, String groupName){
+    public synchronized String assignPermissionToQueue(String policyName, final String queueName, String userName, String groupName){
         logger.info("Assign submit-app/admin-queue permission to yarn queue.");
         String policyId = null;
         ArrayList<String> queueList = new ArrayList<String>(){{add(queueName);}};
         ArrayList<String> groupList = new ArrayList<String>(){{add(groupName);}};
-        ArrayList<String> userList = new ArrayList<String>(){{add(accountName);}};
+        ArrayList<String> userList = new ArrayList<String>(){{add(userName);}};
         ArrayList<String> types = new ArrayList<String>(){{add("submit-app");add("admin-queue");}};
         ArrayList<String> conditions = new ArrayList<String>();
         RangerV2Policy rp = new RangerV2Policy(
@@ -116,13 +116,13 @@ public class YarnCommonService {
         return updateResult;
     }
 
-    public boolean appendUserToQueuePermission(String policyId, String groupName, String accountName, List<String> permissions){
-        boolean updateResult = rc.appendUserToV2Policy(policyId, groupName, accountName, permissions);
+    public boolean appendUserToQueuePermission(String policyId, String groupName, String userName, List<String> permissions){
+        boolean updateResult = rc.appendUserToV2Policy(policyId, groupName, userName, permissions);
         if(updateResult){
             renewCapacityCaculater();
             List<String> queues = rc.getResourcsFromV2Policy(policyId, OCDPConstants.YARN_RANGER_RESOURCE_TYPE);
             for(String queue : queues) {
-                capacityCalculator.addQueueMapping(accountName, queue);
+                capacityCalculator.addQueueMapping(userName, queue);
             }
             ambClient.updateCapacitySchedulerConfig(capacityCalculator.getProperties(),clusterConfig.getClusterName());
             ambClient.refreshYarnQueue(clusterConfig.getYarnRMHost());
@@ -163,13 +163,13 @@ public class YarnCommonService {
         return updateResult;
     }
 
-    public boolean removeUserFromQueuePermission(String policyId, String accountName){
-        boolean updateResult = rc.removeUserFromV2Policy(policyId, accountName);
+    public boolean removeUserFromQueuePermission(String policyId, String userName){
+        boolean updateResult = rc.removeUserFromV2Policy(policyId, userName);
         if(updateResult){
             renewCapacityCaculater();
             List<String> queues = rc.getResourcsFromV2Policy(policyId, OCDPConstants.YARN_RANGER_RESOURCE_TYPE);
             for(String queue : queues) {
-                capacityCalculator.removeQueueMapping(accountName, queue);
+                capacityCalculator.removeQueueMapping(userName, queue);
             }
             ambClient.updateCapacitySchedulerConfig(capacityCalculator.getProperties(),clusterConfig.getClusterName());
             ambClient.refreshYarnQueue(clusterConfig.getYarnRMHost());

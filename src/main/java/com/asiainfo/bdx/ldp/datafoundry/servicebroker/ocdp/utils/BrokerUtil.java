@@ -38,10 +38,10 @@ public class BrokerUtil {
         return uuid.substring(0,digits);
     }
 
-    public static void createLDAPUser(LdapTemplate ldapTemplate, etcdClient etcdClient, String accountName, String groupName, String gidNumber){
+    public static void createLDAPUser(LdapTemplate ldapTemplate, etcdClient etcdClient, String userName, String groupName, String gidNumber){
         String baseDN = "ou=People";
         LdapName ldapName = LdapNameBuilder.newInstance(baseDN)
-                .add("uid", accountName)
+                .add("uid", userName)
                 .build();
         Attributes userAttributes = new BasicAttributes();
         userAttributes.put("memberOf", "cn=" + groupName +",ou=Group,dc=asiainfo,dc=com");
@@ -49,25 +49,25 @@ public class BrokerUtil {
         classAttribute.add("account");
         classAttribute.add("posixAccount");
         userAttributes.put(classAttribute);
-        userAttributes.put("cn", accountName);
+        userAttributes.put("cn", userName);
         userAttributes.put("uidNumber", getNextUidNumber(etcdClient));
         userAttributes.put("gidNumber", gidNumber);
-        userAttributes.put("homeDirectory", "/home/" + accountName);
+        userAttributes.put("homeDirectory", "/home/" + userName);
         ldapTemplate.bind(ldapName, null, userAttributes);
     }
 
-    public static void removeLDAPUser(LdapTemplate ldapTemplate, String accountName){
+    public static void removeLDAPUser(LdapTemplate ldapTemplate, String userName){
         String baseDN = "ou=People";
         LdapName ldapName = LdapNameBuilder.newInstance(baseDN)
-                .add("uid", accountName)
+                .add("uid", userName)
                 .build();
 
         ldapTemplate.unbind(ldapName);
     }
 
-    public static boolean isLDAPUserExist(LdapTemplate ldapTemplate, String accountName){
+    public static boolean isLDAPUserExist(LdapTemplate ldapTemplate, String userName){
         List list = ldapTemplate.search(
-                "", "(uid=" + accountName + ")",
+                "", "(uid=" + userName + ")",
                 new AttributesMapper() {
                     public Object mapFromAttributes(Attributes attrs)
                             throws NamingException {

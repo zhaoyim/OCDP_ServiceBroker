@@ -190,26 +190,26 @@ public class rangerClient {
         return updateV2Policy(policyId, rp);
     }
 
-    public boolean appendUserToV2Policy(String policyId, String groupName, String accountName, List<String> permissions) {
+    public boolean appendUserToV2Policy(String policyId, String groupName, String userName, List<String> permissions) {
         String currentPolicy = getV2Policy(policyId);
         if (currentPolicy == null)
         {
             return false;
         }
         RangerV2Policy rp = gson.fromJson(currentPolicy, RangerV2Policy.class);
-        rp.addPolicyItems(new ArrayList<String>(){{add(accountName);}},
+        rp.addPolicyItems(new ArrayList<String>(){{add(userName);}},
                 new ArrayList<String>(){{add(groupName);}}, new ArrayList<>(), true, permissions);
         return updateV2Policy(policyId, rp);
     }
 
-    public boolean removeUserFromV2Policy(String policyId, String accountName){
+    public boolean removeUserFromV2Policy(String policyId, String userName){
         String currentPolicy = getV2Policy(policyId);
         if (currentPolicy == null)
         {
             return false;
         }
         RangerV2Policy rp = gson.fromJson(currentPolicy, RangerV2Policy.class);
-        rp.removePolicyItem(accountName);
+        rp.removePolicyItem(userName);
         return updateV2Policy(policyId, rp);
     }
 

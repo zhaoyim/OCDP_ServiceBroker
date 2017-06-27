@@ -171,31 +171,31 @@ public class OCDPServiceInstanceService implements ServiceInstanceService {
     public UpdateServiceInstanceResponse updateServiceInstance(UpdateServiceInstanceRequest request)
             throws OCDPServiceException {
     	try {
+            String serviceInstanceId = request.getServiceInstanceId();
             Map<String, Object> params = request.getParameters();
-            String accountName = (String)params.get("user_name");
+            String userName = (String)params.get("user_name");
             logger.info("Receive request to update service Instance.");
+            ServiceInstance instance = repository.findOne(serviceInstanceId);
+            // Check service instance id
+            if (instance == null) {
+                throw new ServiceInstanceDoesNotExistException(serviceInstanceId);
+            }
             String password;
-            if(! BrokerUtil.isLDAPUserExist(ldap, accountName)){
+            if(! BrokerUtil.isLDAPUserExist(ldap, userName)){
                 password = UUID.randomUUID().toString();
             }else {
                 password = etcdClient.readToString(
-                        "/servicebroker/ocdp/user/krb/" + accountName + "@" + clusterConfig.getKrbRealm());
+                        "/servicebroker/ocdp/user/krb/" + userName + "@" + clusterConfig.getKrbRealm());
             }
             UpdateServiceInstanceResponse response;
             OCDPServiceInstanceCommonService service = getOCDPServiceInstanceCommonService();
             if (request.isAsyncAccepted()){
                 Future<UpdateServiceInstanceResponse> responseFuture = service.doUpdateServiceInstanceAsync(
-                        request, password);
+                        request, instance, password);
                 this.instanceUpdateStateMap.put(request.getServiceInstanceId(), responseFuture);
-                 Map<String, Object> credentials = new HashMap<String, Object>() {
-                     {
-                         put("username", accountName);
-                         put("password", password);
-                     }
-                 };
-                 response = new OCDPUpdateServiceInstanceResponse().withCredential(credentials).withAsync(true);
+                response = new OCDPUpdateServiceInstanceResponse().withAsync(true);
             }else {
-                response = service.doUpdateServiceInstance(request, password);
+                response = service.doUpdateServiceInstance(request, instance, password);
             }
             return response;
 		} catch (Exception e) {
