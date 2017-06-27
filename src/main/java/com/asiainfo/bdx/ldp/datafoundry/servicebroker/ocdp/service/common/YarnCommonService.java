@@ -75,6 +75,9 @@ public class YarnCommonService {
             throw e;
         }
         logger.info("Name of new queue: " + queuePath);
+        ambClient.updateCapacitySchedulerConfig(this.capacityCalculator.getProperties(),clusterConfig.getClusterName());
+        ambClient.refreshYarnQueue(clusterConfig.getYarnRMHost());
+        logger.info("Queue capacity refreshing...");
         return queuePath;
     }
 
@@ -97,7 +100,7 @@ public class YarnCommonService {
         }
         return policyId;
     }
-
+//not used
     public boolean appendResourceToQueuePermission(String policyId, String queueName) {
         boolean updateResult = rc.appendResourceToV2Policy(policyId, queueName, OCDPConstants.YARN_RANGER_RESOURCE_TYPE);
         if(updateResult){
@@ -118,22 +121,13 @@ public class YarnCommonService {
 
     public boolean appendUserToQueuePermission(String policyId, String groupName, String userName, List<String> permissions){
         boolean updateResult = rc.appendUserToV2Policy(policyId, groupName, userName, permissions);
-        if(updateResult){
-            renewCapacityCaculater();
-            List<String> queues = rc.getResourcsFromV2Policy(policyId, OCDPConstants.YARN_RANGER_RESOURCE_TYPE);
-            for(String queue : queues) {
-                capacityCalculator.addQueueMapping(userName, queue);
-            }
-            ambClient.updateCapacitySchedulerConfig(capacityCalculator.getProperties(),clusterConfig.getClusterName());
-            ambClient.refreshYarnQueue(clusterConfig.getYarnRMHost());
-        }
         return updateResult;
     }
 
     public synchronized void deleteQueue(String queueName){
         try{
+            renewCapacityCaculater();
             capacityCalculator.revokeQueue(queueName);
-            capacityCalculator.removeQueueMapping(queueName);
             ambClient.updateCapacitySchedulerConfig(capacityCalculator.getProperties(),clusterConfig.getClusterName());
             ambClient.refreshYarnQueue(clusterConfig.getYarnRMHost());
             logger.info("Refreshing yarn queues...");

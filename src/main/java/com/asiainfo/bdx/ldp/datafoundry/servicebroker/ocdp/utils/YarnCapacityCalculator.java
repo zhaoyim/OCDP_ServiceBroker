@@ -89,8 +89,6 @@ public class YarnCapacityCalculator {
      */
     public boolean revokeQueue(String serviceInstanceResuorceName){
 
-        String queueMapStr = properties.get("yarn.scheduler.capacity.queue-mappings");
-
         String targetQueueCapacity = properties.get("yarn.scheduler.capacity."+
                 serviceInstanceResuorceName+".capacity");
         String resourcePoolCapacity = String.valueOf(availableCapacity+Double.parseDouble(targetQueueCapacity));
