@@ -105,7 +105,7 @@ public class OCDPServiceInstanceService implements ServiceInstanceService {
             GetLastServiceOperationRequest request) throws OCDPServiceException {
     	try {
             String serviceInstanceId = request.getServiceInstanceId();
-            // Determine operation type: provision or delete
+            // Determine operation type: provision, delete or update
             OperationType operationType = getOperationType(serviceInstanceId);
             if (operationType == null){
                 throw new OCDPServiceException("Service instance " + serviceInstanceId + " not exist.");
@@ -117,6 +117,9 @@ public class OCDPServiceInstanceService implements ServiceInstanceService {
                 is_operation_done = responseFuture.isDone();
             } else if( operationType == OperationType.DELETE){
                 Future<DeleteServiceInstanceResponse> responseFuture = this.instanceDeleteStateMap.get(serviceInstanceId);
+                is_operation_done = responseFuture.isDone();
+            } else if ( operationType == OperationType.UPDATE){
+                Future<UpdateServiceInstanceResponse> responseFuture = this.instanceUpdateStateMap.get(serviceInstanceId);
                 is_operation_done = responseFuture.isDone();
             }
             // Return operation type
@@ -216,6 +219,8 @@ public class OCDPServiceInstanceService implements ServiceInstanceService {
             return OperationType.PROVISION;
         } else if (this.instanceDeleteStateMap.get(serviceInstanceId) != null){
             return OperationType.DELETE;
+        } else if (this.instanceUpdateStateMap.get(serviceInstanceId) != null){
+            return OperationType.UPDATE;
         } else {
             return null;
         }
@@ -228,6 +233,10 @@ public class OCDPServiceInstanceService implements ServiceInstanceService {
         }else if(operationType == OperationType.DELETE){
             // For instance delete case, return true if instance information not existed in etcd
             return (repository.findOne(serviceInstanceId) == null);
+        } else if (operationType == OperationType.UPDATE) {
+            // Temp solution: For instance update case, just return true if update operation is done
+            // Need a better solution in future to determine update operation is fail or success
+            return true;
         } else {
             return false;
         }
@@ -238,6 +247,8 @@ public class OCDPServiceInstanceService implements ServiceInstanceService {
             this.instanceProvisionStateMap.remove(serviceInstanceId);
         } else if ( operationType == OperationType.DELETE){
             this.instanceDeleteStateMap.remove(serviceInstanceId);
+        } else if ( operationType == OperationType.UPDATE){
+            this.instanceUpdateStateMap.remove(serviceInstanceId);
         }
     }
 }
