@@ -137,16 +137,6 @@ HDFS service instance update for assign role to tenant user
        }
     }' -H "Content-Type: application/json"
 
-HDFS service instance update for unassgin role from tenant user
-
-    curl -i -X PATCH http://<broker.username>:<broker.password>@localhost:8080/v2/service_instances/hdfs-shared-001 -d '{
-           "service_id":"ae67d4ba-5c4e-4937-a68b-5b47cfe356d8",
-           "plan_id":"72150b09-1025-4533-8bae-0e04ef68ac13",
-           "parameters":{
-                "user_name": "user1"
-           }
-    }' -H "Content-Type: application/json"
-
 HDFS service instance update for resize/scale
 
     curl -i -X PATCH http://<broker.username>:<broker.password>@localhost:8080/v2/service_instances/hdfs-shared-001 -d '{
@@ -196,16 +186,6 @@ HBase service instance update for assign role to tenant user
             "user_name": "user1",
             "accesses": "read,write,create,admin"
        }
-    }' -H "Content-Type: application/json"
-
-HBase service instance update for unassgin role from tenant user
-
-    curl -i -X PATCH http://<broker.username>:<broker.password>@localhost:8080/v2/service_instances/hbase-shared-001 -d '{
-           "service_id":"d9845ade-9410-4c7f-8689-4e032c1a8450",
-           "plan_id":"f658e391-b7d6-4b72-9e4c-c754e4943ae1",
-           "parameters":{
-                "user_name": "user1"
-           }
     }' -H "Content-Type: application/json"
 
 HBase service instance update for resize/scale
@@ -260,16 +240,6 @@ Hive service instance update for assign role to tenant user
        }
     }' -H "Content-Type: application/json"
 
-Hive service instance update for unassgin role from tenant user
-
-    curl -i -X PATCH http://<broker.username>:<broker.password>@localhost:8080/v2/service_instances/hive-shared-001 -d '{
-           "service_id":"2ef26018-003d-4b2b-b786-0481d4ee9fa3",
-           "plan_id":"aa7e364f-fdbf-4187-b60a-218b6fa398ed",
-           "parameters":{
-                "user_name": "user1"
-           }
-    }' -H "Content-Type: application/json"
-
 Hive service instance update for resize/scale
 
     curl -i -X PATCH http://<broker.username>:<broker.password>@localhost:8080/v2/service_instances/hive-shared-001 -d '{
@@ -322,16 +292,6 @@ MapReduce service instance update for assign role to tenant user
        }
     }' -H "Content-Type: application/json"
 
-MapReduce service instance update for unassgin role from tenant user
-
-    curl -i -X PATCH http://<broker.username>:<broker.password>@localhost:8080/v2/service_instances/mr-shared-001 -d '{
-           "service_id":"ae0f2324-27a8-415b-9c7f-64ab6cd88d40",
-           "plan_id":"6524c793-0ea5-4456-9a60-ca70271decdc",
-           "parameters":{
-                "user_name": "user1"
-           }
-    }' -H "Content-Type: application/json"
-
 MapReduce service instance update for resize/scale
 
     curl -i -X PATCH http://<broker.username>:<broker.password>@localhost:8080/v2/service_instances/mr-shared-001 -d '{
@@ -381,16 +341,6 @@ Spark service instance update for assign role to tenant user
             "accesses": "submit-app,admin-queue"
             }
        }
-    }' -H "Content-Type: application/json"
-
-Spark service instance update for unassgin role from tenant user
-
-    curl -i -X PATCH http://<broker.username>:<broker.password>@localhost:8080/v2/service_instances/spark-shared-001 -d '{
-           "service_id":"d3b9a485-f038-4605-9b9b-29792f5c61d1",
-           "plan_id":"5c3d471d-f94a-4bb8-b340-f783f3c15ba1",
-           "parameters":{
-                "user_name": "user1"
-           }
     }' -H "Content-Type: application/json"
 
 Spark service instance update for resize/scale
