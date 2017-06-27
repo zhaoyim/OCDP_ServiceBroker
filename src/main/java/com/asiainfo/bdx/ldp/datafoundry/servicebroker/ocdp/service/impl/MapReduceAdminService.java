@@ -44,7 +44,7 @@ public class MapReduceAdminService implements OCDPAdminService{
 
     @Override
     public String provisionResources(String serviceDefinitionId, String planId, String serviceInstanceId,
-                                     String bindingId, Map<String, Object> cuzQuota) throws Exception {
+                                     Map<String, Object> cuzQuota) throws Exception {
         Map<String, String> quota = this.yarnCommonService.getQuotaFromPlan(serviceDefinitionId, planId, cuzQuota);
         return this.yarnCommonService.createQueue(quota.get(OCDPConstants.YARN_QUEUE_QUOTA));
     }

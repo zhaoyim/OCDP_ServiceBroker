@@ -15,7 +15,7 @@ import java.util.Map;
 public interface OCDPAdminService {
 
 	String provisionResources(String serviceDefinitionId, String planId, String serviceInstanceId,
-                              String bindingId, Map<String, Object> cuzQuota) throws Exception;
+                              Map<String, Object> cuzQuota) throws Exception;
 
     String createPolicyForResources(String policyName, List<String> resources, String userName, String groupName);
 

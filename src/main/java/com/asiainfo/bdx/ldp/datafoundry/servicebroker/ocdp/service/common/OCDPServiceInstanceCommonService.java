@@ -256,7 +256,7 @@ public class OCDPServiceInstanceCommonService {
         String serviceInstanceResource;
         try{
             serviceInstanceResource = ocdp.provisionResources(
-                    serviceDefinitionId, planId, serviceInstanceId, null, params);
+                    serviceDefinitionId, planId, serviceInstanceId, params);
         }catch (Exception e){
             logger.error("OCDP resource provision fail due to: " + e.getLocalizedMessage());
             e.printStackTrace();

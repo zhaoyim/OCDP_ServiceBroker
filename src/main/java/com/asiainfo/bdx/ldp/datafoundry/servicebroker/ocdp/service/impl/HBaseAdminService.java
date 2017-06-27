@@ -72,7 +72,7 @@ public class HBaseAdminService implements OCDPAdminService{
 
     @Override
     public String provisionResources(String serviceDefinitionId, String planId, String serviceInstanceId,
-                                     String bindingId, Map<String, Object> cuzQuota) throws Exception{
+                                     Map<String, Object> cuzQuota) throws Exception{
         String nsName = serviceInstanceId.replaceAll("-", "");
         Map<String, String> quota = this.getQuotaFromPlan(serviceDefinitionId, planId, cuzQuota);
         try{

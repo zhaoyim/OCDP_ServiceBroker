@@ -49,7 +49,7 @@ public class HiveAdminService implements OCDPAdminService {
     }
 
     @Override
-    public String provisionResources(String serviceDefinitionId, String planId, String serviceInstanceId, String bindingId,
+    public String provisionResources(String serviceDefinitionId, String planId, String serviceInstanceId,
                                      Map<String, Object> cuzQuota) throws Exception{
         Map<String, String> quota = this.getQuotaFromPlan(serviceDefinitionId, planId, cuzQuota);
         String dbName = hiveCommonService.createDatabase(serviceInstanceId);
