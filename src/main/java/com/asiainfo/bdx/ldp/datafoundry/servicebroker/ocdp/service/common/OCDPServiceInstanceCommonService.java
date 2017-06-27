@@ -124,18 +124,21 @@ public class OCDPServiceInstanceCommonService {
         String serviceResourceType = OCDPAdminServiceMapper.getOCDPResourceType(serviceDefinitionId);
         String serviceInstanceResource = (String)Credential.get(serviceResourceType);
         String serviceInstancePolicyId = (String)Credential.get("rangerPolicyId");
-
         // 1) Remove resource from ranger policy if it exists
-        if (! ocdp.deletePolicyForResources(serviceInstancePolicyId)){
-            throw new OCDPServiceException("Ranger policy delete failed.");
+        if (serviceInstancePolicyId != null && serviceInstancePolicyId.length() != 0 ) {
+        logger.info("Service instance policy exists, start to deleting policy " + serviceInstancePolicyId);
+            if (!ocdp.deletePolicyForResources(serviceInstancePolicyId)) {
+                throw new OCDPServiceException("Ranger policy delete failed.");
+            }
         }
         // 2 )Delete big data resources like hdfs folder, hbase namespace ...
         deleteTenentResource(ocdp, serviceInstanceResource);
 
         // 3) Clean service instance from etcd
         repository.delete(serviceInstanceId);
+        logger.info("Delete service instance " + serviceInstanceId + " successfully!");
 
-		return new DeleteServiceInstanceResponse().withAsync(false);
+        return new DeleteServiceInstanceResponse().withAsync(false);
 	}
 
     @Async
@@ -187,7 +190,7 @@ public class OCDPServiceInstanceCommonService {
         String serviceDefinitionId = instance.getServiceDefinitionId();
         String resourceType = OCDPAdminServiceMapper.getOCDPResourceType(serviceDefinitionId);
         String serviceInstanceResource = (String) instance.getServiceInstanceCredentials().get(resourceType);
-        if (serviceInstancePolicyId == null){
+        if (serviceInstancePolicyId == null || serviceInstancePolicyId.length() == 0 ){
             // Create new ranger policy for service instance and update policy to service instance
             serviceInstancePolicyId = createPolicyForResources(ocdp, serviceInstanceResource, userName);
             updateServiceInstanceCredentials(instance, "rangerPolicyId", serviceInstancePolicyId);
@@ -287,7 +290,7 @@ public class OCDPServiceInstanceCommonService {
                     e.printStackTrace();
                 }
             }else{
-                logger.info("Ranger policy created.");
+                logger.info("Ranger policy created. Policy ID = " + policyId);
                 break;
             }
         }
@@ -313,7 +316,7 @@ public class OCDPServiceInstanceCommonService {
                     e.printStackTrace();
                 }
             }else{
-                logger.info("Append user to ranger policy failed.");
+                logger.info("Append user to ranger policy succeed. Policy ID = " + serviceInstancePolicyId);
                 break;
             }
         }

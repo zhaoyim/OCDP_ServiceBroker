@@ -71,6 +71,8 @@ public class OCDPServiceInstanceBindingService implements ServiceInstanceBinding
         String bindingId = request.getBindingId();
         String serviceInstanceId = request.getServiceInstanceId();
         Map<String, Object> params = request.getParameters();
+        logger.info(request.toString());
+
         // Check binding instance exists
         if (bindingRepository.findOne(serviceInstanceId, bindingId) != null) {
             throw new ServiceInstanceBindingExistsException(serviceInstanceId, bindingId);
@@ -108,8 +110,10 @@ public class OCDPServiceInstanceBindingService implements ServiceInstanceBinding
         String serviceDefinitionId = request.getServiceDefinitionId();
         String bindingId = request.getBindingId();
         String planId = request.getPlanId();
+        logger.info(request.toString());
         ServiceInstanceBinding binding = bindingRepository.findOne(serviceInstanceId, bindingId);
         if (binding == null) {
+            logger.error("Binding Id doesn't exists.");
             throw new ServiceInstanceBindingDoesNotExistException(bindingId);
         }else if(! planId.equals(binding.getPlanId())){
             throw new ServiceBrokerInvalidParametersException("Unknown plan id: " + planId);
@@ -137,7 +141,7 @@ public class OCDPServiceInstanceBindingService implements ServiceInstanceBinding
 
     private void removeUserFromServiceInstance(OCDPAdminService ocdp, ServiceInstance instance, String userName) {
         String serviceInstancePolicyId = (String) instance.getServiceInstanceCredentials().get("rangerPolicyId");
-        if (serviceInstancePolicyId == null){
+        if (serviceInstancePolicyId == null || serviceInstancePolicyId.length() == 0){
             throw new OCDPServiceException("Ranger policy not found.");
         }
         if (rc.getUsersFromV2Policy(serviceInstancePolicyId).size() == 1) {
