@@ -84,7 +84,7 @@ public class HBaseAdminService implements OCDPAdminService{
             namespaceDescriptor.setConfiguration(
                     "hbase.namespace.quota.maxtables", quota.get(OCDPConstants.HBASE_NAMESPACE_TABLE_QUOTA));
             namespaceDescriptor.setConfiguration(
-                    "hbase.namespace.quota.maxregion", quota.get(OCDPConstants.HBASE_NAMESPACE_REGION_QUOTA));
+                    "hbase.namespace.quota.maxregions", quota.get(OCDPConstants.HBASE_NAMESPACE_REGION_QUOTA));
             admin.createNamespace(namespaceDescriptor);
             admin.close();
         }catch(IOException e){
@@ -213,7 +213,7 @@ public class HBaseAdminService implements OCDPAdminService{
             namespaceDescriptor.setConfiguration(
                     "hbase.namespace.quota.maxtables", quota.get(OCDPConstants.HBASE_NAMESPACE_TABLE_QUOTA));
             namespaceDescriptor.setConfiguration(
-                    "hbase.namespace.quota.maxregion", quota.get(OCDPConstants.HBASE_NAMESPACE_REGION_QUOTA));
+                    "hbase.namespace.quota.maxregions", quota.get(OCDPConstants.HBASE_NAMESPACE_REGION_QUOTA));
             admin.modifyNamespace(namespaceDescriptor);
             admin.close();
         } catch (IOException e){
