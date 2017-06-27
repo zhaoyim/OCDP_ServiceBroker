@@ -80,6 +80,16 @@ public class RangerV2Policy{
         rr.values.add(resourceName);
     }
 
+    public void updateUserAccesses(String userName, List<String> types){
+        for(PolicyItem pi : policyItems){
+            if(pi.getUsers().contains(userName)){
+                pi.accesses.clear();
+                pi.accesses.addAll(pi.getAccesses(types));
+                break;
+            }
+        }
+    }
+
     public void removeResource(String resourceType, String resourceName) {
         RangerResource rr = resources.get(resourceType);
         rr.values.remove(resourceName);
