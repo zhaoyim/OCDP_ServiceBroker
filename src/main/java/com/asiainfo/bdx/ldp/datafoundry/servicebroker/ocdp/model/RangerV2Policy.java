@@ -112,8 +112,7 @@ public class RangerV2Policy{
     public List<String> getUserList(){
         List<String> users = new LinkedList<>();
         for (PolicyItem policyItem: policyItems) {
-            users.add(policyItem.getUsers().get(0));
-            users.add(policyItem.getUsers().get(0));
+            users.addAll(policyItem.getUsers());
         }
         return users;
     }

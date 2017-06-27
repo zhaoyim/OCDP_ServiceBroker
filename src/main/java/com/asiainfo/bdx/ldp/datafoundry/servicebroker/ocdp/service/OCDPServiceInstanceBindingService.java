@@ -125,6 +125,7 @@ public class OCDPServiceInstanceBindingService implements ServiceInstanceBinding
         }
         // 1) Remove user from service instance policy or delete service instance policy
         String userName = (String) binding.getCredentials().get("username");
+        // Convert principal name to normal user name
         userName = userName.split("@")[0];
         OCDPAdminService ocdp = getOCDPAdminService(serviceDefinitionId);
         logger.info("Revoke role, username:  " + userName + ", service instance id: " + serviceInstanceId );
