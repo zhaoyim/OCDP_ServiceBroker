@@ -35,7 +35,7 @@ public class OCDPServiceInstanceBindingRepositoryImpl implements OCDPServiceInst
 
     @Override
     public ServiceInstanceBinding findOne(String serviceInstanceId, String bindingId) {
-        logger.info("find one OCDPServiceInstanceBinding: " + bindingId);
+        logger.info("Try to find one OCDPServiceInstanceBinding: " + bindingId);
         if(etcdClient.read("/servicebroker/ocdp/instance/" + serviceInstanceId + "/bindings/" + bindingId) == null){
             return null;
         }

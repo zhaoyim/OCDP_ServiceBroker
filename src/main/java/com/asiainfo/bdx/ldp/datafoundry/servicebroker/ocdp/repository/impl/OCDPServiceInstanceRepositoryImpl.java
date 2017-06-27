@@ -34,7 +34,7 @@ public class OCDPServiceInstanceRepositoryImpl implements OCDPServiceInstanceRep
 
     @Override
     public ServiceInstance findOne(String serviceInstanceId) {
-        logger.info("Try to find one OCDPServiceInstance: " + serviceInstanceId);
+        logger.info("Try to find one OCDPServiceInstance: " + serviceInstanceId + " in repository.");
 
         if(etcdClient.read("/servicebroker/ocdp/instance/" + serviceInstanceId) == null){
             return null;
