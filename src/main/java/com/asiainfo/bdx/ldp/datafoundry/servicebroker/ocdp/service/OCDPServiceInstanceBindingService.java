@@ -67,72 +67,82 @@ public class OCDPServiceInstanceBindingService implements ServiceInstanceBinding
 	@Override
 	public CreateServiceInstanceBindingResponse createServiceInstanceBinding(
             CreateServiceInstanceBindingRequest request) throws OCDPServiceException {
-        String serviceDefinitionId = request.getServiceDefinitionId();
-        String bindingId = request.getBindingId();
-        String serviceInstanceId = request.getServiceInstanceId();
-        Map<String, Object> params = request.getParameters();
-        logger.info(request.toString());
+		try {
+	        String serviceDefinitionId = request.getServiceDefinitionId();
+	        String bindingId = request.getBindingId();
+	        String serviceInstanceId = request.getServiceInstanceId();
+	        Map<String, Object> params = request.getParameters();
+	        logger.info(request.toString());
 
-        // Check binding instance exists
-        if (bindingRepository.findOne(serviceInstanceId, bindingId) != null) {
-            throw new ServiceInstanceBindingExistsException(serviceInstanceId, bindingId);
-        }
-        // Check service plan exists
-        String planId = request.getPlanId();
-        if(! planId.equals(OCDPAdminServiceMapper.getOCDPServicePlan(serviceDefinitionId))){
-            throw new ServiceBrokerInvalidParametersException("Unknown plan id: " + planId);
-        }
-        // Check service instance exists
-        ServiceInstance instance = repository.findOne(serviceInstanceId);
-        if (instance == null) {
-            throw new ServiceInstanceDoesNotExistException(serviceInstanceId);
-        }
-        // Construct service instance credentials for binding user
-        String userPrincipal = params.get("user_name") + "@" + clusterConfig.getKrbRealm();
-        String password = etcdClient.readToString("/servicebroker/ocdp/user/krb/" + userPrincipal);
-        Map<String, Object> serviceInstanceCredentials = instance.getServiceInstanceCredentials();
-        serviceInstanceCredentials.put("username", userPrincipal);
-        serviceInstanceCredentials.put("password", password);
-        // save service instance binding
-        String appGuid = request.getBoundAppGuid();
-        ServiceInstanceBinding binding = new ServiceInstanceBinding(
-                bindingId, serviceInstanceId, serviceInstanceCredentials, null, appGuid, planId);
-        bindingRepository.save(binding);
-        // Remove ranger policy id for binding response
-        serviceInstanceCredentials.remove("rangerPolicyId");
-        return new CreateServiceInstanceAppBindingResponse().withCredentials(serviceInstanceCredentials);
+	        // Check binding instance exists
+	        if (bindingRepository.findOne(serviceInstanceId, bindingId) != null) {
+	            throw new ServiceInstanceBindingExistsException(serviceInstanceId, bindingId);
+	        }
+	        // Check service plan exists
+	        String planId = request.getPlanId();
+	        if(! planId.equals(OCDPAdminServiceMapper.getOCDPServicePlan(serviceDefinitionId))){
+	            throw new ServiceBrokerInvalidParametersException("Unknown plan id: " + planId);
+	        }
+	        // Check service instance exists
+	        ServiceInstance instance = repository.findOne(serviceInstanceId);
+	        if (instance == null) {
+	            throw new ServiceInstanceDoesNotExistException(serviceInstanceId);
+	        }
+	        // Construct service instance credentials for binding user
+	        String userPrincipal = params.get("user_name") + "@" + clusterConfig.getKrbRealm();
+	        String password = etcdClient.readToString("/servicebroker/ocdp/user/krb/" + userPrincipal);
+	        Map<String, Object> serviceInstanceCredentials = instance.getServiceInstanceCredentials();
+	        serviceInstanceCredentials.put("username", userPrincipal);
+	        serviceInstanceCredentials.put("password", password);
+	        // save service instance binding
+	        String appGuid = request.getBoundAppGuid();
+	        ServiceInstanceBinding binding = new ServiceInstanceBinding(
+	                bindingId, serviceInstanceId, serviceInstanceCredentials, null, appGuid, planId);
+	        bindingRepository.save(binding);
+	        // Remove ranger policy id for binding response
+	        serviceInstanceCredentials.remove("rangerPolicyId");
+	        return new CreateServiceInstanceAppBindingResponse().withCredentials(serviceInstanceCredentials);
+		} catch (Exception e) {
+			e.printStackTrace();
+			throw e;
+		}
 	}
 
 	@Override
 	public void deleteServiceInstanceBinding(DeleteServiceInstanceBindingRequest request)
             throws OCDPServiceException{
-        String serviceInstanceId = request.getServiceInstanceId();
-        String serviceDefinitionId = request.getServiceDefinitionId();
-        String bindingId = request.getBindingId();
-        String planId = request.getPlanId();
-        logger.info(request.toString());
-        ServiceInstanceBinding binding = bindingRepository.findOne(serviceInstanceId, bindingId);
-        if (binding == null) {
-            logger.error("Binding Id doesn't exists.");
-            throw new ServiceInstanceBindingDoesNotExistException(bindingId);
-        }else if(! planId.equals(binding.getPlanId())){
-            throw new ServiceBrokerInvalidParametersException("Unknown plan id: " + planId);
-        }
-        // Check service instance exists
-        ServiceInstance instance = repository.findOne(serviceInstanceId);
-        if (instance == null) {
-            throw new ServiceInstanceDoesNotExistException(serviceInstanceId);
-        }
-        // 1) Remove user from service instance policy or delete service instance policy
-        String userName = (String) binding.getCredentials().get("username");
-        // Convert principal name to normal user name
-        userName = userName.split("@")[0];
-        OCDPAdminService ocdp = getOCDPAdminService(serviceDefinitionId);
-        logger.info("Revoke role, username:  " + userName + ", service instance id: " + serviceInstanceId );
-        removeUserFromServiceInstance(ocdp, instance, userName);
+		try {
+	        String serviceInstanceId = request.getServiceInstanceId();
+	        String serviceDefinitionId = request.getServiceDefinitionId();
+	        String bindingId = request.getBindingId();
+	        String planId = request.getPlanId();
+	        logger.info(request.toString());
+	        ServiceInstanceBinding binding = bindingRepository.findOne(serviceInstanceId, bindingId);
+	        if (binding == null) {
+	            logger.error("Binding Id doesn't exists.");
+	            throw new ServiceInstanceBindingDoesNotExistException(bindingId);
+	        }else if(! planId.equals(binding.getPlanId())){
+	            throw new ServiceBrokerInvalidParametersException("Unknown plan id: " + planId);
+	        }
+	        // Check service instance exists
+	        ServiceInstance instance = repository.findOne(serviceInstanceId);
+	        if (instance == null) {
+	            throw new ServiceInstanceDoesNotExistException(serviceInstanceId);
+	        }
+	        // 1) Remove user from service instance policy or delete service instance policy
+	        String userName = (String) binding.getCredentials().get("username");
+	        // Convert principal name to normal user name
+	        userName = userName.split("@")[0];
+	        OCDPAdminService ocdp = getOCDPAdminService(serviceDefinitionId);
+	        logger.info("Revoke role, username:  " + userName + ", service instance id: " + serviceInstanceId );
+	        removeUserFromServiceInstance(ocdp, instance, userName);
 
-        // 2) Delete service instance binding info from repository/etcd
-        bindingRepository.delete(serviceInstanceId, bindingId);
+	        // 2) Delete service instance binding info from repository/etcd
+	        bindingRepository.delete(serviceInstanceId, bindingId);
+		} catch (Exception e) {
+			e.printStackTrace();
+			throw e;
+		}
     }
 
     private OCDPAdminService getOCDPAdminService(String serviceDefinitionId){
@@ -146,19 +156,25 @@ public class OCDPServiceInstanceBindingService implements ServiceInstanceBinding
         if (serviceInstancePolicyId == null || serviceInstancePolicyId.length() == 0){
             throw new OCDPServiceException("Ranger policy not found.");
         }
-        if (rc.getUsersFromV2Policy(serviceInstancePolicyId.split(":")[0]).size() == 1) {
-            // Delete ranger policy if user is last one
-            if (! ocdp.deletePolicyForResources(serviceInstancePolicyId)){
-                throw new OCDPServiceException("Ranger policy delete failed.");
+        try {
+            List<String> users = rc.getUsersFromV2Policy(serviceInstancePolicyId.split(":")[0]);
+            if (users.size() == 1 && users.contains(userName)) {
+                // Delete ranger policy if user is last one
+                if (! ocdp.deletePolicyForResources(serviceInstancePolicyId)){
+                    throw new OCDPServiceException("Ranger policy delete failed.");
+                }
+                removeServiceInstanceCredentialsItem(instance, "rangerPolicyId");
+            } else {
+                // Remove user from ranger policy
+                if (! ocdp.removeUserFromPolicy(serviceInstancePolicyId, userName) ){
+                    throw new OCDPServiceException("Remove user from Ranger policy failed.");
+                }
+                logger.info("remove user " + userName + " from tenant" + userName + ", tenant policy id is " + serviceInstancePolicyId);
             }
-            removeServiceInstanceCredentialsItem(instance, "rangerPolicyId");
-        } else {
-            // Remove user from ranger policy
-            if (! ocdp.removeUserFromPolicy(serviceInstancePolicyId, userName) ){
-                throw new OCDPServiceException("Remove user from Ranger policy failed.");
-            }
-            logger.info("remove user " + userName + " from policy, policy id is " + serviceInstancePolicyId);
-        }
+		} catch (Exception e) {
+			e.printStackTrace();
+			throw e;
+		}
     }
 
     private void removeServiceInstanceCredentialsItem(ServiceInstance instance, String key){
