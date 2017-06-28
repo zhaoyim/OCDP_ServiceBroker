@@ -139,7 +139,7 @@ public class KafkaAdminService implements OCDPAdminService{
 	@Override
 	public boolean removeUserFromPolicy(String policyId, String userName) {
         boolean removed = ranger.removeUserFromV2Policy(policyId, userName);
-        LOG.info("Remove user [{}] from kafka ranger policy [{}] with result: {}" + userName, policyId, removed);
+        LOG.info("Remove user [{}] from kafka ranger policy [{}] with result: {}", userName, policyId, removed);
 		return removed;
 	}
 	
@@ -320,6 +320,8 @@ public class KafkaAdminService implements OCDPAdminService{
 	private void genKafkaCredential(HashMap<String, Object> credential, OCTopic topic) {
 		credential.put(Constants.REROURCE_TYPE, topic.name());
 		credential.put(ZK_CONN_KEY, sys_env.getZk_connection());
+		credential.put("host", sys_env.getKafka_hosts());
+		credential.put("port", sys_env.getKafka_port());
 	}
 	
 	private void initSysProperties() {
