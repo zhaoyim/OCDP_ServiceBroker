@@ -146,7 +146,7 @@ public class OCDPServiceInstanceBindingService implements ServiceInstanceBinding
         if (serviceInstancePolicyId == null || serviceInstancePolicyId.length() == 0){
             throw new OCDPServiceException("Ranger policy not found.");
         }
-        if (rc.getUsersFromV2Policy(serviceInstancePolicyId).size() == 1) {
+        if (rc.getUsersFromV2Policy(serviceInstancePolicyId.split(":")[0]).size() == 1) {
             // Delete ranger policy if user is last one
             if (! ocdp.deletePolicyForResources(serviceInstancePolicyId)){
                 throw new OCDPServiceException("Ranger policy delete failed.");
@@ -157,7 +157,7 @@ public class OCDPServiceInstanceBindingService implements ServiceInstanceBinding
             if (! ocdp.removeUserFromPolicy(serviceInstancePolicyId, userName) ){
                 throw new OCDPServiceException("Remove user from Ranger policy failed.");
             }
-            logger.info("remove user " + userName + " from tenant" + userName + ", tenant policy id is " + serviceInstancePolicyId);
+            logger.info("remove user " + userName + " from policy, policy id is " + serviceInstancePolicyId);
         }
     }
 

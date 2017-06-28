@@ -16,6 +16,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 /**
  * Created by baikai on 8/4/16.
@@ -60,16 +61,22 @@ public class SparkAdminService implements OCDPAdminService {
             {
                 add("/user/" + userName);
                 add("/spark-history");
+                //add dummy path to avoid ranger error of existing resource path
+                add("/tmp/dummy_" + UUID.randomUUID().toString());
             }
         };
-        if (this.hdfsAdminService.createPolicyForResources(userName + "_" + policyName, hdfsFolderForJobExec, userName, groupName) != null){
-            logger.info("Assign permissions for /user/" + userName + " folder.");
+        String hdfsPolicyId = this.hdfsAdminService.createPolicyForResources(userName + "_" + policyName, hdfsFolderForJobExec, userName, groupName);
+        if ( hdfsPolicyId != null){
+            logger.info("Assign permissions for folder " + hdfsFolderForJobExec.toString()  + " with policy id " + hdfsPolicyId);
         }
 
         String resource = resources.get(0);
         String yarnPolicyId = this.yarnCommonService.assignPermissionToQueue(policyName, resource, userName, groupName);
-        // return yarn policy id
-        return (yarnPolicyId != null) ? yarnPolicyId : null;
+        if ( yarnPolicyId != null){
+            logger.info("Assign permissions for folder " + resource  + " with policy id " + yarnPolicyId);
+        }
+        // return policy ids if both yarn policy and hdfs policy create successfully
+        return ( hdfsPolicyId != null && yarnPolicyId != null) ? hdfsPolicyId + ":" + yarnPolicyId : null;
     }
 
     @Override
@@ -80,17 +87,29 @@ public class SparkAdminService implements OCDPAdminService {
     @Override
     public boolean appendUserToPolicy(
             String policyId, String groupName, String userName, List<String> permissions) {
-        return this.yarnCommonService.appendUserToQueuePermission(policyId, groupName, userName, permissions);
+        String[] policyIds = policyId.split(":");
+        boolean userAppendToHDFSPolicy = this.hdfsAdminService.appendUserToPolicy(
+                policyIds[0], groupName, userName, new ArrayList<String>(){{add("read");add("write");add("execute");}});
+        boolean resourceAppendToHDFSPolicy = this.hdfsAdminService.appendResourcesToPolicy(policyIds[0], "/user/" + userName);
+        boolean userAppendToYarnPolicy = this.yarnCommonService.appendUserToQueuePermission(
+                policyIds[1], groupName, userName, permissions);
+        return userAppendToHDFSPolicy && resourceAppendToHDFSPolicy && userAppendToYarnPolicy;
     }
 
     @Override
     public void deprovisionResources(String serviceInstanceResuorceName)throws Exception{
-        this.yarnCommonService.deleteQueue(serviceInstanceResuorceName);
+        String[] resources = serviceInstanceResuorceName.split(":");
+        this.yarnCommonService.deleteQueue(resources[1]);
     }
 
     @Override
     public boolean deletePolicyForResources(String policyId) {
-        return this.yarnCommonService.unassignPermissionFromQueue(policyId);
+        String[] policyIds = policyId.split(":");
+        logger.info("Unassign read/write/execute permission to hdfs folder.");
+        boolean hdfsPolicyDeleted = this.hdfsAdminService.deletePolicyForResources(policyIds[0]);
+        logger.info("Unassign submit/admin permission to yarn queue.");
+        boolean yarnPolicyDeleted = this.yarnCommonService.unassignPermissionFromQueue(policyIds[1]);
+        return hdfsPolicyDeleted && yarnPolicyDeleted;
     }
 
     @Override
@@ -100,9 +119,15 @@ public class SparkAdminService implements OCDPAdminService {
 
     @Override
     public boolean removeUserFromPolicy(String policyId, String userName) {
-        return  this.yarnCommonService.removeUserFromQueuePermission(policyId, userName);
+        String[] policyIds = policyId.split(":");
+        boolean userRemovedFromHDFSPolicy = this.hdfsAdminService.removeUserFromPolicy(policyIds[0], userName);
+        boolean resourceRemovedFromHDFSPolicy = this.hdfsAdminService.removeResourceFromPolicy(policyIds[0], "/user/" + userName);
+        boolean userRemovedFromYarnPolicy = this.yarnCommonService.removeUserFromQueuePermission(
+                policyIds[1], userName);
+        return userRemovedFromHDFSPolicy && resourceRemovedFromHDFSPolicy && userRemovedFromYarnPolicy;
     }
 
+    //not used
     @Override
     public  List<String> getResourceFromPolicy(String policyId){
         return yarnCommonService.getResourceFromQueuePolicy(policyId);

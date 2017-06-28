@@ -153,7 +153,6 @@ public class HDFSAdminService implements OCDPAdminService{
 
     @Override
     public String createPolicyForResources(String policyName, List<String> resources, String userName, String groupName){
-        logger.info("Assign read/write/execute permission to hdfs folder.");
         String policyId = null;
         ArrayList<String> groupList = new ArrayList<String>(){{add(groupName);}};
         ArrayList<String> userList = new ArrayList<String>(){{add(userName);}};
@@ -167,6 +166,10 @@ public class HDFSAdminService implements OCDPAdminService{
         if (newPolicyString != null){
             RangerV2Policy newPolicyObj = gson.fromJson(newPolicyString, RangerV2Policy.class);
             policyId = newPolicyObj.getPolicyId();
+        }
+        else {
+            logger.error("Failed to assign read/write/execute permission to hdfs folder " + resources.toString());
+
         }
         return policyId;
     }
