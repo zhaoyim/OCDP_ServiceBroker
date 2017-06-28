@@ -140,6 +140,10 @@ public class ClusterConfig implements EnvironmentAware{
     
     private String kafka_jaas_path;
     
+    private String kafka_hosts;
+    
+	private String kafka_port;
+    
 	@Override
     public void setEnvironment(Environment env){
         this.etcd_host = env.getProperty("ETCD_HOST");
@@ -199,6 +203,8 @@ public class ClusterConfig implements EnvironmentAware{
         this.spark_history_url = env.getProperty("SPARK_HISTORY_URL");
         this.zk_connection = env.getProperty("OC_ZK_CONNECTION");
         this.kafka_jaas_path = env.getProperty("KAFKA_JAAS_PATH");
+        this.kafka_hosts = env.getProperty("KAFKA_HOSTS");
+        this.kafka_port = env.getProperty("KAFKA_PORT");
     }
 
     public String getEtcdHost() { return etcd_host; }
@@ -319,5 +325,13 @@ public class ClusterConfig implements EnvironmentAware{
     
 	public String getKafka_jaas_path() {
 		return kafka_jaas_path;
+	}
+	
+    public String getKafka_hosts() {
+		return kafka_hosts;
+	}
+
+	public String getKafka_port() {
+		return kafka_port;
 	}
 }
