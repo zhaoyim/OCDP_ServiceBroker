@@ -4,10 +4,7 @@ import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Created by baikai on 8/3/21.
@@ -83,6 +80,16 @@ public class RangerV2Policy{
         rr.values.add(resourceName);
     }
 
+    public void updateUserAccesses(String userName, List<String> types){
+        for(PolicyItem pi : policyItems){
+            if(pi.getUsers().contains(userName)){
+                pi.accesses.clear();
+                pi.accesses.addAll(pi.getAccesses(types));
+                break;
+            }
+        }
+    }
+
     public void removeResource(String resourceType, String resourceName) {
         RangerResource rr = resources.get(resourceType);
         rr.values.remove(resourceName);
@@ -113,7 +120,11 @@ public class RangerV2Policy{
     public String getPolicyId(){return id;}
     public List<PolicyItem> getPolicyItems(){return policyItems;}
     public List<String> getUserList(){
-        return policyItems.get(0).getUsers();
+        List<String> users = new LinkedList<>();
+        for (PolicyItem policyItem: policyItems) {
+            users.addAll(policyItem.getUsers());
+        }
+        return users;
     }
     //Temp fix for citic case, do not pass group when create policy
     /**

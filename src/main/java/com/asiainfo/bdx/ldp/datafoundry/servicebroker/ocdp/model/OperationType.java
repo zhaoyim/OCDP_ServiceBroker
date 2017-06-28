@@ -5,14 +5,19 @@ package com.asiainfo.bdx.ldp.datafoundry.servicebroker.ocdp.model;
  */
 public enum OperationType {
     /**
-     * Indicates that a request is still being processed. Cloud Foundry will continue polling for the current state.
+     * Indicates that a service instance has been created.
      */
     PROVISION("provision"),
 
     /**
-     * Indicates that a request completed successfully. Cloud Foundry will stop polling for the current state.
+     * Indicates that a service instance has been deleted.
      */
-    DELETE("delete");
+    DELETE("delete"),
+
+    /**
+     * Indicates that a service instance has been updated.
+     */
+    UPDATE("update");
 
     private final String state;
 

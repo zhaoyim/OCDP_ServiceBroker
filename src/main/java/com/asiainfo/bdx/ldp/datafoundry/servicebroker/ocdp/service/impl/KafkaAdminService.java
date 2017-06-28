@@ -61,13 +61,13 @@ public class KafkaAdminService implements OCDPAdminService{
 	
 	@Override
 	public String provisionResources(String serviceDefinitionId, String planId, String serviceInstanceId,
-			String bindingId, Map<String, Object> cuzQuota) throws Exception {
+			Map<String, Object> cuzQuota) throws Exception {
 		OCTopic topic = new OCTopic(serviceInstanceId);
 		return createResources(topic, quotaPolicy(serviceDefinitionId, planId, cuzQuota));
 	}
 
 	@Override
-	public String createPolicyForTenant(String policyName, List<String> resources, String defaultUser,
+	public String createPolicyForResources(String policyName, List<String> resources, String defaultUser,
 			String groupName) {
         String policyId = null;
         RangerV2Policy policy = newPolicy(policyName);
@@ -83,7 +83,7 @@ public class KafkaAdminService implements OCDPAdminService{
 	}
 	
 	@Override
-	public boolean appendResourceToTenantPolicy(String policyId, String serviceInstanceResource) {
+	public boolean appendResourcesToPolicy(String policyId, String serviceInstanceResource) {
 		boolean result = ranger.appendResourceToV2Policy(policyId, serviceInstanceResource, Constants.REROURCE_TYPE);
 		LOG.info("Append kafka resource [{}] to policy [{}] returned by result [{}]", serviceInstanceResource, policyId, result);
 		return result;
@@ -102,14 +102,14 @@ public class KafkaAdminService implements OCDPAdminService{
 	}
 	
 	@Override
-	public boolean deletePolicyForTenant(String policyId) {
+	public boolean deletePolicyForResources(String policyId) {
 		boolean deleted = ranger.removeV2Policy(policyId);
 		LOG.info("Delete kafka policy [{}] from ranger with result: [{}]", policyId, deleted);
 		return deleted;
 	}
 
 	@Override
-	public boolean removeResourceFromTenantPolicy(String policyId, String serviceInstanceResource) {
+	public boolean removeResourceFromPolicy(String policyId, String serviceInstanceResource) {
 		boolean removed = ranger.removeResourceFromV2Policy(policyId, serviceInstanceResource, Constants.REROURCE_TYPE);
 		LOG.info("Remove resource [{}] from kafka policy [{}] return [{}]", serviceInstanceResource, policyId, removed);
 		return removed;
@@ -129,17 +129,17 @@ public class KafkaAdminService implements OCDPAdminService{
 	}
 	
 	@Override
-	public boolean appendUserToTenantPolicy(String policyId, String groupName, String accountName,
+	public boolean appendUserToPolicy(String policyId, String groupName, String userName,
 			List<String> permissions) {
-        boolean appended = ranger.appendUserToV2Policy(policyId, groupName, accountName, permissions);
-        LOG.info("Append user [{}] to kafka ranger policy [{}] by accesses [{}] with result: {}", accountName, policyId, permissions, appended);
+        boolean appended = ranger.appendUserToV2Policy(policyId, groupName, userName, permissions);
+        LOG.info("Append user [{}] to kafka ranger policy [{}] by accesses [{}] with result: {}", userName, policyId, permissions, appended);
         return appended;
 	}
 
 	@Override
-	public boolean removeUserFromTenantPolicy(String policyId, String accountName) {
-        boolean removed = ranger.removeUserFromV2Policy(policyId, accountName);
-        LOG.info("Remove user [{}] from kafka ranger policy [{}] with result: {}", accountName, policyId, removed);
+	public boolean removeUserFromPolicy(String policyId, String userName) {
+        boolean removed = ranger.removeUserFromV2Policy(policyId, userName);
+        LOG.info("Remove user [{}] from kafka ranger policy [{}] with result: {}" + userName, policyId, removed);
 		return removed;
 	}
 	
@@ -151,7 +151,7 @@ public class KafkaAdminService implements OCDPAdminService{
 	}
 	
 	@Override
-	public List<String> getResourceFromTenantPolicy(String policyId) {
+	public List<String> getResourceFromPolicy(String policyId) {
 		List<String> resources = ranger.getResourcsFromV2Policy(policyId, Constants.REROURCE_TYPE);
 		LOG.info("Kafka Resources from policy [{}]: [{}]", policyId, resources);
         return resources;

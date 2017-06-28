@@ -60,6 +60,7 @@ public class OCDPServiceInstanceService implements ServiceInstanceService {
         this.etcdClient = clusterConfig.getEtcdClient();
         this.instanceProvisionStateMap = new HashMap<>();
         this.instanceDeleteStateMap = new HashMap<>();
+        this.instanceUpdateStateMap = new HashMap<>();
     }
 
     @Override
@@ -68,7 +69,7 @@ public class OCDPServiceInstanceService implements ServiceInstanceService {
             String serviceDefinitionId = request.getServiceDefinitionId();
             String serviceInstanceId = request.getServiceInstanceId();
             String planId = request.getPlanId();
-            logger.info("Receive request to create service instance " + serviceInstanceId + ".");
+            logger.info(request.toString());
 
             ServiceInstance instance = repository.findOne(serviceInstanceId);
             // Check service instance and planid
@@ -104,7 +105,7 @@ public class OCDPServiceInstanceService implements ServiceInstanceService {
             GetLastServiceOperationRequest request) throws OCDPServiceException {
     	try {
             String serviceInstanceId = request.getServiceInstanceId();
-            // Determine operation type: provision or delete
+            // Determine operation type: provision, delete or update
             OperationType operationType = getOperationType(serviceInstanceId);
             if (operationType == null){
                 throw new OCDPServiceException("Service instance " + serviceInstanceId + " not exist.");
@@ -116,6 +117,9 @@ public class OCDPServiceInstanceService implements ServiceInstanceService {
                 is_operation_done = responseFuture.isDone();
             } else if( operationType == OperationType.DELETE){
                 Future<DeleteServiceInstanceResponse> responseFuture = this.instanceDeleteStateMap.get(serviceInstanceId);
+                is_operation_done = responseFuture.isDone();
+            } else if ( operationType == OperationType.UPDATE){
+                Future<UpdateServiceInstanceResponse> responseFuture = this.instanceUpdateStateMap.get(serviceInstanceId);
                 is_operation_done = responseFuture.isDone();
             }
             // Return operation type
@@ -142,6 +146,7 @@ public class OCDPServiceInstanceService implements ServiceInstanceService {
     	try {
             String serviceInstanceId = request.getServiceInstanceId();
             logger.info("Receive request to delete service instance " + serviceInstanceId + " .");
+            logger.info(request.toString());
             ServiceInstance instance = repository.findOne(serviceInstanceId);
             // Check service instance id
             if (instance == null) {
@@ -158,7 +163,6 @@ public class OCDPServiceInstanceService implements ServiceInstanceService {
             } else {
                 response = service.doDeleteServiceInstance(request, instance);
             }
-            logger.info("Delete service instance " + serviceInstanceId + " successfully!");
             return response;
 		} catch (Exception e) {
 			logger.error("Delete ServiceInstance error: ", e);
@@ -171,31 +175,32 @@ public class OCDPServiceInstanceService implements ServiceInstanceService {
     public UpdateServiceInstanceResponse updateServiceInstance(UpdateServiceInstanceRequest request)
             throws OCDPServiceException {
     	try {
+            String serviceInstanceId = request.getServiceInstanceId();
             Map<String, Object> params = request.getParameters();
-            String accountName = (String)params.get("user_name");
+            String userName = (String)params.get("user_name");
             logger.info("Receive request to update service Instance.");
+            logger.info(request.toString());
+            ServiceInstance instance = repository.findOne(serviceInstanceId);
+            // Check service instance id
+            if (instance == null) {
+                throw new ServiceInstanceDoesNotExistException(serviceInstanceId);
+            }
             String password;
-            if(! BrokerUtil.isLDAPUserExist(ldap, accountName)){
+            if(! BrokerUtil.isLDAPUserExist(ldap, userName)){
                 password = UUID.randomUUID().toString();
             }else {
                 password = etcdClient.readToString(
-                        "/servicebroker/ocdp/user/krb/" + accountName + "@" + clusterConfig.getKrbRealm());
+                        "/servicebroker/ocdp/user/krb/" + userName + "@" + clusterConfig.getKrbRealm());
             }
             UpdateServiceInstanceResponse response;
             OCDPServiceInstanceCommonService service = getOCDPServiceInstanceCommonService();
             if (request.isAsyncAccepted()){
                 Future<UpdateServiceInstanceResponse> responseFuture = service.doUpdateServiceInstanceAsync(
-                        request, password);
+                        request, instance, password);
                 this.instanceUpdateStateMap.put(request.getServiceInstanceId(), responseFuture);
-                 Map<String, Object> credentials = new HashMap<String, Object>() {
-                     {
-                         put("username", accountName);
-                         put("password", password);
-                     }
-                 };
-                 response = new OCDPUpdateServiceInstanceResponse().withCredential(credentials).withAsync(true);
+                response = new OCDPUpdateServiceInstanceResponse().withAsync(true);
             }else {
-                response = service.doUpdateServiceInstance(request, password);
+                response = service.doUpdateServiceInstance(request, instance, password);
             }
             return response;
 		} catch (Exception e) {
@@ -214,6 +219,8 @@ public class OCDPServiceInstanceService implements ServiceInstanceService {
             return OperationType.PROVISION;
         } else if (this.instanceDeleteStateMap.get(serviceInstanceId) != null){
             return OperationType.DELETE;
+        } else if (this.instanceUpdateStateMap.get(serviceInstanceId) != null){
+            return OperationType.UPDATE;
         } else {
             return null;
         }
@@ -226,6 +233,10 @@ public class OCDPServiceInstanceService implements ServiceInstanceService {
         }else if(operationType == OperationType.DELETE){
             // For instance delete case, return true if instance information not existed in etcd
             return (repository.findOne(serviceInstanceId) == null);
+        } else if (operationType == OperationType.UPDATE) {
+            // Temp solution: For instance update case, just return true if update operation is done
+            // Need a better solution in future to determine update operation is fail or success
+            return true;
         } else {
             return false;
         }
@@ -236,6 +247,8 @@ public class OCDPServiceInstanceService implements ServiceInstanceService {
             this.instanceProvisionStateMap.remove(serviceInstanceId);
         } else if ( operationType == OperationType.DELETE){
             this.instanceDeleteStateMap.remove(serviceInstanceId);
+        } else if ( operationType == OperationType.UPDATE){
+            this.instanceUpdateStateMap.remove(serviceInstanceId);
         }
     }
 }

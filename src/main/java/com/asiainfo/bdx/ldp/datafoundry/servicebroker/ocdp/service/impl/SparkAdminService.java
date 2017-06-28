@@ -43,13 +43,13 @@ public class SparkAdminService implements OCDPAdminService {
 
     @Override
     public String provisionResources(String serviceDefinitionId, String planId, String serviceInstanceId,
-                                     String bindingId, Map<String, Object> cuzQuota) throws Exception {
+                                     Map<String, Object> cuzQuota) throws Exception {
         Map<String, String> quota = this.yarnCommonService.getQuotaFromPlan(serviceDefinitionId, planId, cuzQuota);
         return yarnCommonService.createQueue(quota.get(OCDPConstants.YARN_QUEUE_QUOTA));
     }
 
     @Override
-    public String createPolicyForTenant(String policyName, final List<String> resources, String tenantName, String groupName) {
+    public String createPolicyForResources(String policyName, final List<String> resources, String userName, String groupName) {
         /**
          * Temp fix:
          * Create ranger policy to make sure current tenant can use /user/<account name> folder to store some files generate by spark or mr.
@@ -58,29 +58,29 @@ public class SparkAdminService implements OCDPAdminService {
          */
         List <String> hdfsFolderForJobExec = new ArrayList<String>(){
             {
-                add("/user/" + tenantName);
+                add("/user/" + userName);
                 add("/spark-history");
             }
         };
-        if (this.hdfsAdminService.createPolicyForTenant(tenantName + "_" + policyName, hdfsFolderForJobExec, tenantName, groupName) != null){
-            logger.info("Assign permissions for /user/" + tenantName + " folder.");
+        if (this.hdfsAdminService.createPolicyForResources(userName + "_" + policyName, hdfsFolderForJobExec, userName, groupName) != null){
+            logger.info("Assign permissions for /user/" + userName + " folder.");
         }
 
         String resource = resources.get(0);
-        String yarnPolicyId = this.yarnCommonService.assignPermissionToQueue(policyName, resource, tenantName, groupName);
+        String yarnPolicyId = this.yarnCommonService.assignPermissionToQueue(policyName, resource, userName, groupName);
         // return yarn policy id
         return (yarnPolicyId != null) ? yarnPolicyId : null;
     }
 
     @Override
-    public boolean appendResourceToTenantPolicy(String policyId, String serviceInstanceResource){
+    public boolean appendResourcesToPolicy(String policyId, String serviceInstanceResource){
         return yarnCommonService.appendResourceToQueuePermission(policyId, serviceInstanceResource);
     }
 
     @Override
-    public boolean appendUserToTenantPolicy(
-            String policyId, String groupName, String accountName, List<String> permissions) {
-        return this.yarnCommonService.appendUserToQueuePermission(policyId, groupName, accountName, permissions);
+    public boolean appendUserToPolicy(
+            String policyId, String groupName, String userName, List<String> permissions) {
+        return this.yarnCommonService.appendUserToQueuePermission(policyId, groupName, userName, permissions);
     }
 
     @Override
@@ -89,22 +89,22 @@ public class SparkAdminService implements OCDPAdminService {
     }
 
     @Override
-    public boolean deletePolicyForTenant(String policyId) {
+    public boolean deletePolicyForResources(String policyId) {
         return this.yarnCommonService.unassignPermissionFromQueue(policyId);
     }
 
     @Override
-    public boolean removeResourceFromTenantPolicy(String policyId, String serviceInstanceResource){
+    public boolean removeResourceFromPolicy(String policyId, String serviceInstanceResource){
         return yarnCommonService.removeResourceFromQueuePermission(policyId, serviceInstanceResource);
     }
 
     @Override
-    public boolean removeUserFromTenantPolicy(String policyId, String accountName) {
-        return  this.yarnCommonService.removeUserFromQueuePermission(policyId, accountName);
+    public boolean removeUserFromPolicy(String policyId, String userName) {
+        return  this.yarnCommonService.removeUserFromQueuePermission(policyId, userName);
     }
 
     @Override
-    public  List<String> getResourceFromTenantPolicy(String policyId){
+    public  List<String> getResourceFromPolicy(String policyId){
         return yarnCommonService.getResourceFromQueuePolicy(policyId);
     }
 
