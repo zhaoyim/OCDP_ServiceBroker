@@ -6,7 +6,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import com.asiainfo.bdx.ldp.datafoundry.servicebroker.ocdp.utils.OCDPConstants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,6 +18,8 @@ import com.asiainfo.bdx.ldp.datafoundry.servicebroker.ocdp.model.ServiceInstance
 import com.asiainfo.bdx.ldp.datafoundry.servicebroker.ocdp.service.OCDPAdminService;
 import com.asiainfo.bdx.ldp.datafoundry.servicebroker.ocdp.service.common.HiveCommonService;
 import com.asiainfo.bdx.ldp.datafoundry.servicebroker.ocdp.service.common.YarnCommonService;
+import com.asiainfo.bdx.ldp.datafoundry.servicebroker.ocdp.utils.OCDPConstants;
+import com.google.common.collect.Lists;
 
 /**
  * Created by baikai on 5/19/16.
@@ -101,9 +102,9 @@ public class HiveAdminService implements OCDPAdminService {
         boolean userAppendToHivePolicy = this.hiveCommonService.appendUserToDatabasePermission(
                 policyIds[0], groupName, userName, permissions);
         boolean userAppendToHDFSPolicy = this.hdfsAdminService.appendUserToPolicy(
-                policyIds[1], groupName, userName, permissions);
+                policyIds[1], groupName, userName, Lists.newArrayList("read", "write","execute"));
         boolean userAppendToYarnPolicy = this.yarnCommonService.appendUserToQueuePermission(
-                policyIds[2], groupName, userName, permissions);
+                policyIds[2], groupName, userName, Lists.newArrayList("submit-app", "admin-queue"));
         return userAppendToHivePolicy && userAppendToHDFSPolicy && userAppendToYarnPolicy;
     }
 

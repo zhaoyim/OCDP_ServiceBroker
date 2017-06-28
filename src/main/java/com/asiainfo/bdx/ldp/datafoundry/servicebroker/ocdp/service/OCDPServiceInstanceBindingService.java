@@ -146,7 +146,8 @@ public class OCDPServiceInstanceBindingService implements ServiceInstanceBinding
         if (serviceInstancePolicyId == null || serviceInstancePolicyId.length() == 0){
             throw new OCDPServiceException("Ranger policy not found.");
         }
-        if (rc.getUsersFromV2Policy(serviceInstancePolicyId).size() == 1) {
+        List<String> users = rc.getUsersFromV2Policy(serviceInstancePolicyId);
+        if (users.size() == 1 && users.contains(userName)) {
             // Delete ranger policy if user is last one
             if (! ocdp.deletePolicyForResources(serviceInstancePolicyId)){
                 throw new OCDPServiceException("Ranger policy delete failed.");
