@@ -90,7 +90,7 @@ public class YarnCommonService {
         ArrayList<String> conditions = new ArrayList<String>();
         RangerV2Policy rp = new RangerV2Policy(
                 policyName,"","This is Yarn Policy",clusterConfig.getClusterName()+"_yarn",true,true);
-        rp.addResources(OCDPConstants.YARN_RANGER_RESOURCE_TYPE, queueList,false);
+        rp.addResources2(OCDPConstants.YARN_RANGER_RESOURCE_TYPE, queueList,false, true);
         rp.addPolicyItems(userList,groupList,conditions,false,types);
         String newPolicyString = rc.createV2Policy(rp);
         if (newPolicyString != null){
@@ -139,8 +139,14 @@ public class YarnCommonService {
     }
 
     public boolean unassignPermissionFromQueue(String policyId){
-        logger.info("Removing yarn policy [{}] ...", policyId);
-        return this.rc.removeV2Policy(policyId);
+        if (rc.getV2Policy(policyId) != null) {
+            logger.info("Unassign submit/admin permission to yarn queue.");
+            return this.rc.removeV2Policy(policyId);
+        }
+        else {
+            logger.warn("ranger policy " + policyId + " doesn't exist, do not need to remove");
+            return true;
+        }
     }
 //not used
     public boolean removeResourceFromQueuePermission(String policyId, String queueName){

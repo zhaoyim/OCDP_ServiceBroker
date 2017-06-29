@@ -83,8 +83,8 @@ Configure connectivity properties (e.g. LDAP, kerberos, Hadoop ...) in system en
 If NameNode and ResourceManager HA enabled, you need to configure following environment variables.
 
     export HDFS_NAMESERVICES=<dfs.nameservices in custom hdfs-site if HA enabled>
-    export HDFS_NAMENODE1_ADDR=<dfs.namenode.http-address in custom hdfs-site if HA enabled>
-    export HDFS_NAMENODE2_ADDR=<dfs.namenode.http-address in custom hdfs-site if HA enabled>
+    export HDFS_NAMENODE1_ADDR=<dfs.namenode.rpc-address in custom hdfs-site if HA enabled>
+    export HDFS_NAMENODE2_ADDR=<dfs.namenode.rpc-address in custom hdfs-site if HA enabled>
     export HDFS_NAMENODE1=<dfs.ha.namenodes in custom hdfs-site if HA enabled(e.g. nn1)>
     export HDFS_NAMENODE2=<dfs.ha.namenodes in custom hdfs-site if HA enabled(e.g. nn2)>
     export YARN_RESOURCEMANAGER_URL2=<Yarn Standby Resource Manager URL>
