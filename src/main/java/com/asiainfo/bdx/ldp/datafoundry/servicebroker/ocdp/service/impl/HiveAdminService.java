@@ -101,10 +101,13 @@ public class HiveAdminService implements OCDPAdminService {
         String[] policyIds = policyId.split(":");
         boolean userAppendToHivePolicy = this.hiveCommonService.appendUserToDatabasePermission(
                 policyIds[0], groupName, userName, permissions);
+        logger.info("User [{}] added to hive policy [{}] with result [{}].", userName, policyIds[0], userAppendToHivePolicy);
         boolean userAppendToHDFSPolicy = this.hdfsAdminService.appendUserToPolicy(
                 policyIds[1], groupName, userName, Lists.newArrayList("read", "write","execute"));
+        logger.info("User [{}] added to hdfs policy [{}] with result [{}].", userName, policyIds[1], userAppendToHDFSPolicy);
         boolean userAppendToYarnPolicy = this.yarnCommonService.appendUserToQueuePermission(
                 policyIds[2], groupName, userName, Lists.newArrayList("submit-app", "admin-queue"));
+        logger.info("User [{}] added to yarn policy [{}] with result [{}].", userName, policyIds[2], userAppendToYarnPolicy);
         return userAppendToHivePolicy && userAppendToHDFSPolicy && userAppendToYarnPolicy;
     }
 
@@ -112,18 +115,20 @@ public class HiveAdminService implements OCDPAdminService {
     public void deprovisionResources(String serviceInstanceResuorceName)throws Exception{
         String[] resources = serviceInstanceResuorceName.split(":");
         this.hiveCommonService.deleteDatabase(resources[0]);
+        logger.info("Delete database [{}] successful!", resources[0]);
         this.yarnCommonService.deleteQueue(resources[1]);
+        logger.info("Delete queue [{}] successful!", resources[1]);
     }
 
     @Override
     public boolean deletePolicyForResources(String policyId){
         String[] policyIds = policyId.split(":");
-        logger.info("Unassign select/update/create/drop/alter/index/lock/all permission to hive database.");
         boolean hivePolicyDeleted = this.hiveCommonService.unassignPermissionFromDatabase(policyIds[0]);
-        logger.info("Unassign read/write/execute permission to hdfs folder.");
+        logger.info("Delete hive policy [{}] with result [{}].", policyIds[0], hivePolicyDeleted);
         boolean hdfsPolicyDeleted = this.hdfsAdminService.deletePolicyForResources(policyIds[1]);
-        logger.info("Unassign submit/admin permission to yarn queue.");
+        logger.info("Delete hdfs policy [{}] with result [{}].", policyIds[1], hdfsPolicyDeleted);
         boolean yarnPolicyDeleted = this.yarnCommonService.unassignPermissionFromQueue(policyIds[2]);
+        logger.info("Delete yarn policy [{}] with result [{}].", policyIds[2], yarnPolicyDeleted);
         return hivePolicyDeleted && hdfsPolicyDeleted && yarnPolicyDeleted;
     }
 
@@ -142,9 +147,12 @@ public class HiveAdminService implements OCDPAdminService {
         String[] policyIds = policyId.split(":");
         boolean userRemovedFromHivePolicy = this.hiveCommonService.removeUserFromDatabasePermission(
                 policyIds[0], userName);
+        logger.info("User [{}] removed from hive policy [{}] with result [{}].", userName, policyIds[0], userRemovedFromHivePolicy);
         boolean userRemovedFromHDFSPolicy = this.hdfsAdminService.removeUserFromPolicy(policyIds[1], userName);
+        logger.info("User [{}] removed from hdfs policy [{}] with result [{}].", userName, policyIds[1], userRemovedFromHDFSPolicy);
         boolean userRemovedFromYarnPolicy = this.yarnCommonService.removeUserFromQueuePermission(
                 policyIds[2], userName);
+        logger.info("User [{}] removed from yarn policy [{}] with result [{}].", userName, policyIds[2], userRemovedFromYarnPolicy);
         return userRemovedFromHivePolicy && userRemovedFromHDFSPolicy && userRemovedFromYarnPolicy;
     }
 

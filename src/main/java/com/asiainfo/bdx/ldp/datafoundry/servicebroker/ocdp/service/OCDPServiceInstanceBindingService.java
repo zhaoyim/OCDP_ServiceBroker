@@ -134,9 +134,8 @@ public class OCDPServiceInstanceBindingService implements ServiceInstanceBinding
 	        // Convert principal name to normal user name
 	        userName = userName.split("@")[0];
 	        OCDPAdminService ocdp = getOCDPAdminService(serviceDefinitionId);
-	        logger.info("Revoke role, username:  " + userName + ", service instance id: " + serviceInstanceId );
+	        logger.info("Unbinding username: " + userName + ", service instance id: " + serviceInstanceId );
 	        removeUserFromServiceInstance(ocdp, instance, userName);
-
 	        // 2) Delete service instance binding info from repository/etcd
 	        bindingRepository.delete(serviceInstanceId, bindingId);
 		} catch (Exception e) {
@@ -169,7 +168,7 @@ public class OCDPServiceInstanceBindingService implements ServiceInstanceBinding
                 if (! ocdp.removeUserFromPolicy(serviceInstancePolicyId, userName) ){
                     throw new OCDPServiceException("Remove user from Ranger policy failed.");
                 }
-                logger.info("remove user " + userName + " from tenant" + userName + ", tenant policy id is " + serviceInstancePolicyId);
+                logger.info("Successfully removed user " + userName + " from policy " + serviceInstancePolicyId);
             }
 		} catch (Exception e) {
 			e.printStackTrace();

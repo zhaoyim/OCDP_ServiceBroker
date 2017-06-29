@@ -157,7 +157,7 @@ public class rangerClient {
                 logger.error("Update policy [{}] failed: " + response.getStatusLine().getReasonPhrase(), policyID);
 			}
             response.close();
-            logger.info("Update ranger policy successfully!");
+            logger.info("Update ranger [{}] policy successfully!", policyID);
         }catch (IOException e){
             e.printStackTrace();
         }
