@@ -9,6 +9,7 @@ import java.net.URI;
 
 import com.asiainfo.bdx.ldp.datafoundry.servicebroker.ocdp.config.CatalogConfig;
 import com.asiainfo.bdx.ldp.datafoundry.servicebroker.ocdp.config.ClusterConfig;
+import com.asiainfo.bdx.ldp.datafoundry.servicebroker.ocdp.exception.OCDPServiceException;
 import com.asiainfo.bdx.ldp.datafoundry.servicebroker.ocdp.model.RangerV2Policy;
 import com.asiainfo.bdx.ldp.datafoundry.servicebroker.ocdp.model.ServiceInstance;
 import com.google.gson.Gson;
@@ -168,8 +169,7 @@ public class HDFSAdminService implements OCDPAdminService{
             policyId = newPolicyObj.getPolicyId();
         }
         else {
-            logger.error("Failed to assign read/write/execute permission to hdfs folder " + resources.toString());
-
+            logger.error("Failed to create hdfs policy to user [{}] of resources [{}] ", userName, resources);
         }
         return policyId;
     }
