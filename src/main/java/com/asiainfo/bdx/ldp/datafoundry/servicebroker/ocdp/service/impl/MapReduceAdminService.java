@@ -43,7 +43,7 @@ public class MapReduceAdminService implements OCDPAdminService{
     public String provisionResources(String serviceDefinitionId, String planId, String serviceInstanceId,
                                      Map<String, Object> cuzQuota) throws Exception {
         Map<String, String> quota = this.yarnCommonService.getQuotaFromPlan(serviceDefinitionId, planId, cuzQuota);
-        return this.yarnCommonService.createQueue(quota.get(OCDPConstants.YARN_QUEUE_QUOTA));
+        return yarnCommonService.createQueue(quota.get(OCDPConstants.YARN_QUEUE_QUOTA));
     }
 
     @Override
@@ -56,7 +56,13 @@ public class MapReduceAdminService implements OCDPAdminService{
                 add("/tmp/dummy_" + UUID.randomUUID().toString());
             }
         };
-        String hdfsPolicyId = this.hdfsAdminService.createPolicyForResources(
+        try{
+            hdfsAdminService.createHDFSDir(hdfsFolderForJobExec.get(0), null, null);
+        }
+        catch (IOException e) {
+            return null;
+        }
+        String hdfsPolicyId = hdfsAdminService.createPolicyForResources(
                 userName + "_" + policyName, hdfsFolderForJobExec, userName, groupName);
         if ( hdfsPolicyId != null){
             logger.info("Assign permissions for folder " + hdfsFolderForJobExec.toString()  + " with policy id " + hdfsPolicyId);
@@ -80,10 +86,16 @@ public class MapReduceAdminService implements OCDPAdminService{
     public boolean appendUserToPolicy(
             String policyId, String groupName, String userName, List<String> permissions) {
         String[] policyIds = policyId.split(":");
+        String hdfsPath = "/user/" + userName;
+        try{
+            this.hdfsAdminService.createHDFSDir(hdfsPath, null, null);
+        }
+        catch (IOException e) {
+            return false;
+        }
         boolean userAppendToHDFSPolicy = this.hdfsAdminService.appendUserToPolicy(
                 policyIds[0], groupName, userName, new ArrayList<String>(){{add("read");add("write");add("execute");}});
-        boolean resourceAppendToHDFSPolicy = this.hdfsAdminService.appendResourcesToPolicy(
-                policyIds[0], "/user/" + userName);
+        boolean resourceAppendToHDFSPolicy = this.hdfsAdminService.appendResourcesToPolicy(policyIds[0], hdfsPath);
         boolean userAppendToYarnPolicy = this.yarnCommonService.appendUserToQueuePermission(
                 policyIds[1], groupName, userName, permissions);
         return userAppendToHDFSPolicy && resourceAppendToHDFSPolicy && userAppendToYarnPolicy;
@@ -97,9 +109,9 @@ public class MapReduceAdminService implements OCDPAdminService{
     @Override
     public boolean deletePolicyForResources(String policyId) {
         String[] policyIds = policyId.split(":");
-        logger.info("Unassign read/write/execute permission to hdfs folder.");
+        logger.info("Delete hdfs ranger policy " + policyIds[0]);
         boolean hdfsPolicyDeleted = this.hdfsAdminService.deletePolicyForResources(policyIds[0]);
-        logger.info("Unassign submit/admin permission to yarn queue.");
+        logger.info("Delete yarn ranger policy " + policyIds[1]);
         boolean yarnPolicyDeleted = this.yarnCommonService.unassignPermissionFromQueue(policyIds[1]);
         return hdfsPolicyDeleted && yarnPolicyDeleted;
     }
