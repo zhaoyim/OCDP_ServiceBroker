@@ -68,7 +68,7 @@ public class HiveAdminService implements OCDPAdminService {
         String[] resourcesList = resources.get(0).split(":");
         String hivePolicyId = this.hiveCommonService.assignPermissionToDatabase(
                 policyName, resourcesList[0], userName, groupName);
-        logger.info("Create corresponding hdfs policy for hive user");
+        logger.info("Creating hive policy for user [{}] with resource [{}] with result policyid [{}].", userName, resourcesList[0], hivePolicyId);
         List<String> hdfsFolders = new ArrayList<String>(){
             {
                 add("/apps/hive/warehouse/" + resourcesList[0] + ".db");
@@ -79,9 +79,10 @@ public class HiveAdminService implements OCDPAdminService {
         };
         String hdfsPolicyId = this.hdfsAdminService.createPolicyForResources(
                 "hive_" + policyName, hdfsFolders, userName, groupName);
-        logger.info("Create corresponding yarn policy for hive user");
+        logger.info("Creating hdfs policy for user [{}] with resource [{}] with result policyid [{}].", userName, hdfsFolders, hdfsPolicyId);
         String yarnPolicyId = this.yarnCommonService.assignPermissionToQueue(
                 "hive_" + policyName, resourcesList[1], userName, groupName);
+        logger.info("Creating yarn policy for user [{}] with resource [{}] with result policyid [{}].", userName, resourcesList[1], yarnPolicyId);
         return (hivePolicyId != null && hdfsPolicyId != null && yarnPolicyId != null) ? hivePolicyId + ":" + hdfsPolicyId + ":" + yarnPolicyId : null;
     }
 
