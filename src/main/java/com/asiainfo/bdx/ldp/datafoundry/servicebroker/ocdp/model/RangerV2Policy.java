@@ -1,5 +1,6 @@
 package com.asiainfo.bdx.ldp.datafoundry.servicebroker.ocdp.model;
 
+import com.asiainfo.bdx.ldp.datafoundry.servicebroker.ocdp.utils.OCDPConstants;
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
@@ -58,7 +59,7 @@ public class RangerV2Policy{
         this.policyItems = new ArrayList<>();
     }
 
-    // For HBase/Hive/Yarn ranger policy
+    // For HBase/Hive ranger policy
     public void addResources(String resourceType, List<String> resourceList, boolean isExcludes){
         RangerResource rr = new RangerResource();
         rr.values.addAll(resourceList);
@@ -66,7 +67,7 @@ public class RangerV2Policy{
         resources.put(resourceType, rr);
     }
 
-    // For HDFS/Kafka ranger policy
+    // For HDFS/Kafka/Yarn ranger policy
     public void addResources2(String resourceType, List<String> resourceList, boolean isExcludes, boolean isRecursive){
         RangerResource2 rr = new RangerResource2();
         rr.values.addAll(resourceList);
@@ -76,8 +77,15 @@ public class RangerV2Policy{
     }
 
     public void updateResource(String resourceType, String resourceName) {
-        RangerResource rr = resources.get(resourceType);
-        rr.values.add(resourceName);
+        if (resourceType.equals(OCDPConstants.HDFS_RESOURCE_TYPE) ||
+                resourceType.equals(OCDPConstants.KAFKA_RESOURCE_TYPE) ||
+                resourceType.equals(OCDPConstants.YARN_RANGER_RESOURCE_TYPE)){
+            RangerResource2 rr = (RangerResource2)resources.get(resourceType);
+            rr.values.add(resourceName);
+        } else {
+            RangerResource rr = resources.get(resourceType);
+            rr.values.add(resourceName);
+        }
     }
 
     public void updateUserAccesses(String userName, List<String> types){
