@@ -1,5 +1,5 @@
 FROM registry.dataos.io/ocdp_service_brokers/service_brokers:citic
-RUN rm -rf datafoundry_servicebroker_ocdp/
+RUN rm -rf datafoundry_servicebroker_ocdp/*
 #EXPOSE 8080
 
 #RUN yum update -y && \
@@ -15,10 +15,11 @@ RUN rm -rf datafoundry_servicebroker_ocdp/
 
 #COPY src/main/docker/start.sh start.sh
 
-RUN git clone https://github.com/asiainfoLDP/datafoundry_servicebroker_ocdp.git && \
-    cd datafoundry_servicebroker_ocdp && \
-    git checkout citic && \
-    ./gradlew build
+ADD . ./datafoundry_servicebroker_ocdp
+
+RUN cd datafoundry_servicebroker_ocdp && \
+        git checkout citic && \
+        ./gradlew build
 
 RUN cp datafoundry_servicebroker_ocdp/build/libs/datafoundry-ocdp-service-broker.jar app.jar
 
