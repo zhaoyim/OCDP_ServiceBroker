@@ -128,6 +128,7 @@ public class OCDPServiceInstanceCommonService {
         if (serviceInstancePolicyId != null && serviceInstancePolicyId.length() != 0 ) {
         logger.info("Service instance policy exists, start to deleting policy " + serviceInstancePolicyId);
             if (!ocdp.deletePolicyForResources(serviceInstancePolicyId)) {
+            	logger.error("Ranger policy [{}] delete failed.", serviceInstancePolicyId);
                 throw new OCDPServiceException("Ranger policy delete failed.");
             }
         }
@@ -166,15 +167,17 @@ public class OCDPServiceInstanceCommonService {
             response = new UpdateServiceInstanceResponse().withAsync(false);
         } else {
             // Resize service instance
-            logger.info("Resize Service Instance: " + serviceInstanceId);
+            logger.info("Resizing service instance: " + serviceInstanceId);
             try{
                 ocdp.resizeResourceQuota(instance, params);
             } catch (IOException e){
                 e.printStackTrace();
+                throw new OCDPServiceException(e.getMessage());
             }
+            logger.info("Resizing service instance [{}] with params [{}] successful.", serviceInstanceId, params);
             response = new UpdateServiceInstanceResponse().withAsync(false);
         }
-        logger.info("Update service instance successfully!");
+        logger.info("Update service instance [{}] successfully!", serviceInstanceId);
         return response;
     }
 

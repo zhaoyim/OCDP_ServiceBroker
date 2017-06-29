@@ -139,7 +139,7 @@ public class YarnCommonService {
     }
 
     public boolean unassignPermissionFromQueue(String policyId){
-        logger.info("Unassign submit/admin permission to yarn queue.");
+        logger.info("Removing yarn policy [{}] ...", policyId);
         return this.rc.removeV2Policy(policyId);
     }
 //not used
@@ -183,10 +183,11 @@ public class YarnCommonService {
         if(resourceType.equals(OCDPConstants.HIVE_RESOURCE_TYPE)){
         	queueName = queueName.split(":")[1];
         }
-        logger.info("resize queue " + queueName + "...");
+        logger.info("Resizing queue " + queueName + "...");
         capacityCalculator.updateQueue(queueName, new Long(quota.get(OCDPConstants.YARN_QUEUE_QUOTA)));
         ambClient.updateCapacitySchedulerConfig(capacityCalculator.getProperties(),clusterConfig.getClusterName());
         ambClient.refreshYarnQueue(clusterConfig.getYarnRMHost());
+        logger.info("Resizing queue " + queueName + " successfully to " + quota.get(OCDPConstants.YARN_QUEUE_QUOTA));
     }
 
     private void renewCapacityCaculater(){

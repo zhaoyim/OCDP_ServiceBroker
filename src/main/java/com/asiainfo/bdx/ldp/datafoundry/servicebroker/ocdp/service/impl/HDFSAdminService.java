@@ -203,7 +203,7 @@ public class HDFSAdminService implements OCDPAdminService{
 
     @Override
     public boolean deletePolicyForResources(String policyId){
-        logger.info("Unassign read/write/execute permission to hdfs folder.");
+        logger.info("Removing hdfs policy [{}] ...", policyId);
         return this.rc.removeV2Policy(policyId);
     }
 
