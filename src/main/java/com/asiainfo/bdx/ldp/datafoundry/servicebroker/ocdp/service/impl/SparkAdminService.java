@@ -50,7 +50,6 @@ public class SparkAdminService implements OCDPAdminService {
     }
 
     @Override
-
     public String createPolicyForResources(String policyName, final List<String> resources, String userName, String groupName) {
         List <String> hdfsFolderForJobExec = new ArrayList<String>(){
             {

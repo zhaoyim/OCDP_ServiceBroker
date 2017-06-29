@@ -90,7 +90,7 @@ public class YarnCommonService {
         ArrayList<String> conditions = new ArrayList<String>();
         RangerV2Policy rp = new RangerV2Policy(
                 policyName,"","This is Yarn Policy",clusterConfig.getClusterName()+"_yarn",true,true);
-        rp.addResources(OCDPConstants.YARN_RANGER_RESOURCE_TYPE, queueList,false);
+        rp.addResources2(OCDPConstants.YARN_RANGER_RESOURCE_TYPE, queueList,false, true);
         rp.addPolicyItems(userList,groupList,conditions,false,types);
         String newPolicyString = rc.createV2Policy(rp);
         if (newPolicyString != null){
