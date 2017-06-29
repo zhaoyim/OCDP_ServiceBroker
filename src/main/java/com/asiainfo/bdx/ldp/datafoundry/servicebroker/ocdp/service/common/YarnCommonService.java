@@ -180,6 +180,9 @@ public class YarnCommonService {
         Map<String, String> quota = getQuotaFromPlan(serviceDefinitionId, planId, cuzQuota);
         String resourceType = OCDPAdminServiceMapper.getOCDPResourceType(serviceDefinitionId);
         String queueName = (String)instance.getServiceInstanceCredentials().get(resourceType);
+        if(resourceType.equals(OCDPConstants.HIVE_RESOURCE_TYPE)){
+        	queueName = queueName.split(":")[1];
+        }
         logger.info("resize queue " + queueName + "...");
         capacityCalculator.updateQueue(queueName, new Long(quota.get(OCDPConstants.YARN_QUEUE_QUOTA)));
         ambClient.updateCapacitySchedulerConfig(capacityCalculator.getProperties(),clusterConfig.getClusterName());
