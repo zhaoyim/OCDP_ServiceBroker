@@ -51,12 +51,6 @@ public class SparkAdminService implements OCDPAdminService {
 
     @Override
     public String createPolicyForResources(String policyName, final List<String> resources, String userName, String groupName) {
-        /**
-         * Temp fix:
-         * Create ranger policy to make sure current tenant can use /user/<account name> folder to store some files generate by spark or mr.
-         * For each tenant, just need only one ranger policy about this.
-         * If such policy exists, policy create will fail here.
-         */
         List <String> hdfsFolderForJobExec = new ArrayList<String>(){
             {
                 add("/user/" + userName);
@@ -65,7 +59,8 @@ public class SparkAdminService implements OCDPAdminService {
                 add("/tmp/dummy_" + UUID.randomUUID().toString());
             }
         };
-        String hdfsPolicyId = this.hdfsAdminService.createPolicyForResources(userName + "_" + policyName, hdfsFolderForJobExec, userName, groupName);
+        String hdfsPolicyId = this.hdfsAdminService.createPolicyForResources(
+                userName + "_" + policyName, hdfsFolderForJobExec, userName, groupName);
         if ( hdfsPolicyId != null){
             logger.info("Assign permissions for folder " + hdfsFolderForJobExec.toString()  + " with policy id " + hdfsPolicyId);
         }
@@ -90,7 +85,8 @@ public class SparkAdminService implements OCDPAdminService {
         String[] policyIds = policyId.split(":");
         boolean userAppendToHDFSPolicy = this.hdfsAdminService.appendUserToPolicy(
                 policyIds[0], groupName, userName, new ArrayList<String>(){{add("read");add("write");add("execute");}});
-        boolean resourceAppendToHDFSPolicy = this.hdfsAdminService.appendResourcesToPolicy(policyIds[0], "/user/" + userName);
+        boolean resourceAppendToHDFSPolicy = this.hdfsAdminService.appendResourcesToPolicy(
+                policyIds[0], "/user/" + userName);
         boolean userAppendToYarnPolicy = this.yarnCommonService.appendUserToQueuePermission(
                 policyIds[1], groupName, userName, permissions);
         return userAppendToHDFSPolicy && resourceAppendToHDFSPolicy && userAppendToYarnPolicy;
@@ -98,8 +94,7 @@ public class SparkAdminService implements OCDPAdminService {
 
     @Override
     public void deprovisionResources(String serviceInstanceResuorceName)throws Exception{
-        String[] resources = serviceInstanceResuorceName.split(":");
-        this.yarnCommonService.deleteQueue(resources[1]);
+        this.yarnCommonService.deleteQueue(serviceInstanceResuorceName);
     }
 
     @Override
@@ -121,7 +116,8 @@ public class SparkAdminService implements OCDPAdminService {
     public boolean removeUserFromPolicy(String policyId, String userName) {
         String[] policyIds = policyId.split(":");
         boolean userRemovedFromHDFSPolicy = this.hdfsAdminService.removeUserFromPolicy(policyIds[0], userName);
-        boolean resourceRemovedFromHDFSPolicy = this.hdfsAdminService.removeResourceFromPolicy(policyIds[0], "/user/" + userName);
+        boolean resourceRemovedFromHDFSPolicy = this.hdfsAdminService.removeResourceFromPolicy(
+                policyIds[0], "/user/" + userName);
         boolean userRemovedFromYarnPolicy = this.yarnCommonService.removeUserFromQueuePermission(
                 policyIds[1], userName);
         return userRemovedFromHDFSPolicy && resourceRemovedFromHDFSPolicy && userRemovedFromYarnPolicy;
