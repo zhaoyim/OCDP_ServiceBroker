@@ -68,7 +68,7 @@ public class HiveAdminService implements OCDPAdminService {
         String[] resourcesList = resources.get(0).split(":");
         String hivePolicyId = this.hiveCommonService.assignPermissionToDatabase(
                 policyName, resourcesList[0], userName, groupName);
-        logger.info("Create corresponding hdfs policy for hive user");
+        logger.info("Creating hive policy for user [{}] with resource [{}] with result policyid [{}].", userName, resourcesList[0], hivePolicyId);
         List<String> hdfsFolders = new ArrayList<String>(){
             {
                 add("/apps/hive/warehouse/" + resourcesList[0] + ".db");
@@ -77,15 +77,17 @@ public class HiveAdminService implements OCDPAdminService {
                 add("/ats/active");
             }
         };
+        createHdfsPath("/user/" + userName);
         String hdfsPolicyId = this.hdfsAdminService.createPolicyForResources(
                 "hive_" + policyName, hdfsFolders, userName, groupName);
-        logger.info("Create corresponding yarn policy for hive user");
+        logger.info("Creating hdfs policy for user [{}] with resource [{}] with result policyid [{}].", userName, hdfsFolders, hdfsPolicyId);
         String yarnPolicyId = this.yarnCommonService.assignPermissionToQueue(
                 "hive_" + policyName, resourcesList[1], userName, groupName);
+        logger.info("Creating yarn policy for user [{}] with resource [{}] with result policyid [{}].", userName, resourcesList[1], yarnPolicyId);
         return (hivePolicyId != null && hdfsPolicyId != null && yarnPolicyId != null) ? hivePolicyId + ":" + hdfsPolicyId + ":" + yarnPolicyId : null;
     }
 
-    @Override
+	@Override
     public boolean appendResourcesToPolicy(String policyId, String serviceInstanceResource){
         String[] resourcesList = serviceInstanceResource.split(":");
         boolean appendResourceToHivePolicy = hiveCommonService.appendResourceToDatabasePermission(
@@ -105,6 +107,7 @@ public class HiveAdminService implements OCDPAdminService {
         boolean userAppendToHDFSPolicy = this.hdfsAdminService.appendUserToPolicy(
                 policyIds[1], groupName, userName, Lists.newArrayList("read", "write","execute"));
         logger.info("User [{}] added to hdfs policy [{}] with result [{}].", userName, policyIds[1], userAppendToHDFSPolicy);
+        createHdfsPath("/user/" + userName);
         boolean userAppendToYarnPolicy = this.yarnCommonService.appendUserToQueuePermission(
                 policyIds[2], groupName, userName, Lists.newArrayList("submit-app", "admin-queue"));
         logger.info("User [{}] added to yarn policy [{}] with result [{}].", userName, policyIds[2], userAppendToYarnPolicy);
@@ -189,5 +192,18 @@ public class HiveAdminService implements OCDPAdminService {
         CatalogConfig catalogConfig = (CatalogConfig) this.context.getBean("catalogConfig");
         return catalogConfig.getQuotaFromPlan(serviceDefinitionId, planId, cuzQuota);
     }
+    
+    /**
+     * Create hdfs user path
+     * @param path
+     */
+    private void createHdfsPath(String path) {
+    	try {
+			this.hdfsAdminService.createHDFSDir(path, null, null);
+		} catch (IOException e) {
+			logger.error("Create hdfs user path [{}] failed!", e);
+			throw new RuntimeException(e);
+		}
+	}
 
 }

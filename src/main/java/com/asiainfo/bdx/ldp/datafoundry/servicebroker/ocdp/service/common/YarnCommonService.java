@@ -98,7 +98,7 @@ public class YarnCommonService {
             policyId = newPolicyObj.getPolicyId();
         }
         else {
-            logger.error("Failed to assign submit-app/admin-queue permission to yarn queue " + queueName);
+            logger.error("Failed to assign permissions to yarn queue [{}] for user [{}]." ,queueName, userName);
         }
         return policyId;
     }
