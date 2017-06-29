@@ -139,8 +139,14 @@ public class YarnCommonService {
     }
 
     public boolean unassignPermissionFromQueue(String policyId){
-        logger.info("Unassign submit/admin permission to yarn queue.");
-        return this.rc.removeV2Policy(policyId);
+        if (rc.getV2Policy(policyId) != null) {
+            logger.info("Unassign submit/admin permission to yarn queue.");
+            return this.rc.removeV2Policy(policyId);
+        }
+        else {
+            logger.warn("ranger policy " + policyId + " doesn't exist, do not need to remove");
+            return true;
+        }
     }
 //not used
     public boolean removeResourceFromQueuePermission(String policyId, String queueName){

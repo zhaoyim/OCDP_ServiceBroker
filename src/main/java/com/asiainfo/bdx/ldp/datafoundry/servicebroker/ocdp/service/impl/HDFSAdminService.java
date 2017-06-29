@@ -117,9 +117,11 @@ public class HDFSAdminService implements OCDPAdminService{
             this.dfs.initialize(URI.create(this.hdfsRPCUrl), this.conf);
             if (! this.dfs.exists(new Path(pathName))){
                 this.dfs.mkdirs(new Path(pathName), FS_PERMISSION);
-                this.dfs.setQuota(new Path(pathName),
-                        Long.parseLong(nameSpaceQuota), Long.parseLong(storageSpaceQuota));
-                logger.info("Create hdfs folder successful.");
+                if (nameSpaceQuota != null && storageSpaceQuota !=null) {
+                    this.dfs.setQuota(new Path(pathName),
+                            Long.parseLong(nameSpaceQuota), Long.parseLong(storageSpaceQuota));
+                }
+                logger.info("Create hdfs folder " + pathName + " successful.");
             } else {
                 logger.info("HDFS folder exists, not need to create again.");
             }
@@ -203,8 +205,14 @@ public class HDFSAdminService implements OCDPAdminService{
 
     @Override
     public boolean deletePolicyForResources(String policyId){
-        logger.info("Unassign read/write/execute permission to hdfs folder.");
-        return this.rc.removeV2Policy(policyId);
+        if (rc.getV2Policy(policyId) != null) {
+            logger.info("Unassign read/write/execute permission to hdfs folder.");
+            return this.rc.removeV2Policy(policyId);
+        }
+        else {
+            logger.warn("ranger policy " + policyId + " doesn't exist, do not need to remove");
+            return true;
+        }
     }
 
     @Override
