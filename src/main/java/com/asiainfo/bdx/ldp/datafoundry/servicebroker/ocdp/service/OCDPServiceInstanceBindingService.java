@@ -76,16 +76,19 @@ public class OCDPServiceInstanceBindingService implements ServiceInstanceBinding
 
 	        // Check binding instance exists
 	        if (bindingRepository.findOne(serviceInstanceId, bindingId) != null) {
+	        	logger.error("Binding [{}] already exist!", bindingId);
 	            throw new ServiceInstanceBindingExistsException(serviceInstanceId, bindingId);
 	        }
 	        // Check service plan exists
 	        String planId = request.getPlanId();
 	        if(! planId.equals(OCDPAdminServiceMapper.getOCDPServicePlan(serviceDefinitionId))){
+	        	logger.error("Unknown plan id: " + planId);
 	            throw new ServiceBrokerInvalidParametersException("Unknown plan id: " + planId);
 	        }
 	        // Check service instance exists
 	        ServiceInstance instance = repository.findOne(serviceInstanceId);
 	        if (instance == null) {
+	        	logger.error("Service instance not exit: " + serviceInstanceId);
 	            throw new ServiceInstanceDoesNotExistException(serviceInstanceId);
 	        }
 	        // Construct service instance credentials for binding user

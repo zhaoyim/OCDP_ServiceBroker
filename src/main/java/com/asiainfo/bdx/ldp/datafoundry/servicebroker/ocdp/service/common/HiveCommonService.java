@@ -86,7 +86,7 @@ public class HiveCommonService {
     }
 
     public String assignPermissionToDatabase(String policyName, final String dbName, String userName, String groupName){
-        logger.info("Assign select/update/create/drop/alter/index/lock/all permission to hive database.");
+        logger.info("Assigning select/update/create/drop/alter/index/lock/all permission to hive database.");
         String policyId = null;
         ArrayList<String> dbList = new ArrayList<String>(){{add(dbName);}};
         ArrayList<String> tbList = new ArrayList<String>(){{add("*");}};
@@ -106,7 +106,10 @@ public class HiveCommonService {
         if (newPolicyString != null){
             RangerV2Policy newPolicyObj = gson.fromJson(newPolicyString, RangerV2Policy.class);
             policyId = newPolicyObj.getPolicyId();
+            logger.info("Assign permissions [{}] of user [{}] to hive database [{}] successful with policyid [{}].", types, userName, dbName, policyId);
+            return policyId;
         }
+        logger.error("Assign permissions of user [{}] to hive database [{}] failed!", userName, dbName);
         return policyId;
     }
 
