@@ -40,8 +40,9 @@ public class YarnCapacityCalculator {
     /**
      * A Method to apply queue with capacity quota
      * @param quota
+     * @param serviceInstanceId 
      */
-    public String applyQueue(Long quota){
+    public String applyQueue(Long quota, String serviceInstanceId){
 
         String emptyQueue = null;
         //To make sure that the sum of all the queues capacity equals 100%, the patch for ambari server to support
@@ -60,7 +61,7 @@ public class YarnCapacityCalculator {
             properties.replace("yarn.scheduler.capacity.root."+emptyQueue+".maximum-capacity","0",targetQueueCapacity);
         }
         else {
-            String newQueue = UUID.randomUUID().toString();
+            String newQueue = serviceInstanceId;
             emptyQueue = newQueue;
             properties.replace("yarn.scheduler.capacity.root.queues",allQueues,allQueues+","+newQueue);
             properties.put("yarn.scheduler.capacity.root."+newQueue+".capacity",targetQueueCapacity);
