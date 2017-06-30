@@ -68,11 +68,11 @@ public class OCDPServiceInstanceBindingService implements ServiceInstanceBinding
 	public CreateServiceInstanceBindingResponse createServiceInstanceBinding(
             CreateServiceInstanceBindingRequest request) throws OCDPServiceException {
 		try {
+	        logger.info("Receiving binding request: " + request);
 	        String serviceDefinitionId = request.getServiceDefinitionId();
 	        String bindingId = request.getBindingId();
 	        String serviceInstanceId = request.getServiceInstanceId();
 	        Map<String, Object> params = request.getParameters();
-	        logger.info(request.toString());
 
 	        // Check binding instance exists
 	        if (bindingRepository.findOne(serviceInstanceId, bindingId) != null) {
@@ -115,6 +115,7 @@ public class OCDPServiceInstanceBindingService implements ServiceInstanceBinding
 	public void deleteServiceInstanceBinding(DeleteServiceInstanceBindingRequest request)
             throws OCDPServiceException{
 		try {
+	        logger.info("Receiving unbinding request: " + request);
 	        String serviceInstanceId = request.getServiceInstanceId();
 	        String serviceDefinitionId = request.getServiceDefinitionId();
 	        String bindingId = request.getBindingId();
