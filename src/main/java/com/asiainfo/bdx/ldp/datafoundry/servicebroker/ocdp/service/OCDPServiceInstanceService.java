@@ -66,10 +66,10 @@ public class OCDPServiceInstanceService implements ServiceInstanceService {
     @Override
     public CreateServiceInstanceResponse createServiceInstance(
             CreateServiceInstanceRequest request) throws OCDPServiceException {
+        	logger.info("Receiving create request: " + request);
             String serviceDefinitionId = request.getServiceDefinitionId();
             String serviceInstanceId = request.getServiceInstanceId();
             String planId = request.getPlanId();
-            logger.info(request.toString());
 
             ServiceInstance instance = repository.findOne(serviceInstanceId);
             // Check service instance and planid
@@ -104,6 +104,7 @@ public class OCDPServiceInstanceService implements ServiceInstanceService {
     public GetLastServiceOperationResponse getLastOperation(
             GetLastServiceOperationRequest request) throws OCDPServiceException {
     	try {
+            logger.info("Receiving getLastOperation request: " + request);
             String serviceInstanceId = request.getServiceInstanceId();
             // Determine operation type: provision, delete or update
             OperationType operationType = getOperationType(serviceInstanceId);
@@ -144,9 +145,9 @@ public class OCDPServiceInstanceService implements ServiceInstanceService {
     public DeleteServiceInstanceResponse deleteServiceInstance(DeleteServiceInstanceRequest request)
             throws OCDPServiceException {
     	try {
+            logger.info("Receiving delete request: " + request);
             String serviceInstanceId = request.getServiceInstanceId();
             logger.info("Receive request to delete service instance " + serviceInstanceId + " .");
-            logger.info(request.toString());
             ServiceInstance instance = repository.findOne(serviceInstanceId);
             // Check service instance id
             if (instance == null) {
@@ -177,9 +178,8 @@ public class OCDPServiceInstanceService implements ServiceInstanceService {
     	try {
             String serviceInstanceId = request.getServiceInstanceId();
             Map<String, Object> params = request.getParameters();
+            logger.info("Receiving update request: " + request);
             String userName = (String)params.get("user_name");
-            logger.info("Receive request to update service Instance.");
-            logger.info(request.toString());
             ServiceInstance instance = repository.findOne(serviceInstanceId);
             // Check service instance id
             if (instance == null) {
