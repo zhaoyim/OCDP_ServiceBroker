@@ -148,7 +148,6 @@ public class SparkAdminService implements OCDPAdminService {
                 put("uri", clusterConfig.getYarnRMUrl());
                 put("host", clusterConfig.getYarnRMHost());
                 put("port", clusterConfig.getYarnRMPort());
-                put(OCDPConstants.SPARK_RESOURCE_TYPE, serviceInstanceId);
             }
         };
     }
