@@ -144,7 +144,6 @@ public class MapReduceAdminService implements OCDPAdminService{
                 put("uri", clusterConfig.getYarnRMUrl());
                 put("host", clusterConfig.getYarnRMHost());
                 put("port", clusterConfig.getYarnRMPort());
-                put(OCDPConstants.MAPREDUCE_RESOURCE_TYPE, serviceInstanceId);
             }
         };
     }
