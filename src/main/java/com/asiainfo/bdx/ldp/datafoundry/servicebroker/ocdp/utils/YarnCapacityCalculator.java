@@ -2,6 +2,8 @@ package com.asiainfo.bdx.ldp.datafoundry.servicebroker.ocdp.utils;
 
 import com.asiainfo.bdx.ldp.datafoundry.servicebroker.ocdp.model.CapacitySchedulerConfig;
 import com.google.common.base.Splitter;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.Map;
 import java.util.UUID;
@@ -16,6 +18,7 @@ public class YarnCapacityCalculator {
 //    private String serviceInstanceId;
 
 //    private CapacitySchedulerConfig csConfig;
+    private Logger logger = LoggerFactory.getLogger(YarnCapacityCalculator.class);
     private Map<String,String> properties;
     private String allQueues;
     private Double totalMemory;

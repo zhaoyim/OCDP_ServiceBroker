@@ -57,7 +57,7 @@ public class HiveAdminService implements OCDPAdminService {
         // Set database storage quota
         if(dbName != null){
             hdfsAdminService.setQuota(
-                    "/apps/hive/warehouse/" + dbName + ".db", "1000", quota.get(OCDPConstants.HDFS_STORAGE_QUOTA));
+                    "/apps/hive/warehouse/" + dbName + ".db", null, quota.get(OCDPConstants.HDFS_STORAGE_QUOTA));
         }
         String queueName = yarnCommonService.createQueue(quota.get(OCDPConstants.YARN_QUEUE_QUOTA));
         return dbName + ":" + queueName;

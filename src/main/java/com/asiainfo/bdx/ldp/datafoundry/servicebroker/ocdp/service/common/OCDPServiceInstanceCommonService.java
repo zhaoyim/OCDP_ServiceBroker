@@ -158,16 +158,19 @@ public class OCDPServiceInstanceCommonService {
         String serviceInstanceId = request.getServiceInstanceId();
         OCDPAdminService ocdp = getOCDPAdminService(serviceDefinitionId);
         Map<String, Object> params = request.getParameters();
-        UpdateServiceInstanceResponse response;
         if(params.get("user_name") != null && params.get("accesses") != null){
             // Assign user permissions/role to service instance
             String userName = (String) params.get("user_name");
             logger.info("Assign role, username:  " + userName + ", service instance id: " + serviceInstanceId );
-            // Convert accesses from string to list
-            List<String> accesses = new ArrayList<>();
-            Collections.addAll(accesses, ((String) params.get("accesses")).split(","));
-            addUserToServiceInstance(ocdp, instance, userName, password, accesses);
-            response = new UpdateServiceInstanceResponse().withAsync(false);
+            String accessesStr = (String) params.get("accesses");
+            if (accessesStr != null && accessesStr.length() != 0){
+                List<String> accesses = new ArrayList<>();
+                // Convert accesses from string to list
+                Collections.addAll(accesses, accessesStr.split(","));
+                addUserToServiceInstance(ocdp, instance, userName, password, accesses);
+            } else {
+                logger.info("Skip add user to ServiceInstance if parameter 'accesses' is empty string.");
+            }
         } else {
             // Resize service instance
             logger.info("Resizing service instance: " + serviceInstanceId);
@@ -178,10 +181,9 @@ public class OCDPServiceInstanceCommonService {
                 throw new OCDPServiceException(e.getMessage());
             }
             logger.info("Resizing service instance [{}] with params [{}] successful.", serviceInstanceId, params);
-            response = new UpdateServiceInstanceResponse().withAsync(false);
         }
         logger.info("Update service instance [{}] successfully!", serviceInstanceId);
-        return response;
+        return new UpdateServiceInstanceResponse().withAsync(false);
     }
 
     private void addUserToServiceInstance(OCDPAdminService ocdp, ServiceInstance instance, String userName,

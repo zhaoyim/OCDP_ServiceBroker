@@ -91,7 +91,7 @@ curl http://$etcdUsername:$etcdUserpwd@$etcdHost:$etcdPort/v2/keys/servicebroker
 
 curl http://$etcdUsername:$etcdUserpwd@$etcdHost:$etcdPort/v2/keys/servicebroker/ocdp/catalog/2ef26018-003d-4b2b-b786-0481d4ee9fa3/plan/aa7e364f-fdbf-4187-b60a-218b6fa398ed/name -XPUT -d value='shared' 
 
-curl http://$etcdUsername:$etcdUserpwd@$etcdHost:$etcdPort/v2/keys/servicebroker/ocdp/catalog/2ef26018-003d-4b2b-b786-0481d4ee9fa3/plan/aa7e364f-fdbf-4187-b60a-218b6fa398ed/metadata -XPUT -d value='{"costs":[{"amount":{"usd":0.0},"unit":"MONTHLY"}],"bullets":["Shared Hive Server (GB):20", "Yarn Queue Quota (GB):4"], "customize":{"storageSpaceQuota": {"default":1024,"max":102400,"price":10,"unit":"GB","step":10,"desc":"Hive数据库的最大存储容量"}, "yarnQueueQuota":{"default":10,"max":100,"price":10,"unit":"GB","step":10,"desc":"Yarn队列的最大容量"}}}'
+curl http://$etcdUsername:$etcdUserpwd@$etcdHost:$etcdPort/v2/keys/servicebroker/ocdp/catalog/2ef26018-003d-4b2b-b786-0481d4ee9fa3/plan/aa7e364f-fdbf-4187-b60a-218b6fa398ed/metadata -XPUT -d value='{"costs":[{"amount":{"usd":0.0},"unit":"MONTHLY"}],"bullets":["Storage Space Quota (GB):20", "Yarn Queue Quota (GB):4"], "customize":{"storageSpaceQuota": {"default":1024,"max":102400,"price":10,"unit":"GB","step":10,"desc":"Hive数据库的最大存储容量"}, "yarnQueueQuota":{"default":10,"max":100,"price":10,"unit":"GB","step":10,"desc":"Yarn队列的最大容量"}}}'
 
 #mr2
 curl http://$etcdUsername:$etcdUserpwd@$etcdHost:$etcdPort/v2/keys/servicebroker/ocdp/catalog/ae0f2324-27a8-415b-9c7f-64ab6cd88d40 -XPUT -d dir=true

@@ -81,6 +81,7 @@ public class HiveCommonService {
             throw e;
         }finally {
             conn.close();
+            logger.info("Hive Database " + databaseName + " has been created.");
         }
         return databaseName;
     }

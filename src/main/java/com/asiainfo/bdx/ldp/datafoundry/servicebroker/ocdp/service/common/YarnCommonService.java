@@ -22,7 +22,6 @@ import org.springframework.stereotype.Service;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -198,6 +197,7 @@ public class YarnCommonService {
 
     private void renewCapacityCaculater(){
         String csConfig = ambClient.getCapacitySchedulerConfig(clusterConfig.getYarnRMHost());
+        logger.info("Get Capacity-scheduler Config from ambari: " + csConfig);
         CapacitySchedulerConfig csActualConfig = gson.fromJson(csConfig, CapacitySchedulerConfig.class);
         yClient.getClusterMetrics();
         String clusterTotalMemory = yClient.getTotalMemory();

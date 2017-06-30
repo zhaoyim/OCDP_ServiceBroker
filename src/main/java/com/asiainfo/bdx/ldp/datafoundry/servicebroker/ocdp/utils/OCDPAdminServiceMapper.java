@@ -1,9 +1,6 @@
 package com.asiainfo.bdx.ldp.datafoundry.servicebroker.ocdp.utils;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 import com.asiainfo.bdx.ldp.datafoundry.servicebroker.ocdp.service.impl.KafkaAdminService.Constants;
 
@@ -56,6 +53,16 @@ public class OCDPAdminServiceMapper {
         }
     };
 
+    private static final Map<String, String> OCDP_SERVICE_QUOTA_MAP = new HashMap<String, String>(){
+        {
+            put(OCDPConstants.HDFS_NAMESPACE_QUOTA, OCDPConstants.HDFS_NAMESPACE_QUOTA_PLAN);
+            put(OCDPConstants.HDFS_STORAGE_QUOTA, OCDPConstants.HDFS_STORAGE_QUOTA_PLAN);
+            put(OCDPConstants.HBASE_NAMESPACE_TABLE_QUOTA, OCDPConstants.HBASE_NAMESPACE_TABLE_QUOTA_PLAN);
+            put(OCDPConstants.HBASE_NAMESPACE_REGION_QUOTA, OCDPConstants.HBASE_NAMESPACE_REGION_QUOTA_PLAN);
+            put(OCDPConstants.YARN_QUEUE_QUOTA, OCDPConstants.YARN_QUEUE_QUOTA_PLAN);
+        }
+    };
+
     public static String getOCDPAdminService(String serviceDefinitionId){
         return OCDP_ADMIN_SERVICE_MAP.get(serviceDefinitionId);
     }
@@ -64,11 +71,20 @@ public class OCDPAdminServiceMapper {
         return OCDP_SERVICE_PLAN_MAP.get(serviceDefinitionId);
     }
 
-    public static List<String> getOCDPServiceIds(){
+    public static List<String> getOCDPServiceIds()
+    {
         return OCDP_SERVICE_DEFINITION_IDS;
+    }
+
+    public static Set<String> getOCDPServiceQuotaKeys() {
+        return OCDP_SERVICE_QUOTA_MAP.keySet();
     }
 
     public static String getOCDPResourceType(String serviceDefinitionId) {
         return OCDP_SERVICE_RESOURCE_MAP.get(serviceDefinitionId);
+    }
+
+    public static String getOCDPPlanQuotaName(String quotaKey) {
+        return OCDP_SERVICE_QUOTA_MAP.get(quotaKey);
     }
 }
