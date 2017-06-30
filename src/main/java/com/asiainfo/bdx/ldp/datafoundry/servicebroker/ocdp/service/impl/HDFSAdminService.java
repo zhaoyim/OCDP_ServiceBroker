@@ -62,6 +62,8 @@ public class HDFSAdminService implements OCDPAdminService{
 
     private static final String HDFS_NAME_SPACE_QUOTA = "1000";
 
+    private static final String HDFS_STORAGE_SPACE_QUORA = "1000000000";
+
     @Autowired
     public HDFSAdminService(ClusterConfig clusterConfig){
         this.clusterConfig = clusterConfig;
@@ -144,6 +146,10 @@ public class HDFSAdminService implements OCDPAdminService{
                 // Use default namespacequota if not pass.
                 nameSpaceQuota = HDFS_NAME_SPACE_QUOTA;
             }
+            if (storageSpaceQuota == null || storageSpaceQuota.equals("")){
+                // Use default storgespacequota if not pass.
+                storageSpaceQuota = HDFS_STORAGE_SPACE_QUORA;
+            }
             this.dfs.setQuota(new Path(pathName), Long.parseLong(nameSpaceQuota), Long.parseLong(storageSpaceQuota));
         }catch (Exception e){
             logger.error("Set HDFS folder quota fails due to: " + e.getLocalizedMessage());
@@ -151,6 +157,8 @@ public class HDFSAdminService implements OCDPAdminService{
             throw e;
         } finally {
             this.dfs.close();
+            logger.info("Set path " + pathName + "'s namespace quota to " + nameSpaceQuota +
+                    ", set storage space quota to " + storageSpaceQuota + ".");
         }
     }
 
