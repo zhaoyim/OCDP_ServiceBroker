@@ -94,8 +94,11 @@ public class OCDPServiceInstanceCommonService {
         String serviceResourceType = OCDPAdminServiceMapper.getOCDPResourceType(serviceDefinitionId);
         // For spark/mr instance provision, need append queue name into credentials,
         // because function generateCredentialsInfo not append it
-        if(! credentials.containsKey(serviceResourceType))
-            credentials.put(serviceResourceType, serviceInstanceResource);
+//        if(! credentials.containsKey(serviceResourceType))
+//        	credentials.put(serviceResourceType, serviceInstanceResource);
+
+    	// must not delete, coz hive need to override the value(from 'dbName' to 'dbName:queueName')
+        credentials.put(serviceResourceType, serviceInstanceResource);
 
         // 3) Save service instance
         ServiceInstance instance = new ServiceInstance(request);

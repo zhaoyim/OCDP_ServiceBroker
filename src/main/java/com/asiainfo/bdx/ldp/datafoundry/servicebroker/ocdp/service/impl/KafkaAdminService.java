@@ -318,7 +318,7 @@ public class KafkaAdminService implements OCDPAdminService{
 	}
 
 	private void genKafkaCredential(HashMap<String, Object> credential, OCTopic topic) {
-//		credential.put(Constants.REROURCE_TYPE, topic.name());
+		credential.put(Constants.REROURCE_TYPE, topic.name());
 		credential.put(ZK_CONN_KEY, sys_env.getZk_connection());
 		credential.put("host", sys_env.getKafka_hosts());
 		credential.put("port", sys_env.getKafka_port());

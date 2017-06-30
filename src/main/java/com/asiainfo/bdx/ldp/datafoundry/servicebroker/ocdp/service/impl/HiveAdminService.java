@@ -168,6 +168,8 @@ public class HiveAdminService implements OCDPAdminService {
                         clusterConfig.getHivePort() + "/" + dbName + ";principal=" + clusterConfig.getHiveSuperUser());
                 put("host", clusterConfig.getHiveHost());
                 put("port", clusterConfig.getHivePort());
+                put(OCDPConstants.HIVE_RESOURCE_TYPE, dbName);
+
             }
         };
     }
