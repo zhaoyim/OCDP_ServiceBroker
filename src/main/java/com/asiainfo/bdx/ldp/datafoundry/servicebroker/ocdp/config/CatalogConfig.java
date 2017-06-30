@@ -5,6 +5,8 @@ import java.util.*;
 
 import com.asiainfo.bdx.ldp.datafoundry.servicebroker.ocdp.model.CustomizeQuotaItem;
 import com.asiainfo.bdx.ldp.datafoundry.servicebroker.ocdp.utils.OCDPConstants;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.cloud.servicebroker.model.Catalog;
 import org.springframework.cloud.servicebroker.model.Plan;
 import org.springframework.cloud.servicebroker.model.ServiceDefinition;
@@ -24,6 +26,8 @@ public class CatalogConfig {
 
     @Autowired
     private ApplicationContext context;
+
+    private Logger logger = LoggerFactory.getLogger(CatalogConfig.class);
 
     static final Gson gson = new GsonBuilder().create();
 
@@ -72,7 +76,7 @@ public class CatalogConfig {
         Map<String, Object> customizeMap = (Map<String,Object>)metadata.get("customize");
         Map<String, String> quotas = new HashMap<>();
         String quota = "";
-        for (String quotaKey : cuzQuota.keySet()){
+        for (String quotaKey : OCDPAdminServiceMapper.getOCDPServiceQuotaKeys()){
             if(customizeMap != null){
                 // Customize quota case
                 CustomizeQuotaItem quotaItem = (CustomizeQuotaItem)customizeMap.get(quotaKey);
@@ -94,10 +98,12 @@ public class CatalogConfig {
                 }
             } else {
                 // Non customize quota case, use plan.metadata.bullets
+                // Convert quota key to plan bullets quota key
+                String quotaPlanKey = OCDPAdminServiceMapper.getOCDPPlanQuotaName(quotaKey);
                 Iterator<String> it = bullets.iterator();
                 while (it.hasNext()) {
                     String str = it.next();
-                    if (str.startsWith(quotaKey)) {
+                    if (str.startsWith(quotaPlanKey)) {
                         quota = str.split(":")[1];
                     }
                 }

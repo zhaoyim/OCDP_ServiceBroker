@@ -27,11 +27,21 @@ public class OCDPConstants {
 
     public static final String HDFS_NAMESPACE_QUOTA = "nameSpaceQuota";
 
+    public static final String HDFS_NAMESPACE_QUOTA_PLAN = "Name Space Quota";
+
     public static final String HDFS_STORAGE_QUOTA = "storageSpaceQuota";
+
+    public static final String HDFS_STORAGE_QUOTA_PLAN = "Storage Space Quota (GB)";
 
     public static final String HBASE_NAMESPACE_TABLE_QUOTA = "maximumTablesQuota";
 
+    public static final String HBASE_NAMESPACE_TABLE_QUOTA_PLAN = "HBase Maximun Tables";
+
     public static final String HBASE_NAMESPACE_REGION_QUOTA = "maximumRegionsQuota";
 
+    public static final String HBASE_NAMESPACE_REGION_QUOTA_PLAN = "HBase Maximun Regions";
+
     public static final String YARN_QUEUE_QUOTA = "yarnQueueQuota";
+
+    public static final String YARN_QUEUE_QUOTA_PLAN = "Yarn Queue Quota (GB)";
 }
