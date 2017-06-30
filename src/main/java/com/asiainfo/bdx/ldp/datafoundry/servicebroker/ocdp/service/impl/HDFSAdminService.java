@@ -240,7 +240,7 @@ public class HDFSAdminService implements OCDPAdminService{
                 put("uri", webHdfsUrl + "/servicebroker/" + serviceInstanceId);
                 put("host", clusterConfig.getHdfsNameNode());
                 put("port", clusterConfig.getHdfsPort());
-//                put(OCDPConstants.HDFS_RESOURCE_TYPE, "/servicebroker/" + serviceInstanceId);
+                put(OCDPConstants.HDFS_RESOURCE_TYPE, "/servicebroker/" + serviceInstanceId);
             }
         };
     }
