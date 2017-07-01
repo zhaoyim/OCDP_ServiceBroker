@@ -43,7 +43,7 @@ public class MapReduceAdminService implements OCDPAdminService{
     public String provisionResources(String serviceDefinitionId, String planId, String serviceInstanceId,
                                      Map<String, Object> cuzQuota) throws Exception {
         Map<String, String> quota = this.yarnCommonService.getQuotaFromPlan(serviceDefinitionId, planId, cuzQuota);
-        return yarnCommonService.createQueue(quota.get(OCDPConstants.YARN_QUEUE_QUOTA), serviceInstanceId);
+        return yarnCommonService.createQueue(quota.get(OCDPConstants.YARN_QUEUE_QUOTA));
     }
 
     @Override
@@ -144,7 +144,7 @@ public class MapReduceAdminService implements OCDPAdminService{
                 put("uri", clusterConfig.getYarnRMUrl());
                 put("host", clusterConfig.getYarnRMHost());
                 put("port", clusterConfig.getYarnRMPort());
-                put(OCDPConstants.MAPREDUCE_RESOURCE_TYPE, "root."+serviceInstanceId);
+//                put(OCDPConstants.MAPREDUCE_RESOURCE_TYPE, "root."+serviceInstanceId);
             }
         };
     }
