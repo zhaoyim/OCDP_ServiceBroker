@@ -50,7 +50,8 @@ public class SparkAdminService implements OCDPAdminService {
     }
 
     @Override
-    public String createPolicyForResources(String policyName, final List<String> resources, String userName, String groupName) {
+    public String createPolicyForResources(String policyName, final List<String> resources, String userName,
+                                           String groupName, List<String> permissions) {
         List <String> hdfsFolderForJobExec = new ArrayList<String>(){
             {
                 add("/user/" + userName);
@@ -66,13 +67,13 @@ public class SparkAdminService implements OCDPAdminService {
             return null;
         }
         String hdfsPolicyId = this.hdfsAdminService.createPolicyForResources(
-                userName + "_" + policyName, hdfsFolderForJobExec, userName, groupName);
+                userName + "_" + policyName, hdfsFolderForJobExec, userName, groupName, null);
         if ( hdfsPolicyId != null){
             logger.info("Assign permissions for folder " + hdfsFolderForJobExec.toString()  + " with policy id " + hdfsPolicyId);
         }
 
         String resource = resources.get(0);
-        String yarnPolicyId = this.yarnCommonService.assignPermissionToQueue(policyName, resource, userName, groupName);
+        String yarnPolicyId = this.yarnCommonService.assignPermissionToQueue(policyName, resource, userName, groupName, null);
         if ( yarnPolicyId != null){
             logger.info("Assign permissions for folder " + resource  + " with policy id " + yarnPolicyId);
         }

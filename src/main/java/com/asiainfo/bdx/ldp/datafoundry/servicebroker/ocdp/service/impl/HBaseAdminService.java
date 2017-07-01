@@ -8,6 +8,7 @@ import java.util.Map;
 
 import com.asiainfo.bdx.ldp.datafoundry.servicebroker.ocdp.utils.OCDPAdminServiceMapper;
 import com.asiainfo.bdx.ldp.datafoundry.servicebroker.ocdp.utils.OCDPConstants;
+import com.google.common.collect.Lists;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hbase.HBaseConfiguration;
 import org.apache.hadoop.hbase.HConstants;
@@ -52,6 +53,8 @@ public class HBaseAdminService implements OCDPAdminService{
     private Configuration conf;
 
     private Connection connection;
+
+    private static final List<String> ACCESSES = Lists.newArrayList("read", "write", "create", "admin");
 
     @Autowired
     public HBaseAdminService(ClusterConfig clusterConfig){
@@ -98,14 +101,15 @@ public class HBaseAdminService implements OCDPAdminService{
     }
 
     @Override
-    public String createPolicyForResources(String policyName, List<String> tableList, String userName, String groupName){
+    public String createPolicyForResources(String policyName, List<String> tableList, String userName,
+                                           String groupName, List<String> permissions){
         logger.info("Assign read/write/create/admin permission to hbase namespace.");
         String policyId = null;
         ArrayList<String> cfList = new ArrayList<String>(){{add("*");}};
         ArrayList<String> cList = new ArrayList<String>(){{add("*");}};
         ArrayList<String> groupList = new ArrayList<String>(){{add(groupName);}};
         ArrayList<String> userList = new ArrayList<String>(){{add(userName);}};
-        ArrayList<String> types = new ArrayList<String>(){{add("read");add("write");add("create");add("admin");}};
+       // ArrayList<String> types = new ArrayList<String>(){{add("read");add("write");add("create");add("admin");}};
         ArrayList<String> conditions = new ArrayList<String>();
         RangerV2Policy rp = new RangerV2Policy(
                 policyName,"","This is HBase Policy", clusterConfig.getClusterName()+"_hbase",true,true);
@@ -117,7 +121,11 @@ public class HBaseAdminService implements OCDPAdminService{
         rp.addResources(OCDPConstants.HBASE_RANGER_RESOURCE_TYPE, nsList, false);
         rp.addResources("column-family", cfList, false);
         rp.addResources("column", cList, false);
-        rp.addPolicyItems(userList,groupList,conditions,false,types);
+        if (permissions == null) {
+            rp.addPolicyItems(userList,groupList,conditions,false,ACCESSES);
+        } else {
+            rp.addPolicyItems(userList,groupList,conditions,false,permissions);
+        }
         String newPolicyString = rc.createV2Policy(rp);
         if (newPolicyString != null){
             RangerV2Policy newPolicyObj = gson.fromJson(newPolicyString, RangerV2Policy.class);

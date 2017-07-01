@@ -17,7 +17,8 @@ public interface OCDPAdminService {
 	String provisionResources(String serviceDefinitionId, String planId, String serviceInstanceId,
                               Map<String, Object> cuzQuota) throws Exception;
 
-    String createPolicyForResources(String policyName, List<String> resources, String userName, String groupName);
+    String createPolicyForResources(String policyName, List<String> resources, String userName,
+                                    String groupName, List<String> permissions);
 
     boolean appendResourcesToPolicy(String policyId, String serviceInstanceResource);
 

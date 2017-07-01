@@ -166,7 +166,11 @@ public class OCDPServiceInstanceCommonService {
             if (accessesStr != null && accessesStr.length() != 0){
                 List<String> accesses = new ArrayList<>();
                 // Convert accesses from string to list
-                Collections.addAll(accesses, accessesStr.split(","));
+                //Collections.addAll(accesses, accessesStr.split(","));
+                // Need trim blank space in accesses string, otherwise call ranger policy api will fail.
+                for (String access : accessesStr.split(",")){
+                    accesses.add(access.trim());
+                }
                 addUserToServiceInstance(ocdp, instance, userName, password, accesses);
             } else {
                 logger.info("Skip add user to ServiceInstance if parameter 'accesses' is empty string.");
@@ -200,7 +204,7 @@ public class OCDPServiceInstanceCommonService {
         String serviceInstanceResource = (String) instance.getServiceInstanceCredentials().get(resourceType);
         if (serviceInstancePolicyId == null || serviceInstancePolicyId.length() == 0 ){
             // Create new ranger policy for service instance and update policy to service instance
-            serviceInstancePolicyId = createPolicyForResources(ocdp, serviceInstanceResource, userName);
+            serviceInstancePolicyId = createPolicyForResources(ocdp, serviceInstanceResource, userName,accesses);
             updateServiceInstanceCredentials(instance, "rangerPolicyId", serviceInstancePolicyId);
         } else {
             // Append user to service instance policy
@@ -283,13 +287,14 @@ public class OCDPServiceInstanceCommonService {
         }
     }
 
-    private String createPolicyForResources(OCDPAdminService ocdp, String serviceInstanceResource, String userName){
+    private String createPolicyForResources(
+            OCDPAdminService ocdp, String serviceInstanceResource, String userName, List<String> accesses){
         String policyId = null;
         int i = 0;
         logger.info("Try to create ranger policy...");
         while(i++ <= 40){
             policyId = ocdp.createPolicyForResources(serviceInstanceResource,
-                    new ArrayList<String>(){{add(serviceInstanceResource);}}, userName, clusterConfig.getLdapGroup());
+                    new ArrayList<String>(){{add(serviceInstanceResource);}}, userName, clusterConfig.getLdapGroup(), accesses);
             // TODO Need get a way to force sync up ldap users with ranger service, for temp solution will wait 60 sec
             if (policyId == null){
                 try{

@@ -12,6 +12,7 @@ import com.asiainfo.bdx.ldp.datafoundry.servicebroker.ocdp.model.ServiceInstance
 import com.asiainfo.bdx.ldp.datafoundry.servicebroker.ocdp.utils.OCDPAdminServiceMapper;
 import com.asiainfo.bdx.ldp.datafoundry.servicebroker.ocdp.utils.OCDPConstants;
 import com.asiainfo.bdx.ldp.datafoundry.servicebroker.ocdp.utils.YarnCapacityCalculator;
+import com.google.common.collect.Lists;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import org.slf4j.Logger;
@@ -34,6 +35,8 @@ public class YarnCommonService {
     private Logger logger = LoggerFactory.getLogger(YarnCommonService.class);
 
     static final Gson gson = new GsonBuilder().create();
+
+    private static final List<String> ACCESSES = Lists.newArrayList("submit-app", "admin-queue");
 
     @Autowired
     private ApplicationContext context;
@@ -80,17 +83,22 @@ public class YarnCommonService {
         return queuePath;
     }
 
-    public synchronized String assignPermissionToQueue(String policyName, final String queueName, String userName, String groupName){
+    public synchronized String assignPermissionToQueue(String policyName, final String queueName, String userName,
+                                                       String groupName, List<String> permissions){
         String policyId = null;
         ArrayList<String> queueList = new ArrayList<String>(){{add(queueName);}};
         ArrayList<String> groupList = new ArrayList<String>(){{add(groupName);}};
         ArrayList<String> userList = new ArrayList<String>(){{add(userName);}};
-        ArrayList<String> types = new ArrayList<String>(){{add("submit-app");add("admin-queue");}};
+        //ArrayList<String> types = new ArrayList<String>(){{add("submit-app");add("admin-queue");}};
         ArrayList<String> conditions = new ArrayList<String>();
         RangerV2Policy rp = new RangerV2Policy(
                 policyName,"","This is Yarn Policy",clusterConfig.getClusterName()+"_yarn",true,true);
         rp.addResources2(OCDPConstants.YARN_RANGER_RESOURCE_TYPE, queueList,false, true);
-        rp.addPolicyItems(userList,groupList,conditions,false,types);
+        if(permissions == null){
+            rp.addPolicyItems(userList,groupList,conditions,false,ACCESSES);
+        } else {
+            rp.addPolicyItems(userList,groupList,conditions,false,permissions);
+        }
         String newPolicyString = rc.createV2Policy(rp);
         if (newPolicyString != null){
             RangerV2Policy newPolicyObj = gson.fromJson(newPolicyString, RangerV2Policy.class);

@@ -37,7 +37,7 @@ curl http://$etcdUsername:$etcdUserpwd@$etcdHost:$etcdPort/v2/keys/servicebroker
 
 curl http://$etcdUsername:$etcdUserpwd@$etcdHost:$etcdPort/v2/keys/servicebroker/ocdp/catalog/ae67d4ba-5c4e-4937-a68b-5b47cfe356d8/plan/72150b09-1025-4533-8bae-0e04ef68ac13/name -XPUT -d value='shared'
 
-curl http://$etcdUsername:$etcdUserpwd@$etcdHost:$etcdPort/v2/keys/servicebroker/ocdp/catalog/ae67d4ba-5c4e-4937-a68b-5b47cfe356d8/plan/72150b09-1025-4533-8bae-0e04ef68ac13/metadata -XPUT -d value='{"costs":[{"amount":{"usd":0.0},"unit":"MONTHLY"}],"bullets":["Name Space Quota:1000", "Storage Space Quota (GB):20"], "customize":{"nameSpaceQuota": {"default":1000,"max":100000,"price":10,"unit":"","step":10,"desc":"HDFS目录允许创建的最大文件数目"},“storageSpaceQuota”:{"default":1024,"max":102400,"price":10,"unit":"GB","step":10,"desc":"HDFS目录的最大存储容量"}}}'
+curl http://$etcdUsername:$etcdUserpwd@$etcdHost:$etcdPort/v2/keys/servicebroker/ocdp/catalog/ae67d4ba-5c4e-4937-a68b-5b47cfe356d8/plan/72150b09-1025-4533-8bae-0e04ef68ac13/metadata -XPUT -d value='{"costs":[{"amount":{"usd":0.0},"unit":"MONTHLY"}],"bullets":["Name Space Quota:1000", "Storage Space Quota (GB):20"], "customize":{"nameSpaceQuota": {"default":1000,"max":100000,"price":10,"unit":"","step":10,"desc":"HDFS目录允许创建的最大文件数目"},"storageSpaceQuota":{"default":1024,"max":102400,"price":10,"unit":"GB","step":10,"desc":"HDFS目录的最大存储容量"}}}'
 
 # hbase
 curl http://$etcdUsername:$etcdUserpwd@$etcdHost:$etcdPort/v2/keys/servicebroker/ocdp/catalog/d9845ade-9410-4c7f-8689-4e032c1a8450 -XPUT -d dir=true

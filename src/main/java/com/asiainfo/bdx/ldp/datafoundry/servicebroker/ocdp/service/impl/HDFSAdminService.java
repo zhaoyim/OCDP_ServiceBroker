@@ -12,6 +12,7 @@ import com.asiainfo.bdx.ldp.datafoundry.servicebroker.ocdp.config.ClusterConfig;
 import com.asiainfo.bdx.ldp.datafoundry.servicebroker.ocdp.exception.OCDPServiceException;
 import com.asiainfo.bdx.ldp.datafoundry.servicebroker.ocdp.model.RangerV2Policy;
 import com.asiainfo.bdx.ldp.datafoundry.servicebroker.ocdp.model.ServiceInstance;
+import com.google.common.collect.Lists;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import org.springframework.context.ApplicationContext;
@@ -45,6 +46,8 @@ public class HDFSAdminService implements OCDPAdminService{
     private static final FsPermission FS_USER_PERMISSION = new FsPermission(FsAction.ALL, FsAction.NONE,
             FsAction.NONE);
 
+    private static final List<String> ACCESSES = Lists.newArrayList("read", "write", "execute");
+
     @Autowired
     private ApplicationContext context;
 
@@ -62,7 +65,7 @@ public class HDFSAdminService implements OCDPAdminService{
 
     private static final String HDFS_NAME_SPACE_QUOTA = "1000";
 
-    private static final String HDFS_STORAGE_SPACE_QUORA = "1000000000";
+    private static final String HDFS_STORAGE_SPACE_QUOTA = "1000000000";
 
     @Autowired
     public HDFSAdminService(ClusterConfig clusterConfig){
@@ -123,6 +126,8 @@ public class HDFSAdminService implements OCDPAdminService{
                 if (nameSpaceQuota != null && storageSpaceQuota !=null) {
                     this.dfs.setQuota(new Path(pathName),
                             Long.parseLong(nameSpaceQuota), Long.parseLong(storageSpaceQuota));
+                    logger.info("Set path " + pathName + "'s namespace quota to " + nameSpaceQuota +
+                            ", set storage space quota to " + storageSpaceQuota + ".");
                 }
                 logger.info("Create hdfs folder " + pathName + " successful.");
             } else {
@@ -148,7 +153,7 @@ public class HDFSAdminService implements OCDPAdminService{
             }
             if (storageSpaceQuota == null || storageSpaceQuota.equals("")){
                 // Use default storgespacequota if not pass.
-                storageSpaceQuota = HDFS_STORAGE_SPACE_QUORA;
+                storageSpaceQuota = HDFS_STORAGE_SPACE_QUOTA;
             }
             this.dfs.setQuota(new Path(pathName), Long.parseLong(nameSpaceQuota), Long.parseLong(storageSpaceQuota));
         }catch (Exception e){
@@ -163,16 +168,21 @@ public class HDFSAdminService implements OCDPAdminService{
     }
 
     @Override
-    public String createPolicyForResources(String policyName, List<String> resources, String userName, String groupName){
+    public String createPolicyForResources(String policyName, List<String> resources, String userName,
+                                           String groupName, List<String> permissions){
         String policyId = null;
         ArrayList<String> groupList = new ArrayList<String>(){{add(groupName);}};
         ArrayList<String> userList = new ArrayList<String>(){{add(userName);}};
-        ArrayList<String> types = new ArrayList<String>(){{add("read");add("write");add("execute");}};
+        //ArrayList<String> types = new ArrayList<String>(){{add("read");add("write");add("execute");}};
         ArrayList<String> conditions = new ArrayList<>();
         RangerV2Policy rp = new RangerV2Policy(
                 policyName,"","This is HDFS Policy", clusterConfig.getClusterName()+"_hadoop",true,true);
         rp.addResources2(OCDPConstants.HDFS_RANGER_RESOURCE_TYPE, resources,false,true);
-        rp.addPolicyItems(userList,groupList,conditions,false,types);
+        if (permissions == null){
+            rp.addPolicyItems(userList,groupList,conditions,false,ACCESSES);
+        } else {
+            rp.addPolicyItems(userList,groupList,conditions,false,permissions);
+        }
         String newPolicyString = rc.createV2Policy(rp);
         if (newPolicyString != null){
             RangerV2Policy newPolicyObj = gson.fromJson(newPolicyString, RangerV2Policy.class);

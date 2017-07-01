@@ -68,11 +68,18 @@ public class KafkaAdminService implements OCDPAdminService{
 
 	@Override
 	public String createPolicyForResources(String policyName, List<String> resources, String defaultUser,
-			String groupName) {
+			String groupName, List<String> permissions) {
         String policyId = null;
         RangerV2Policy policy = newPolicy(policyName);
         policy.addResources2(Constants.REROURCE_TYPE, resources, false, false);
-        policy.addPolicyItems(Lists.newArrayList(defaultUser), Lists.newArrayList(groupName), Lists.newArrayList(), false, ACCESSES);
+       // policy.addPolicyItems(Lists.newArrayList(defaultUser), Lists.newArrayList(groupName), Lists.newArrayList(), false, ACCESSES);
+		if (permissions == null){
+			policy.addPolicyItems(
+					Lists.newArrayList(defaultUser), Lists.newArrayList(groupName), Lists.newArrayList(), false, ACCESSES);
+		} else {
+			policy.addPolicyItems(
+					Lists.newArrayList(defaultUser), Lists.newArrayList(groupName), Lists.newArrayList(), false, permissions);
+		}
         String newPolicyString = ranger.createV2Policy(policy);
         if (newPolicyString != null){
             RangerV2Policy newPolicyObj = gson.fromJson(newPolicyString, RangerV2Policy.class);
