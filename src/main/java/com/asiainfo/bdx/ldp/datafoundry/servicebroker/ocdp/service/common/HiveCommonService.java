@@ -90,18 +90,18 @@ public class HiveCommonService {
         return databaseName;
     }
 
-    public String assignPermissionToDatabase(String policyName, final String dbName, String userName, String groupName,
+    public String assignPermissionToDatabase(String policyName, final String dbName, List<String> userList, String groupName,
                                              List<String> permissions){
         logger.info("Assigning select/update/create/drop/alter/index/lock/all permission to hive database.");
         String policyId = null;
-        ArrayList<String> dbList = new ArrayList<String>(){{add(dbName);}};
-        ArrayList<String> tbList = new ArrayList<String>(){{add("*");}};
-        ArrayList<String> cList = new ArrayList<String>(){{add("*");}};
-        ArrayList<String> groupList = new ArrayList<String>(){{add(groupName);}};
-        ArrayList<String> userList = new ArrayList<String>(){{add(userName);}};
+        ArrayList<String> dbList = Lists.newArrayList(dbName);
+        ArrayList<String> tbList = Lists.newArrayList("*");
+        ArrayList<String> cList = Lists.newArrayList("*");
+        ArrayList<String> groupList = Lists.newArrayList("*");
+       // ArrayList<String> userList = new ArrayList<String>(){{add(userName);}};
        // ArrayList<String> types = new ArrayList<String>(){{add("select"); add("update");
        //     add("create"); add("drop"); add("alter"); add("index"); add("lock"); add("all");}};
-        ArrayList<String> conditions = new ArrayList<String>();
+        ArrayList<String> conditions = Lists.newArrayList();
         RangerV2Policy rp = new RangerV2Policy(
                 policyName,"","This is Hive Policy",clusterConfig.getClusterName()+"_hive",true,true);
         rp.addResources(OCDPConstants.HIVE_RANGER_RESOURCE_TYPE, dbList, false);
@@ -116,10 +116,11 @@ public class HiveCommonService {
         if (newPolicyString != null){
             RangerV2Policy newPolicyObj = gson.fromJson(newPolicyString, RangerV2Policy.class);
             policyId = newPolicyObj.getPolicyId();
-            logger.info("Assign permissions [{}] of user [{}] to hive database [{}] successful with policyid [{}].", permissions, userName, dbName, policyId);
+            logger.info("Assign permissions [{}] of user [{}] to hive database [{}] successful with policyid [{}].",
+                    permissions, userList.toString(), dbName, policyId);
             return policyId;
         }
-        logger.error("Assign permissions of user [{}] to hive database [{}] failed!", userName, dbName);
+        logger.error("Assign permissions of user [{}] to hive database [{}] failed!", userList.toString(), dbName);
         return policyId;
     }
 
@@ -127,9 +128,9 @@ public class HiveCommonService {
         return rc.appendResourceToV2Policy(policyId, databaseName, OCDPConstants.HIVE_RANGER_RESOURCE_TYPE);
     }
 
-    public boolean appendUserToDatabasePermission(
-            String policyId, String groupName, String userName, List<String> permissions) {
-        return rc.appendUserToV2Policy(policyId, groupName, userName, permissions);
+    public boolean appendUsersToDatabasePermission(
+            String policyId, String groupName, List<String> users, List<String> permissions) {
+        return rc.appendUsersToV2Policy(policyId, groupName, users, permissions);
     }
 
     public void deleteDatabase(String dbName) throws Exception{

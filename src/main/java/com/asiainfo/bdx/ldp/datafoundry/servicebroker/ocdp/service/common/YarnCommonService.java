@@ -83,14 +83,14 @@ public class YarnCommonService {
         return queuePath;
     }
 
-    public synchronized String assignPermissionToQueue(String policyName, final String queueName, String userName,
+    public synchronized String assignPermissionToQueue(String policyName, final String queueName, List<String> userList,
                                                        String groupName, List<String> permissions){
         String policyId = null;
-        ArrayList<String> queueList = new ArrayList<String>(){{add(queueName);}};
-        ArrayList<String> groupList = new ArrayList<String>(){{add(groupName);}};
-        ArrayList<String> userList = new ArrayList<String>(){{add(userName);}};
+        ArrayList<String> queueList = Lists.newArrayList(queueName);
+        ArrayList<String> groupList = Lists.newArrayList(groupName);
+       // ArrayList<String> userList = new ArrayList<String>(){{add(userName);}};
         //ArrayList<String> types = new ArrayList<String>(){{add("submit-app");add("admin-queue");}};
-        ArrayList<String> conditions = new ArrayList<String>();
+        ArrayList<String> conditions = Lists.newArrayList();
         RangerV2Policy rp = new RangerV2Policy(
                 policyName,"","This is Yarn Policy",clusterConfig.getClusterName()+"_yarn",true,true);
         rp.addResources2(OCDPConstants.YARN_RANGER_RESOURCE_TYPE, queueList,false, true);
@@ -105,7 +105,7 @@ public class YarnCommonService {
             policyId = newPolicyObj.getPolicyId();
         }
         else {
-            logger.error("Failed to assign permissions to yarn queue [{}] for user [{}]." ,queueName, userName);
+            logger.error("Failed to assign permissions to yarn queue [{}] for user [{}]." ,queueName, userList.toString());
         }
         return policyId;
     }
@@ -128,9 +128,8 @@ public class YarnCommonService {
         return updateResult;
     }
 
-    public boolean appendUserToQueuePermission(String policyId, String groupName, String userName, List<String> permissions){
-        boolean updateResult = rc.appendUserToV2Policy(policyId, groupName, userName, permissions);
-        return updateResult;
+    public boolean appendUsersToQueuePermission(String policyId, String groupName, List<String> users, List<String> permissions){
+        return rc.appendUsersToV2Policy(policyId, groupName, users, permissions);
     }
 
     public synchronized void deleteQueue(String queueName){

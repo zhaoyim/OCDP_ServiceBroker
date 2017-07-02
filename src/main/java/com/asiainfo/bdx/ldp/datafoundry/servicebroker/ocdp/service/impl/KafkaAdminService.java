@@ -67,25 +67,27 @@ public class KafkaAdminService implements OCDPAdminService{
 	}
 
 	@Override
-	public String createPolicyForResources(String policyName, List<String> resources, String defaultUser,
+	public String createPolicyForResources(String policyName, List<String> resources, List<String> defaultUsers,
 			String groupName, List<String> permissions) {
         String policyId = null;
         RangerV2Policy policy = newPolicy(policyName);
         policy.addResources2(Constants.REROURCE_TYPE, resources, false, false);
        // policy.addPolicyItems(Lists.newArrayList(defaultUser), Lists.newArrayList(groupName), Lists.newArrayList(), false, ACCESSES);
-		if (permissions == null){
-			policy.addPolicyItems(
-					Lists.newArrayList(defaultUser), Lists.newArrayList(groupName), Lists.newArrayList(), false, ACCESSES);
-		} else {
-			policy.addPolicyItems(
-					Lists.newArrayList(defaultUser), Lists.newArrayList(groupName), Lists.newArrayList(), false, permissions);
+		for (String defaultUser : defaultUsers){
+			if (permissions == null){
+				policy.addPolicyItems(
+						Lists.newArrayList(defaultUser), Lists.newArrayList(groupName), Lists.newArrayList(), false, ACCESSES);
+			} else {
+				policy.addPolicyItems(
+						Lists.newArrayList(defaultUser), Lists.newArrayList(groupName), Lists.newArrayList(), false, permissions);
+			}
 		}
         String newPolicyString = ranger.createV2Policy(policy);
         if (newPolicyString != null){
             RangerV2Policy newPolicyObj = gson.fromJson(newPolicyString, RangerV2Policy.class);
             policyId = newPolicyObj.getPolicyId();
         }
-        LOG.info("Create policy [{}] for tenant [{}] successful with policy id [{}]", policyName, defaultUser, policyId);
+        LOG.info("Create policy [{}] for tenant [{}] successful with policy id [{}]", policyName, defaultUsers.toString(), policyId);
         return policyId;
 	}
 	
@@ -136,10 +138,10 @@ public class KafkaAdminService implements OCDPAdminService{
 	}
 	
 	@Override
-	public boolean appendUserToPolicy(String policyId, String groupName, String userName,
+	public boolean appendUsersToPolicy(String policyId, String groupName, List<String> users,
 			List<String> permissions) {
-        boolean appended = ranger.appendUserToV2Policy(policyId, groupName, userName, permissions);
-        LOG.info("Append user [{}] to kafka ranger policy [{}] by accesses [{}] with result: {}", userName, policyId, permissions, appended);
+        boolean appended = ranger.appendUsersToV2Policy(policyId, groupName, users, permissions);
+        LOG.info("Append user [{}] to kafka ranger policy [{}] by accesses [{}] with result: {}", users, policyId, permissions, appended);
         return appended;
 	}
 

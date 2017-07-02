@@ -13,6 +13,7 @@ import com.asiainfo.bdx.ldp.datafoundry.servicebroker.ocdp.client.rangerClient;
 import com.asiainfo.bdx.ldp.datafoundry.servicebroker.ocdp.config.ClusterConfig;
 import com.asiainfo.bdx.ldp.datafoundry.servicebroker.ocdp.service.OCDPAdminService;
 import com.asiainfo.bdx.ldp.datafoundry.servicebroker.ocdp.utils.BrokerUtil;
+import com.google.common.collect.Lists;
 import org.springframework.cloud.servicebroker.model.*;
 import com.asiainfo.bdx.ldp.datafoundry.servicebroker.ocdp.model.OCDPCreateServiceInstanceResponse;
 import org.slf4j.Logger;
@@ -161,17 +162,20 @@ public class OCDPServiceInstanceCommonService {
         if(params.get("user_name") != null && params.get("accesses") != null){
             // Assign user permissions/role to service instance
             String userName = (String) params.get("user_name");
+            // Support assign service instance permission for multiple users when create new instance in tenant.
+            // Please refer to: https://github.com/OCManager/OCDP_ServiceBroker/issues/48
+            List<String> users = Lists.newArrayList();
+            Collections.addAll(users, userName.split(","));
             logger.info("Assign role, username:  " + userName + ", service instance id: " + serviceInstanceId );
             String accessesStr = (String) params.get("accesses");
             if (accessesStr != null && accessesStr.length() != 0){
-                List<String> accesses = new ArrayList<>();
-                // Convert accesses from string to list
+                List<String> accesses = Lists.newArrayList();
                 //Collections.addAll(accesses, accessesStr.split(","));
                 // Need trim blank space in accesses string, otherwise call ranger policy api will fail.
                 for (String access : accessesStr.split(",")){
                     accesses.add(access.trim());
                 }
-                addUserToServiceInstance(ocdp, instance, userName, password, accesses);
+                addUserToServiceInstance(ocdp, instance, users, password, accesses);
             } else {
                 logger.info("Skip add user to ServiceInstance if parameter 'accesses' is empty string.");
             }
@@ -190,12 +194,17 @@ public class OCDPServiceInstanceCommonService {
         return new UpdateServiceInstanceResponse().withAsync(false);
     }
 
-    private void addUserToServiceInstance(OCDPAdminService ocdp, ServiceInstance instance, String userName,
+    private void addUserToServiceInstance(OCDPAdminService ocdp, ServiceInstance instance, List<String> users,
                                            String password, List<String> accesses) {
         // 1) Create LDAP user and krb principal for tenant user if it not exits
-        if (createLDAPUser(userName)){
-            createKrbPrinc(userName, password);
-            etcdClient.write("/servicebroker/ocdp/user/krb/" + userName, password);
+        if(users.size() == 1){
+            // Temp fix for issue: https://github.com/OCManager/OCDP_ServiceBroker/issues/48
+            // Create new ldap user only for 'add new user for tenant' case;
+            // because in 'create instance for tenant' case, all tenant users are already exist, no need to check/create again.
+            if (createLDAPUser(users.get(0))){
+                createKrbPrinc(users.get(0), password);
+                etcdClient.write("/servicebroker/ocdp/user/krb/" + users.get(0), password);
+            }
         }
         // 2) Create policy for service instance or append user to an exists policy
         String serviceInstancePolicyId = (String) instance.getServiceInstanceCredentials().get("rangerPolicyId");
@@ -204,11 +213,11 @@ public class OCDPServiceInstanceCommonService {
         String serviceInstanceResource = (String) instance.getServiceInstanceCredentials().get(resourceType);
         if (serviceInstancePolicyId == null || serviceInstancePolicyId.length() == 0 ){
             // Create new ranger policy for service instance and update policy to service instance
-            serviceInstancePolicyId = createPolicyForResources(ocdp, serviceInstanceResource, userName,accesses);
+            serviceInstancePolicyId = createPolicyForResources(ocdp, serviceInstanceResource, users, accesses);
             updateServiceInstanceCredentials(instance, "rangerPolicyId", serviceInstancePolicyId);
         } else {
-            // Append user to service instance policy
-            updateUserToPolicy(ocdp, serviceInstancePolicyId, userName, accesses);
+            // Append users to service instance policy
+            updateUsersToPolicy(ocdp, serviceInstancePolicyId, users, accesses);
         }
     }
 
@@ -222,6 +231,9 @@ public class OCDPServiceInstanceCommonService {
         Map<String, Object> credentials = instance.getServiceInstanceCredentials();
         credentials.replace(key, value);
         instance.setCredential(credentials);
+        // delete old service instance
+        repository.delete(instance.getServiceInstanceId());
+        // save new service instance
         repository.save(instance);
     }
 
@@ -288,13 +300,13 @@ public class OCDPServiceInstanceCommonService {
     }
 
     private String createPolicyForResources(
-            OCDPAdminService ocdp, String serviceInstanceResource, String userName, List<String> accesses){
+            OCDPAdminService ocdp, String serviceInstanceResource, List<String> userList, List<String> accesses){
         String policyId = null;
         int i = 0;
         logger.info("Try to create ranger policy...");
         while(i++ <= 40){
-            policyId = ocdp.createPolicyForResources(serviceInstanceResource,
-                    new ArrayList<String>(){{add(serviceInstanceResource);}}, userName, clusterConfig.getLdapGroup(), accesses);
+            policyId = ocdp.createPolicyForResources(serviceInstanceResource, Lists.newArrayList(serviceInstanceResource),
+                    userList, clusterConfig.getLdapGroup(), accesses);
             // TODO Need get a way to force sync up ldap users with ranger service, for temp solution will wait 60 sec
             if (policyId == null){
                 try{
@@ -314,14 +326,14 @@ public class OCDPServiceInstanceCommonService {
         return policyId;
     }
 
-    private void updateUserToPolicy(
-            OCDPAdminService ocdp, String serviceInstancePolicyId, String userName, List<String> accesses){
+    private void updateUsersToPolicy(
+            OCDPAdminService ocdp, String serviceInstancePolicyId, List<String> users, List<String> accesses){
         int i = 0;
         boolean policyUpdateResult = false;
         logger.info("Try to append user to ranger policy...");
         while(i++ <= 40){
-            policyUpdateResult = ocdp.appendUserToPolicy(
-                    serviceInstancePolicyId, this.clusterConfig.getLdapGroup(), userName, accesses);
+            policyUpdateResult = ocdp.appendUsersToPolicy(
+                    serviceInstancePolicyId, this.clusterConfig.getLdapGroup(), users, accesses);
             if (!policyUpdateResult){
                 try{
                     Thread.sleep(3000);
@@ -334,7 +346,7 @@ public class OCDPServiceInstanceCommonService {
             }
         }
         if (! policyUpdateResult){
-            logger.error("Fail to append user [{}] to ranger policy [{}].", userName, serviceInstancePolicyId);
+            logger.error("Fail to append user [{}] to ranger policy [{}].", users, serviceInstancePolicyId);
             throw new OCDPServiceException("Fail to append user to ranger policy.");
         }
     }

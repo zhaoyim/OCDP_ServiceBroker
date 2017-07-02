@@ -192,20 +192,23 @@ public class rangerClient {
         return updateV2Policy(policyId, rp);
     }
 
-    public boolean appendUserToV2Policy(String policyId, String groupName, String userName, List<String> permissions) {
+    public boolean appendUsersToV2Policy
+            (String policyId, String groupName, List<String> users, List<String> permissions) {
         String currentPolicy = getV2Policy(policyId);
         if (currentPolicy == null)
         {
             return false;
         }
         RangerV2Policy rp = gson.fromJson(currentPolicy, RangerV2Policy.class);
-        if (rp.getUserList().contains(userName)){
-            // Refresh accesses list if user already exist in policy
-            rp.updateUserAccesses(userName, permissions);
-        } else {
-            // Append new policyItem if user not exist in policy
-            rp.addPolicyItems(new ArrayList<String>(){{add(userName);}},
-                    new ArrayList<String>(){{add(groupName);}}, new ArrayList<>(), true, permissions);
+        for (String user : users ){
+            if (rp.getUserList().contains(user)){
+                // Refresh accesses list if user already exist in policy
+                rp.updateUserAccesses(user, permissions);
+            } else {
+                // Append new policyItem if user not exist in policy
+                rp.addPolicyItems(new ArrayList<String>(){{add(user);}},
+                        new ArrayList<String>(){{add(groupName);}}, new ArrayList<>(), true, permissions);
+            }
         }
         return updateV2Policy(policyId, rp);
     }

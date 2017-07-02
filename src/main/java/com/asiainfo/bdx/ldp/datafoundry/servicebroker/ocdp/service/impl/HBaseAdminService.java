@@ -101,16 +101,16 @@ public class HBaseAdminService implements OCDPAdminService{
     }
 
     @Override
-    public String createPolicyForResources(String policyName, List<String> tableList, String userName,
+    public String createPolicyForResources(String policyName, List<String> tableList, List<String> userList,
                                            String groupName, List<String> permissions){
         logger.info("Assign read/write/create/admin permission to hbase namespace.");
         String policyId = null;
-        ArrayList<String> cfList = new ArrayList<String>(){{add("*");}};
-        ArrayList<String> cList = new ArrayList<String>(){{add("*");}};
-        ArrayList<String> groupList = new ArrayList<String>(){{add(groupName);}};
-        ArrayList<String> userList = new ArrayList<String>(){{add(userName);}};
+        ArrayList<String> cfList = Lists.newArrayList("*");
+        ArrayList<String> cList = Lists.newArrayList("*");
+        ArrayList<String> groupList = Lists.newArrayList(groupName);
+       // ArrayList<String> userList = new ArrayList<String>(){{add(userName);}};
        // ArrayList<String> types = new ArrayList<String>(){{add("read");add("write");add("create");add("admin");}};
-        ArrayList<String> conditions = new ArrayList<String>();
+        ArrayList<String> conditions = Lists.newArrayList();
         RangerV2Policy rp = new RangerV2Policy(
                 policyName,"","This is HBase Policy", clusterConfig.getClusterName()+"_hbase",true,true);
         ArrayList<String> nsList = new ArrayList<String>();
@@ -140,9 +140,9 @@ public class HBaseAdminService implements OCDPAdminService{
     }
 
     @Override
-    public boolean appendUserToPolicy(
-            String policyId, String groupName, String userName, List<String> permissions){
-        return rc.appendUserToV2Policy(policyId, groupName, userName, permissions);
+    public boolean appendUsersToPolicy(
+            String policyId, String groupName, List<String> users, List<String> permissions){
+        return rc.appendUsersToV2Policy(policyId, groupName, users, permissions);
     }
 
     @Override

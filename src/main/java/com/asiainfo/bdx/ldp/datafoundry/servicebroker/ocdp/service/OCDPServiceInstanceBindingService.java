@@ -184,6 +184,9 @@ public class OCDPServiceInstanceBindingService implements ServiceInstanceBinding
         Map<String, Object> credentials = instance.getServiceInstanceCredentials();
         credentials.remove(key);
         instance.setCredential(credentials);
+		// delete old service instances
+		repository.delete(instance.getServiceInstanceId());
+		// save new service instance
         repository.save(instance);
     }
 

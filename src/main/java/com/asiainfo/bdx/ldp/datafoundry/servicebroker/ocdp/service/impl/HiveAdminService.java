@@ -64,27 +64,35 @@ public class HiveAdminService implements OCDPAdminService {
     }
 
     @Override
-    public String createPolicyForResources(String policyName, List<String> resources, String userName,
+    public String createPolicyForResources(String policyName, List<String> resources, List<String> userList,
                                            String groupName, List<String> permissions){
         String[] resourcesList = resources.get(0).split(":");
         String hivePolicyId = this.hiveCommonService.assignPermissionToDatabase(
-                policyName, resourcesList[0], userName, groupName, permissions);
-        logger.info("Creating hive policy for user [{}] with resource [{}] with result policyid [{}].", userName, resourcesList[0], hivePolicyId);
+                policyName, resourcesList[0], userList, groupName, permissions);
+        logger.info("Creating hive policy for user [{}] with resource [{}] with result policyid [{}].",
+                userList.toString(), resourcesList[0], hivePolicyId);
+        // Temp fix: for 'create instance in tenant' case,
+        // create one ranger policy for multiple user and multiple /user/<userName> dirs
+        // Please refer to: https://github.com/OCManager/OCDP_ServiceBroker/issues/48
         List<String> hdfsFolders = new ArrayList<String>(){
             {
                 add("/apps/hive/warehouse/" + resourcesList[0] + ".db");
-                add("/user/" + userName);
                 add("/tmp/hive");
                 add("/ats/active");
             }
         };
-        createHdfsPath("/user/" + userName);
+        for (String userName : userList) {
+            hdfsFolders.add("/user/" + userName);
+            createHdfsPath("/user/" + userName);
+        }
         String hdfsPolicyId = this.hdfsAdminService.createPolicyForResources(
-                "hive_" + policyName, hdfsFolders, userName, groupName, null);
-        logger.info("Creating hdfs policy for user [{}] with resource [{}] with result policyid [{}].", userName, hdfsFolders, hdfsPolicyId);
+                "hive_" + policyName, hdfsFolders, userList, groupName, null);
+        logger.info("Creating hdfs policy for user [{}] with resource [{}] with result policyid [{}].",
+                userList.toString(), hdfsFolders, hdfsPolicyId);
         String yarnPolicyId = this.yarnCommonService.assignPermissionToQueue(
-                "hive_" + policyName, resourcesList[1], userName, groupName, null);
-        logger.info("Creating yarn policy for user [{}] with resource [{}] with result policyid [{}].", userName, resourcesList[1], yarnPolicyId);
+                "hive_" + policyName, resourcesList[1], userList, groupName, null);
+        logger.info("Creating yarn policy for user [{}] with resource [{}] with result policyid [{}].",
+                userList.toString(), resourcesList[1], yarnPolicyId);
         return (hivePolicyId != null && hdfsPolicyId != null && yarnPolicyId != null) ? hivePolicyId + ":" + hdfsPolicyId + ":" + yarnPolicyId : null;
     }
 
@@ -99,20 +107,27 @@ public class HiveAdminService implements OCDPAdminService {
     }
 
     @Override
-    public boolean appendUserToPolicy(
-            String policyId, String groupName, String userName, List<String> permissions){
+    public boolean appendUsersToPolicy(
+            String policyId, String groupName, List<String> users, List<String> permissions){
         String[] policyIds = policyId.split(":");
-        boolean userAppendToHivePolicy = this.hiveCommonService.appendUserToDatabasePermission(
-                policyIds[0], groupName, userName, permissions);
-        logger.info("User [{}] added to hive policy [{}] with result [{}].", userName, policyIds[0], userAppendToHivePolicy);
-        boolean userAppendToHDFSPolicy = this.hdfsAdminService.appendUserToPolicy(
-                policyIds[1], groupName, userName, Lists.newArrayList("read", "write","execute"));
-        logger.info("User [{}] added to hdfs policy [{}] with result [{}].", userName, policyIds[1], userAppendToHDFSPolicy);
-        createHdfsPath("/user/" + userName);
-        boolean userAppendToYarnPolicy = this.yarnCommonService.appendUserToQueuePermission(
-                policyIds[2], groupName, userName, Lists.newArrayList("submit-app", "admin-queue"));
-        logger.info("User [{}] added to yarn policy [{}] with result [{}].", userName, policyIds[2], userAppendToYarnPolicy);
-        return userAppendToHivePolicy && userAppendToHDFSPolicy && userAppendToYarnPolicy;
+        boolean userAppendToHivePolicy = this.hiveCommonService.appendUsersToDatabasePermission(
+                policyIds[0], groupName, users, permissions);
+        logger.info("User [{}] added to hive policy [{}] with result [{}].", users, policyIds[0], userAppendToHivePolicy);
+        // Temp fix: when update pass multiple users, append users to policy that create for multiple users and multiple /user/<userName> dirs
+        // Please refer to: https://github.com/OCManager/OCDP_ServiceBroker/issues/48
+        boolean userAppendToHDFSPolicy = this.hdfsAdminService.appendUsersToPolicy(
+                policyIds[1], groupName, users, Lists.newArrayList("read", "write","execute"));
+        logger.info("User [{}] added to hdfs policy [{}] with result [{}].", users, policyIds[1], userAppendToHDFSPolicy);
+        boolean resourceAppendToHDFSPolicy = false;
+        for (String user : users) {
+            logger.info("Create /user dir for user ", user);
+            createHdfsPath("/user/" + user);
+            resourceAppendToHDFSPolicy = this.hdfsAdminService.appendResourcesToPolicy(policyIds[0], "/user/" + user);
+        }
+        boolean userAppendToYarnPolicy = this.yarnCommonService.appendUsersToQueuePermission(
+                policyIds[2], groupName, users, Lists.newArrayList("submit-app", "admin-queue"));
+        logger.info("User [{}] added to yarn policy [{}] with result [{}].", users, policyIds[2], userAppendToYarnPolicy);
+        return userAppendToHivePolicy && resourceAppendToHDFSPolicy && userAppendToHDFSPolicy && userAppendToYarnPolicy;
     }
 
     @Override

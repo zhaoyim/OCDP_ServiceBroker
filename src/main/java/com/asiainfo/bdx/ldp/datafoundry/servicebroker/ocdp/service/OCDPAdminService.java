@@ -17,12 +17,12 @@ public interface OCDPAdminService {
 	String provisionResources(String serviceDefinitionId, String planId, String serviceInstanceId,
                               Map<String, Object> cuzQuota) throws Exception;
 
-    String createPolicyForResources(String policyName, List<String> resources, String userName,
+    String createPolicyForResources(String policyName, List<String> resources, List<String> userList,
                                     String groupName, List<String> permissions);
 
     boolean appendResourcesToPolicy(String policyId, String serviceInstanceResource);
 
-    boolean appendUserToPolicy(String policyId, String groupName, String userName, List<String> permissions);
+    boolean appendUsersToPolicy(String policyId, String groupName, List<String> users, List<String> permissions);
 
     void deprovisionResources(String serviceInstanceResuorceName) throws  Exception;
 

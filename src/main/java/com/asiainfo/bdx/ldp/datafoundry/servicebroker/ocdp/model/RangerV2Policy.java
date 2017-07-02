@@ -105,9 +105,16 @@ public class RangerV2Policy{
 
     public void addPolicyItems(List<String> users, List<String> groups, List<String> conditions,
                                boolean delegateAdmin, List<String> types){
+        for(String user : users){
+            addPolicyItem(user, groups, conditions, delegateAdmin, types);
+        }
+    }
+
+    public void addPolicyItem(String user, List<String> groups, List<String> conditions,
+                               boolean delegateAdmin, List<String> types) {
         PolicyItem pi = new PolicyItem();
         pi.delegateAdmin = delegateAdmin;
-        pi.users.addAll(users);
+        pi.users.add(user);
         //Temp fix for citic case, do not pass group when create policy
         //pi.groups.addAll(groups);
         pi.conditions.addAll(conditions);

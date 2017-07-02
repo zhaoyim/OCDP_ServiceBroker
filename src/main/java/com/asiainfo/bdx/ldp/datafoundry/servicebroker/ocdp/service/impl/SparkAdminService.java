@@ -5,6 +5,7 @@ import com.asiainfo.bdx.ldp.datafoundry.servicebroker.ocdp.model.ServiceInstance
 import com.asiainfo.bdx.ldp.datafoundry.servicebroker.ocdp.service.OCDPAdminService;
 import com.asiainfo.bdx.ldp.datafoundry.servicebroker.ocdp.service.common.YarnCommonService;
 import com.asiainfo.bdx.ldp.datafoundry.servicebroker.ocdp.utils.OCDPConstants;
+import com.google.common.collect.Lists;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -50,30 +51,30 @@ public class SparkAdminService implements OCDPAdminService {
     }
 
     @Override
-    public String createPolicyForResources(String policyName, final List<String> resources, String userName,
+    public String createPolicyForResources(String policyName, final List<String> resources, List<String> userList,
                                            String groupName, List<String> permissions) {
+        // Temp fix: for 'create instance in tenant' case,
+        // create one ranger policy for multiple user and multiple /user/<userName> dirs
+        // Please refer to: https://github.com/OCManager/OCDP_ServiceBroker/issues/48
         List <String> hdfsFolderForJobExec = new ArrayList<String>(){
             {
-                add("/user/" + userName);
                 add("/spark-history");
                 //add dummy path to avoid ranger error of existing resource path
-                add("/tmp/dummy_" + UUID.randomUUID().toString());
+                //add("/tmp/dummy_" + UUID.randomUUID().toString());
             }
         };
-        try{
-            this.hdfsAdminService.createHDFSDir(hdfsFolderForJobExec.get(0), null, null);
-        }
-        catch (IOException e) {
-            return null;
+        for (String userName : userList) {
+            hdfsFolderForJobExec.add("/user/" + userName);
+            createHdfsPath("/user/" + userName);
         }
         String hdfsPolicyId = this.hdfsAdminService.createPolicyForResources(
-                userName + "_" + policyName, hdfsFolderForJobExec, userName, groupName, null);
+                "spark_" + policyName, hdfsFolderForJobExec, userList, groupName, null);
         if ( hdfsPolicyId != null){
             logger.info("Assign permissions for folder " + hdfsFolderForJobExec.toString()  + " with policy id " + hdfsPolicyId);
         }
 
         String resource = resources.get(0);
-        String yarnPolicyId = this.yarnCommonService.assignPermissionToQueue(policyName, resource, userName, groupName, null);
+        String yarnPolicyId = this.yarnCommonService.assignPermissionToQueue(policyName, resource, userList, groupName, null);
         if ( yarnPolicyId != null){
             logger.info("Assign permissions for folder " + resource  + " with policy id " + yarnPolicyId);
         }
@@ -87,21 +88,21 @@ public class SparkAdminService implements OCDPAdminService {
     }
 
     @Override
-    public boolean appendUserToPolicy(
-            String policyId, String groupName, String userName, List<String> permissions) {
+    public boolean appendUsersToPolicy(
+            String policyId, String groupName, List<String> users, List<String> permissions) {
         String[] policyIds = policyId.split(":");
-        String hdfsPath = "/user/" + userName;
-        try{
-            this.hdfsAdminService.createHDFSDir(hdfsPath, null, null);
+        // Temp fix: when update pass multiple users, append users to policy that create for multiple users and multiple /user/<userName> dirs
+        // Please refer to: https://github.com/OCManager/OCDP_ServiceBroker/issues/48
+        boolean resourceAppendToHDFSPolicy = false;
+        for (String user : users) {
+            logger.info("Create /user dir for user ", user);
+            createHdfsPath("/user/" + user);
+            resourceAppendToHDFSPolicy = this.hdfsAdminService.appendResourcesToPolicy(policyIds[0], "/user/" + user);
         }
-        catch (IOException e) {
-            return false;
-        }
-        boolean userAppendToHDFSPolicy = this.hdfsAdminService.appendUserToPolicy(
-                policyIds[0], groupName, userName, new ArrayList<String>(){{add("read");add("write");add("execute");}});
-        boolean resourceAppendToHDFSPolicy = this.hdfsAdminService.appendResourcesToPolicy(policyIds[0], hdfsPath);
-        boolean userAppendToYarnPolicy = this.yarnCommonService.appendUserToQueuePermission(
-                policyIds[1], groupName, userName, permissions);
+        boolean userAppendToHDFSPolicy = this.hdfsAdminService.appendUsersToPolicy(
+                policyIds[0], groupName, users, Lists.newArrayList("read", "write","execute"));
+        boolean userAppendToYarnPolicy = this.yarnCommonService.appendUsersToQueuePermission(
+                policyIds[1], groupName, users, permissions);
         return userAppendToHDFSPolicy && resourceAppendToHDFSPolicy && userAppendToYarnPolicy;
     }
 
@@ -157,6 +158,15 @@ public class SparkAdminService implements OCDPAdminService {
     @Override
     public void resizeResourceQuota(ServiceInstance instance, Map<String, Object> cuzQuota) throws IOException{
         yarnCommonService.resizeResourceQuota(instance, cuzQuota);
+    }
+
+    private void createHdfsPath(String path) {
+        try {
+            this.hdfsAdminService.createHDFSDir(path, null, null);
+        } catch (IOException e) {
+            logger.error("Create hdfs user path [{}] failed!", e);
+            throw new RuntimeException(e);
+        }
     }
 
 }

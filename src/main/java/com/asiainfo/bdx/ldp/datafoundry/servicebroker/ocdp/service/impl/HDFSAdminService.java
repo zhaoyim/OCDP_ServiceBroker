@@ -168,13 +168,13 @@ public class HDFSAdminService implements OCDPAdminService{
     }
 
     @Override
-    public String createPolicyForResources(String policyName, List<String> resources, String userName,
+    public String createPolicyForResources(String policyName, List<String> resources, List<String> userList,
                                            String groupName, List<String> permissions){
         String policyId = null;
-        ArrayList<String> groupList = new ArrayList<String>(){{add(groupName);}};
-        ArrayList<String> userList = new ArrayList<String>(){{add(userName);}};
+        ArrayList<String> groupList = Lists.newArrayList(groupName);
+        //ArrayList<String> userList = new ArrayList<String>(){{add(userName);}};
         //ArrayList<String> types = new ArrayList<String>(){{add("read");add("write");add("execute");}};
-        ArrayList<String> conditions = new ArrayList<>();
+        ArrayList<String> conditions = Lists.newArrayList();
         RangerV2Policy rp = new RangerV2Policy(
                 policyName,"","This is HDFS Policy", clusterConfig.getClusterName()+"_hadoop",true,true);
         rp.addResources2(OCDPConstants.HDFS_RANGER_RESOURCE_TYPE, resources,false,true);
@@ -189,7 +189,7 @@ public class HDFSAdminService implements OCDPAdminService{
             policyId = newPolicyObj.getPolicyId();
         }
         else {
-            logger.error("Failed to create hdfs policy to user [{}] of resources [{}] ", userName, resources);
+            logger.error("Failed to create hdfs policy to user [{}] of resources [{}] ", userList.toString(), resources);
         }
         return policyId;
     }
@@ -200,8 +200,8 @@ public class HDFSAdminService implements OCDPAdminService{
     }
 
     @Override
-    public boolean appendUserToPolicy(String policyId, String groupName, String userName, List<String> permissions){
-        return rc.appendUserToV2Policy(policyId, groupName, userName, permissions);
+    public boolean appendUsersToPolicy(String policyId, String groupName, List<String> users, List<String> permissions){
+        return rc.appendUsersToV2Policy(policyId, groupName, users, permissions);
     }
 
     @Override
