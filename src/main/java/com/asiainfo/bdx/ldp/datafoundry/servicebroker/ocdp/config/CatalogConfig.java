@@ -89,6 +89,7 @@ public class CatalogConfig {
                     // customize quota have input value
                     quota = (String)cuzQuota.get(quotaKey);
                     // If customize quota exceeds plan limitation, use default value
+                    logger.info("Quota:[{}], maxQuota:[{}],defaultQuota:[{}].", quota, maxQuota, defaultQuota);
                     if(Long.parseLong(quota) > maxQuota){
                         quota = Long.toString(defaultQuota);
                     }

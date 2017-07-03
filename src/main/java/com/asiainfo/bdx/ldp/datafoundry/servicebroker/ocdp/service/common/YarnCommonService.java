@@ -65,7 +65,7 @@ public class YarnCommonService {
     public synchronized String createQueue(String quota) throws IOException{
         String queue_suffix;
         String queuePath;
-        logger.info("Try to calculate queue capacity using quota.");
+        logger.info("Try to calculate queue capacity using quota [{}] GB", quota);
         try {
             renewCapacityCaculater();
             queue_suffix = capacityCalculator.applyQueue(new Long(quota));

@@ -9,7 +9,6 @@ import com.google.common.collect.Lists;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
@@ -17,17 +16,13 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.UUID;
 
 /**
  * Created by baikai on 8/4/16.
  */
 @Service
-public class SparkAdminService implements OCDPAdminService {
-    private Logger logger = LoggerFactory.getLogger(SparkAdminService.class);
-
-    @Autowired
-    private ApplicationContext context;
+public class YarnAdminService implements OCDPAdminService {
+    private Logger logger = LoggerFactory.getLogger(YarnAdminService.class);
 
     private ClusterConfig clusterConfig;
 
@@ -36,8 +31,8 @@ public class SparkAdminService implements OCDPAdminService {
     private HDFSAdminService hdfsAdminService;
 
     @Autowired
-    public SparkAdminService(ClusterConfig clusterConfig,
-                             YarnCommonService yarnCommonService, HDFSAdminService hdfsAdminService){
+    public YarnAdminService(ClusterConfig clusterConfig,
+                            YarnCommonService yarnCommonService, HDFSAdminService hdfsAdminService){
         this.clusterConfig = clusterConfig;
         this.yarnCommonService = yarnCommonService;
         this.hdfsAdminService = hdfsAdminService;
@@ -53,12 +48,13 @@ public class SparkAdminService implements OCDPAdminService {
     @Override
     public String createPolicyForResources(String policyName, final List<String> resources, List<String> userList,
                                            String groupName, List<String> permissions) {
+        String historyPath = "/" + policyName.split("_")[0] + "_history";
         // Temp fix: for 'create instance in tenant' case,
         // create one ranger policy for multiple user and multiple /user/<userName> dirs
         // Please refer to: https://github.com/OCManager/OCDP_ServiceBroker/issues/48
         List <String> hdfsFolderForJobExec = new ArrayList<String>(){
             {
-                add("/spark-history");
+                add(historyPath);
                 //add dummy path to avoid ranger error of existing resource path
                 //add("/tmp/dummy_" + UUID.randomUUID().toString());
             }
@@ -68,7 +64,7 @@ public class SparkAdminService implements OCDPAdminService {
             createHdfsPath("/user/" + userName);
         }
         String hdfsPolicyId = this.hdfsAdminService.createPolicyForResources(
-                "spark_" + policyName, hdfsFolderForJobExec, userList, groupName, null);
+                policyName, hdfsFolderForJobExec, userList, groupName, null);
         if ( hdfsPolicyId != null){
             logger.info("Assign permissions for folder " + hdfsFolderForJobExec.toString()  + " with policy id " + hdfsPolicyId);
         }

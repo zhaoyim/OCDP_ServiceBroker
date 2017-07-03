@@ -3,7 +3,6 @@ package com.asiainfo.bdx.ldp.datafoundry.servicebroker.ocdp.service.common;
 import java.io.IOException;
 import java.lang.Thread;
 import java.util.List;
-import java.util.ArrayList;
 import java.util.Map;
 import java.util.Collections;
 import java.util.concurrent.Future;
@@ -213,7 +212,7 @@ public class OCDPServiceInstanceCommonService {
         String serviceInstanceResource = (String) instance.getServiceInstanceCredentials().get(resourceType);
         if (serviceInstancePolicyId == null || serviceInstancePolicyId.length() == 0 ){
             // Create new ranger policy for service instance and update policy to service instance
-            serviceInstancePolicyId = createPolicyForResources(ocdp, serviceInstanceResource, users, accesses);
+            serviceInstancePolicyId = createPolicyForResources(ocdp, serviceInstanceResource, users, accesses, serviceDefinitionId);
             updateServiceInstanceCredentials(instance, "rangerPolicyId", serviceInstancePolicyId);
         } else {
             // Append users to service instance policy
@@ -300,12 +299,13 @@ public class OCDPServiceInstanceCommonService {
     }
 
     private String createPolicyForResources(
-            OCDPAdminService ocdp, String serviceInstanceResource, List<String> userList, List<String> accesses){
+            OCDPAdminService ocdp, String serviceInstanceResource, List<String> userList, List<String> accesses, String serviceDefinitionId){
         String policyId = null;
+        String policyName = OCDPAdminServiceMapper.getOCDPServiceName(serviceDefinitionId) + "_" + serviceInstanceResource;
         int i = 0;
         logger.info("Try to create ranger policy...");
         while(i++ <= 40){
-            policyId = ocdp.createPolicyForResources(serviceInstanceResource, Lists.newArrayList(serviceInstanceResource),
+            policyId = ocdp.createPolicyForResources(policyName, Lists.newArrayList(serviceInstanceResource),
                     userList, clusterConfig.getLdapGroup(), accesses);
             // TODO Need get a way to force sync up ldap users with ranger service, for temp solution will wait 60 sec
             if (policyId == null){

@@ -25,9 +25,20 @@ public class OCDPAdminServiceMapper {
             put("ae67d4ba-5c4e-4937-a68b-5b47cfe356d8", "HDFSAdminService");
             put("d9845ade-9410-4c7f-8689-4e032c1a8450", "HBaseAdminService");
             put("2ef26018-003d-4b2b-b786-0481d4ee9fa3", "hiveAdminService");
-            put("ae0f2324-27a8-415b-9c7f-64ab6cd88d40", "mapReduceAdminService");
-            put("d3b9a485-f038-4605-9b9b-29792f5c61d1", "sparkAdminService");
+            put("ae0f2324-27a8-415b-9c7f-64ab6cd88d40", "yarnAdminService");
+            put("d3b9a485-f038-4605-9b9b-29792f5c61d1", "yarnAdminService");
             put("7b738c78-d412-422b-ac3e-43a9fc72a4a7", "kafkaAdminService");
+        }
+    };
+
+    private static final Map<String, String> OCDP_SERVICE_NAME_MAP = new HashMap<String, String>(){
+        {
+            put("ae67d4ba-5c4e-4937-a68b-5b47cfe356d8", "hdfs");
+            put("d9845ade-9410-4c7f-8689-4e032c1a8450", "hbase");
+            put("2ef26018-003d-4b2b-b786-0481d4ee9fa3", "hive");
+            put("ae0f2324-27a8-415b-9c7f-64ab6cd88d40", "mr");
+            put("d3b9a485-f038-4605-9b9b-29792f5c61d1", "spark");
+            put("7b738c78-d412-422b-ac3e-43a9fc72a4a7", "kafka");
         }
     };
 
@@ -65,6 +76,10 @@ public class OCDPAdminServiceMapper {
 
     public static String getOCDPAdminService(String serviceDefinitionId){
         return OCDP_ADMIN_SERVICE_MAP.get(serviceDefinitionId);
+    }
+
+    public static String getOCDPServiceName(String serviceDefinitionId){
+        return OCDP_SERVICE_NAME_MAP.get(serviceDefinitionId);
     }
 
     public static String getOCDPServicePlan(String serviceDefinitionId){
