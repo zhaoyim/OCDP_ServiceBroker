@@ -320,10 +320,27 @@ public class KafkaAdminService implements OCDPAdminService{
 		Map<String, String> result = Maps.newHashMap();
 		for (Entry<String, Object> entry : cuzQuota.entrySet()) {
 			if (parameterMapping.containsKey(entry.getKey())) {
-				result.put(parameterMapping.get(entry.getKey()), (String)entry.getValue());
+				if (entry.getKey().equals(Constants.PAR_QUOTA)) {
+					//partition size unit transforming from GB to Bytes
+					result.put(parameterMapping.get(entry.getKey()), toBytes((String)entry.getValue()));
+				}
+				else
+				{
+					result.put(parameterMapping.get(entry.getKey()), (String)entry.getValue());
+				}
 			}
 		}
 		return result;
+	}
+
+	/**
+	 * change partition size from GB to Bytes.
+	 * @param value
+	 * @return
+	 */
+	private String toBytes(String valueInGB) {
+		long valueInBytes = Long.valueOf(valueInGB) * 1024 * 1024 * 1024;// 1GB = 1024*1024*1024Bytes
+		return String.valueOf(valueInBytes);
 	}
 
 	private void genKafkaCredential(HashMap<String, Object> credential, OCTopic topic) {
