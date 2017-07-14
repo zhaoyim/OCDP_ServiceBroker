@@ -238,6 +238,12 @@ public class KafkaAdminService implements OCDPAdminService{
 		CustomizeQuotaItem plan_topicQuota = (CustomizeQuotaItem)planQuota.get(Constants.TOPIC_QUOTA);
 		CustomizeQuotaItem plan_topicTTL = (CustomizeQuotaItem)planQuota.get(Constants.TOPIC_TTL);
 		CustomizeQuotaItem plan_parQuota = (CustomizeQuotaItem)planQuota.get(Constants.PAR_QUOTA);
+		if (cuzQuota == null || cuzQuota.isEmpty()) {
+			quota.put(Constants.TOPIC_QUOTA, plan_topicQuota.getDefault());
+			quota.put(Constants.TOPIC_TTL, plan_topicTTL.getDefault());
+			quota.put(Constants.PAR_QUOTA, plan_parQuota.getDefault());
+			return;
+		}
 		quota.put(Constants.TOPIC_QUOTA, validate(plan_topicQuota, cuzQuota.get(Constants.TOPIC_QUOTA)));
 		quota.put(Constants.TOPIC_TTL, validate(plan_topicTTL, cuzQuota.get(Constants.TOPIC_TTL)));
 		quota.put(Constants.PAR_QUOTA, validate(plan_parQuota, cuzQuota.get(Constants.PAR_QUOTA)));
