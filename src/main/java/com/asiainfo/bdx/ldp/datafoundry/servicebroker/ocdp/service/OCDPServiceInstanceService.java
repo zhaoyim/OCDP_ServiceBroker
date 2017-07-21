@@ -190,7 +190,7 @@ public class OCDPServiceInstanceService implements ServiceInstanceService {
                 password = UUID.randomUUID().toString();
             }else {
                 password = etcdClient.readToString(
-                        "/servicebroker/ocdp/user/krb/" + userName + "@" + clusterConfig.getKrbRealm());
+                        "/servicebroker/ocdp/user/krb/" + userName + "@" + clusterConfig.getKrbRealm() + "/password");
             }
             UpdateServiceInstanceResponse response;
             OCDPServiceInstanceCommonService service = getOCDPServiceInstanceCommonService();
