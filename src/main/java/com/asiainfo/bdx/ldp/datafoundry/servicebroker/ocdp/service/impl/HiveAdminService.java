@@ -182,10 +182,13 @@ public class HiveAdminService implements OCDPAdminService {
             {
                 put("uri", "jdbc:hive2://" + clusterConfig.getHiveHost() + ":" +
                         clusterConfig.getHivePort() + "/" + dbName + ";principal=" + clusterConfig.getHiveSuperUser());
+                // Temp fix for Spark SQL application access to hive database:
+                // append a thrift URL to hive bsi's credentials info
+                put("thriftUri", "jdbc:hive2://" + clusterConfig.getSparkThriftServer() + ":" +
+                        clusterConfig.getSparkThriftPort() + "/" + dbName + ";principal=" + clusterConfig.getHiveSuperUser());
                 put("host", clusterConfig.getHiveHost());
                 put("port", clusterConfig.getHivePort());
                 put(OCDPConstants.HIVE_RESOURCE_TYPE, dbName);
-
             }
         };
     }

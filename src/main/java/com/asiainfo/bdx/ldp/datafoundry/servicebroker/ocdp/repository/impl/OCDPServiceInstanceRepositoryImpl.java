@@ -3,6 +3,7 @@ package com.asiainfo.bdx.ldp.datafoundry.servicebroker.ocdp.repository.impl;
 import com.asiainfo.bdx.ldp.datafoundry.servicebroker.ocdp.config.ClusterConfig;
 import com.asiainfo.bdx.ldp.datafoundry.servicebroker.ocdp.client.etcdClient;
 import com.asiainfo.bdx.ldp.datafoundry.servicebroker.ocdp.utils.OCDPAdminServiceMapper;
+import com.asiainfo.bdx.ldp.datafoundry.servicebroker.ocdp.utils.OCDPConstants;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.slf4j.Logger;
@@ -66,6 +67,11 @@ public class OCDPServiceInstanceRepositoryImpl implements OCDPServiceInstanceRep
                 put("rangerPolicyId", rangerPolicyId);
             }
         };
+        if (resourceType.equals(OCDPConstants.HIVE_RESOURCE_TYPE)){
+            String thriftUri = etcdClient.readToString("/servicebroker/ocdp/instance/" + serviceInstanceId +
+                    "/Credentials/thriftUri");
+            Credential.put("thriftUri", thriftUri);
+        }
         instance.setCredential(Credential);
 
         return instance;
@@ -87,6 +93,10 @@ public class OCDPServiceInstanceRepositoryImpl implements OCDPServiceInstanceRep
                 instance.getPlanId());
         etcdClient.write("/servicebroker/ocdp/instance/" + serviceInstanceId + "/Credentials/uri",
                 (String)credentials.get("uri"));
+        if (resourceType.equals(OCDPConstants.HIVE_RESOURCE_TYPE)){
+            etcdClient.write("/servicebroker/ocdp/instance/" + serviceInstanceId + "/Credentials/thriftUri",
+                    (String)credentials.get("thriftUri"));
+        }
         etcdClient.write("/servicebroker/ocdp/instance/" + serviceInstanceId + "/Credentials/host",
                 (String)credentials.get("host"));
         etcdClient.write("/servicebroker/ocdp/instance/" + serviceInstanceId + "/Credentials/port",
