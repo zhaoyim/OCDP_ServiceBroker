@@ -285,6 +285,7 @@ public class OCDPServiceInstanceCommonService {
             // Return base64 encoded keytab string for principal
             String keytab = kc.createKeyTabString(principalName, password, null);
             etcdClient.write("/servicebroker/ocdp/user/krb/" + principalName + "/keytab", keytab);
+            logger.info("Generate keytab string " + keytab + " for principal " + principalName);
             return keytab;
         }catch(KerberosOperationException e){
             logger.error("Kerberos principal create fail due to: " + e.getLocalizedMessage());
