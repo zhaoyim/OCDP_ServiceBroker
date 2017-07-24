@@ -201,8 +201,18 @@ public class OCDPServiceInstanceCommonService {
             // Create new ldap user only for 'add new user for tenant' case;
             // because in 'create instance for tenant' case, all tenant users are already exist,
             // no need to check/create again.
-            if (createLDAPUser(users.get(0))){
-                createKrbPricAndKeytab(users.get(0), password);
+            String username = users.get(0);
+            if (createLDAPUser(username)){
+                createKrbPricAndKeytab(username, password);
+            } else {
+                String principalName = username + "@" + clusterConfig.getKrbRealm();
+                String keytab = etcdClient.readToString(
+                        "/servicebroker/ocdp/user/krbinfo/" + principalName + "/keytab");
+                if (keytab == null){
+                    keytab = kc.createKeyTabString(principalName, password, null);
+                    etcdClient.write("/servicebroker/ocdp/user/krbinfo/" + principalName + "/keytab", keytab);
+                    logger.info("Generate keytab string " + keytab + " for exists principal " + principalName);
+                }
             }
         }
         // 2) Create policy for service instance or append user to an exists policy
@@ -264,7 +274,7 @@ public class OCDPServiceInstanceCommonService {
         logger.info("create new kerberos principal.");
         String principalName = userName + "@" + clusterConfig.getKrbRealm();
         // Generate krb password and store it to etcd
-        etcdClient.write("/servicebroker/ocdp/user/krb/" + principalName + "/password", password);
+        etcdClient.write("/servicebroker/ocdp/user/krbinfo/" + principalName + "/password", password);
         try{
             kc.createPrincipal(principalName, password);
         }catch(KerberosOperationException e){
@@ -279,12 +289,12 @@ public class OCDPServiceInstanceCommonService {
         logger.info("create new kerberos principal.");
         String principalName = userName + "@" + clusterConfig.getKrbRealm();
         // Generate krb password and store it to etcd
-        etcdClient.write("/servicebroker/ocdp/user/krb/" + principalName + "/password", password);
+        etcdClient.write("/servicebroker/ocdp/user/krbinfo/" + principalName + "/password", password);
         try{
             kc.createPrincipal(principalName, password);
             // Return base64 encoded keytab string for principal
             String keytab = kc.createKeyTabString(principalName, password, null);
-            etcdClient.write("/servicebroker/ocdp/user/krb/" + principalName + "/keytab", keytab);
+            etcdClient.write("/servicebroker/ocdp/user/krbinfo/" + principalName + "/keytab", keytab);
             logger.info("Generate keytab string " + keytab + " for principal " + principalName);
             return keytab;
         }catch(KerberosOperationException e){

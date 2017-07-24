@@ -93,8 +93,8 @@ public class OCDPServiceInstanceBindingService implements ServiceInstanceBinding
 	        }
 	        // Construct service instance credentials for binding user
 	        String userPrincipal = params.get("user_name") + "@" + clusterConfig.getKrbRealm();
-	        String password = etcdClient.readToString("/servicebroker/ocdp/user/krb/" + userPrincipal + "/password");
-			String keytab = etcdClient.readToString("/servicebroker/ocdp/user/krb/" + userPrincipal + "/keytab");
+	        String password = etcdClient.readToString("/servicebroker/ocdp/user/krbinfo/" + userPrincipal + "/password");
+			String keytab = etcdClient.readToString("/servicebroker/ocdp/user/krbinfo/" + userPrincipal + "/keytab");
 	        Map<String, Object> serviceInstanceCredentials = instance.getServiceInstanceCredentials();
 	        serviceInstanceCredentials.put("username", userPrincipal);
 	        serviceInstanceCredentials.put("password", password);
