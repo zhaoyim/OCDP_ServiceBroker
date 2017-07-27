@@ -4,6 +4,7 @@ package com.asiainfo.bdx.ldp.datafoundry.servicebroker.ocdp.repository.impl;
 import com.asiainfo.bdx.ldp.datafoundry.servicebroker.ocdp.config.ClusterConfig;
 import com.asiainfo.bdx.ldp.datafoundry.servicebroker.ocdp.client.etcdClient;
 import com.asiainfo.bdx.ldp.datafoundry.servicebroker.ocdp.utils.OCDPAdminServiceMapper;
+import com.asiainfo.bdx.ldp.datafoundry.servicebroker.ocdp.utils.OCDPConstants;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.slf4j.Logger;
@@ -55,6 +56,8 @@ public class OCDPServiceInstanceBindingRepositoryImpl implements OCDPServiceInst
                 bindingId + "/Credentials/username");
         String password = etcdClient.readToString("/servicebroker/ocdp/instance/" + serviceInstanceId + "/bindings/" +
                 bindingId + "/Credentials/password");
+        String keytab = etcdClient.readToString("/servicebroker/ocdp/instance/" + serviceInstanceId + "/bindings/" +
+                bindingId + "/Credentials/keytab");
         String host = etcdClient.readToString("/servicebroker/ocdp/instance/" + serviceInstanceId + "/bindings/" +
                 bindingId + "/Credentials/host");
         String port = etcdClient.readToString("/servicebroker/ocdp/instance/" + serviceInstanceId + "/bindings/" +
@@ -68,12 +71,18 @@ public class OCDPServiceInstanceBindingRepositoryImpl implements OCDPServiceInst
                 put("uri", uri);
                 put("username", username);
                 put("password", password);
+                put("keytab", keytab);
                 put("host", host);
                 put("port", port);
                 put(resourceType, resource);
                 put("rangerPolicyId", rangerPolicyId);
             }
         };
+        if (resourceType.equals(OCDPConstants.HIVE_RESOURCE_TYPE)){
+            String thriftUri = etcdClient.readToString("/servicebroker/ocdp/instance/" + serviceInstanceId + "/bindings/" +
+                    bindingId + "/Credentials/thriftUri");
+            credentials.put("thriftUri", thriftUri);
+        }
 
         return new ServiceInstanceBinding(id, serviceInstanceId, credentials,syslogDrainUrl, appGuid, planId);
     }
@@ -104,10 +113,16 @@ public class OCDPServiceInstanceBindingRepositoryImpl implements OCDPServiceInst
                 bindingId + "/planId", binding.getPlanId());
         etcdClient.write("/servicebroker/ocdp/instance/" + serviceInstanceId + "/bindings/" +
                         bindingId + "/Credentials/uri", (String)credentials.get("uri"));
+        if (resourceType.equals(OCDPConstants.HIVE_RESOURCE_TYPE)){
+            etcdClient.write("/servicebroker/ocdp/instance/" + serviceInstanceId + "/bindings/" +
+                    bindingId + "/Credentials/thriftUri", (String)credentials.get("thriftUri"));
+        }
         etcdClient.write("/servicebroker/ocdp/instance/" + serviceInstanceId + "/bindings/" +
                         bindingId + "/Credentials/username", (String)credentials.get("username"));
         etcdClient.write("/servicebroker/ocdp/instance/" + serviceInstanceId + "/bindings/" +
                         bindingId + "/Credentials/password", (String)credentials.get("password"));
+        etcdClient.write("/servicebroker/ocdp/instance/" + serviceInstanceId + "/bindings/" +
+                bindingId + "/Credentials/keytab", (String)credentials.get("keytab"));
         etcdClient.write("/servicebroker/ocdp/instance/" + serviceInstanceId + "/bindings/" +
                         bindingId + "/Credentials/host", (String)credentials.get("host"));
         etcdClient.write("/servicebroker/ocdp/instance/" + serviceInstanceId + "/bindings/" +
