@@ -5,6 +5,7 @@ import java.lang.Thread;
 import java.util.List;
 import java.util.Map;
 import java.util.Collections;
+import java.util.UUID;
 import java.util.concurrent.Future;
 
 import com.asiainfo.bdx.ldp.datafoundry.servicebroker.ocdp.client.etcdClient;
@@ -203,8 +204,11 @@ public class OCDPServiceInstanceCommonService {
             // no need to check/create again.
             String username = users.get(0);
             if (createLDAPUser(username)){
+                // New LDAP user created, should create krb principal/keytab too
                 createKrbPricAndKeytab(username, password);
             } else {
+                // Exists LDAP user, no need to create again;
+                // but need generate keytab if keytab not created before.
                 String principalName = username + "@" + clusterConfig.getKrbRealm();
                 String keytab = etcdClient.readToString(
                         "/servicebroker/ocdp/user/krbinfo/" + principalName + "/keytab");
@@ -276,11 +280,15 @@ public class OCDPServiceInstanceCommonService {
         // Generate krb password and store it to etcd
         etcdClient.write("/servicebroker/ocdp/user/krbinfo/" + principalName + "/password", password);
         try{
+            // If principal exists, not need to create again.
+            if (kc.principalExists(principalName)){
+                return;
+            }
             kc.createPrincipal(principalName, password);
         }catch(KerberosOperationException e){
             logger.error("Kerberos principal create fail due to: " + e.getLocalizedMessage());
             e.printStackTrace();
-            rollbackLDAPUser(userName);
+           // rollbackLDAPUser(userName);
             throw new OCDPServiceException("Kerberos principal create fail due to: " + e.getLocalizedMessage());
         }
     }
@@ -291,6 +299,10 @@ public class OCDPServiceInstanceCommonService {
         // Generate krb password and store it to etcd
         etcdClient.write("/servicebroker/ocdp/user/krbinfo/" + principalName + "/password", password);
         try{
+            // If principal exists, not need to create again.
+            if (kc.principalExists(principalName)){
+                return "";
+            }
             kc.createPrincipal(principalName, password);
             // Return base64 encoded keytab string for principal
             String keytab = kc.createKeyTabString(principalName, password, null);
@@ -300,7 +312,7 @@ public class OCDPServiceInstanceCommonService {
         }catch(KerberosOperationException e){
             logger.error("Kerberos principal create fail due to: " + e.getLocalizedMessage());
             e.printStackTrace();
-            rollbackLDAPUser(userName);
+           // rollbackLDAPUser(userName);
             throw new OCDPServiceException("Kerberos principal create fail due to: " + e.getLocalizedMessage());
         }
     }
@@ -332,7 +344,9 @@ public class OCDPServiceInstanceCommonService {
     private String createPolicyForResources(
             OCDPAdminService ocdp, String serviceInstanceResource, List<String> userList, List<String> accesses, String serviceDefinitionId){
         String policyId = null;
-        String policyName = OCDPAdminServiceMapper.getOCDPServiceName(serviceDefinitionId) + "_" + serviceInstanceResource;
+        // BSI can be assigned to multiply users, so the policy name should be unique.
+        //String policyName = OCDPAdminServiceMapper.getOCDPServiceName(serviceDefinitionId) + "_" + serviceInstanceResource;
+        String policyName = OCDPAdminServiceMapper.getOCDPServiceName(serviceDefinitionId) + "_" + UUID.randomUUID().toString();
         int i = 0;
         logger.info("Try to create ranger policy...");
         while(i++ <= 40){

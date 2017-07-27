@@ -178,6 +178,31 @@ public class krbClient {
     }
 
     /**
+     * Test to see if the specified principal exists in a previously configured MIT KDC
+     * <p/>
+     * This implementation creates a query to send to the kadmin shell command and then interrogates
+     * the result from STDOUT to determine if the presence of the specified principal.
+     *
+     * @param principal a String containing the principal to test
+     * @return true if the principal exists; false otherwise
+     * @throws KerberosOperationException           if an unexpected error occurred
+     */
+    public boolean principalExists(String principal)
+            throws KerberosOperationException {
+        if (principal == null) {
+            return false;
+        } else {
+            // Create the KAdmin query to execute:
+            ShellCommandUtil.Result result = invokeKAdmin(String.format("get_principal %s", principal));
+
+            // If there is data from STDOUT, see if the following string exists:
+            //    Principal: <principal>
+            String stdOut = result.getStdout();
+            return (stdOut != null) && stdOut.contains(String.format("Principal: %s", principal));
+        }
+    }
+
+    /**
      * Removes an existing principal in a previously configured KDC
      * <p/>
      * The implementation is specific to a particular type of KDC.

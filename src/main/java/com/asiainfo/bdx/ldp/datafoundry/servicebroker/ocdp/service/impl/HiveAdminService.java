@@ -86,11 +86,11 @@ public class HiveAdminService implements OCDPAdminService {
             createHdfsPath("/user/" + userName);
         }
         String hdfsPolicyId = this.hdfsAdminService.createPolicyForResources(
-                "hive_" + policyName, hdfsFolders, userList, groupName, null);
+                policyName, hdfsFolders, userList, groupName, null);
         logger.info("Creating hdfs policy for user [{}] with resource [{}] with result policyid [{}].",
                 userList.toString(), hdfsFolders, hdfsPolicyId);
         String yarnPolicyId = this.yarnCommonService.assignPermissionToQueue(
-                "hive_" + policyName, resourcesList[1], userList, groupName, null);
+                policyName, resourcesList[1], userList, groupName, null);
         logger.info("Creating yarn policy for user [{}] with resource [{}] with result policyid [{}].",
                 userList.toString(), resourcesList[1], yarnPolicyId);
         return (hivePolicyId != null && hdfsPolicyId != null && yarnPolicyId != null) ? hivePolicyId + ":" + hdfsPolicyId + ":" + yarnPolicyId : null;
