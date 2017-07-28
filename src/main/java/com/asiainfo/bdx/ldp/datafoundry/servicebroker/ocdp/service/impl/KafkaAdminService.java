@@ -170,7 +170,7 @@ public class KafkaAdminService implements OCDPAdminService{
 		if (!cuzQuota.containsKey(Constants.TOPIC_QUOTA)) {
 			return; // no partition changing request found
 		}
-		String par = (String)cuzQuota.get(Constants.TOPIC_QUOTA);
+		String par = String.valueOf(cuzQuota.get(Constants.TOPIC_QUOTA));
 		KafkaClient.getClient().changePartitions(topic, Integer.valueOf(par));
 		LOG.info("Kafka topic [{}]'s partition changed to [{}]", topic, par);
 	}
@@ -183,7 +183,7 @@ public class KafkaAdminService implements OCDPAdminService{
 	private String createResources(OCTopic topic, Map<String, Object> quota) {
 		try {
 			Properties props = buildProperties(quota);
-			String par_num = (String) quota.get(Constants.TOPIC_QUOTA);
+			String par_num = String.valueOf(quota.get(Constants.TOPIC_QUOTA));
 			KafkaClient.getClient().createTopic(topic.name(), Integer.valueOf(par_num), Constants.REP_FACTOR, props);
 			LOG.info("Topic {} created successful with {} partitions and config: {}", topic, par_num, props);
 			return topic.name();
@@ -195,10 +195,10 @@ public class KafkaAdminService implements OCDPAdminService{
 
 	private Properties buildProperties(Map<String, Object> quota) {
 		Properties prop = new Properties();
-		String par_size = (String) quota.get(Constants.PAR_QUOTA);
-		String ttl = (String) quota.get(Constants.TOPIC_TTL);
-		prop.put(Constants.CONFIG_PAR_SIZE, par_size);
-		prop.put(Constants.CONFIG_TTL, ttl);
+		String par_size = String.valueOf(quota.get(Constants.PAR_QUOTA));
+		String ttl = String.valueOf(quota.get(Constants.TOPIC_TTL));
+		prop.setProperty(Constants.CONFIG_PAR_SIZE, par_size);
+		prop.setProperty(Constants.CONFIG_TTL, ttl);
 		return prop;
 	}
 
@@ -262,7 +262,7 @@ public class KafkaAdminService implements OCDPAdminService{
 			return String.valueOf(planItem.getDefault());
 		}
 		long planMax = planItem.getMax();
-		long cuzLong = Long.valueOf((String)cuzValue);
+		long cuzLong = Long.valueOf(String.valueOf(cuzValue));
 		LOG.info("Kafka quota values(custom/maximum/default): [{}]/[{}]/[{}]", cuzLong, planMax, planItem.getDefault());
 		if (planMax > 0) {
 			return cuzLong > planMax ? String.valueOf(planItem.getDefault()) : String.valueOf(cuzLong);
@@ -297,7 +297,7 @@ public class KafkaAdminService implements OCDPAdminService{
 	{
 		Iterator<String> it = list.iterator();
 		while (it.hasNext()) {
-			String string = (String) it.next();
+			String string = it.next();
 			if (string.startsWith(name)) {
 				return string.split(":")[1];
 			}
@@ -318,7 +318,7 @@ public class KafkaAdminService implements OCDPAdminService{
 
 	private String getTopic(ServiceInstance instance) {
 		Map<String, Object> credentails = instance.getServiceInstanceCredentials();
-		String name = (String)credentails.get(Constants.REROURCE_TYPE);
+		String name = String.valueOf(credentails.get(Constants.REROURCE_TYPE));
 		return name;
 	}
 	
@@ -328,11 +328,11 @@ public class KafkaAdminService implements OCDPAdminService{
 			if (parameterMapping.containsKey(entry.getKey())) {
 				if (entry.getKey().equals(Constants.PAR_QUOTA)) {
 					//partition size unit transforming from GB to Bytes
-					result.put(parameterMapping.get(entry.getKey()), toBytes((String)entry.getValue()));
+					result.put(parameterMapping.get(entry.getKey()), toBytes(String.valueOf(entry.getValue())));
 				}
 				else
 				{
-					result.put(parameterMapping.get(entry.getKey()), (String)entry.getValue());
+					result.put(parameterMapping.get(entry.getKey()), String.valueOf(entry.getValue()));
 				}
 			}
 		}
