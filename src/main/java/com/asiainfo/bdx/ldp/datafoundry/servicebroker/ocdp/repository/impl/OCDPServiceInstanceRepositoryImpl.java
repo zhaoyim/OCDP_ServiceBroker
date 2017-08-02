@@ -103,6 +103,7 @@ public class OCDPServiceInstanceRepositoryImpl implements OCDPServiceInstanceRep
                 (String)credentials.get("port"));
         etcdClient.write("/servicebroker/ocdp/instance/" + serviceInstanceId + "/Credentials/" + resourceType,
                 (String)credentials.get(resourceType));
+        logger.debug("Update ranger policy id to: " + credentials.get("rangerPolicyId"));
         etcdClient.write("/servicebroker/ocdp/instance/" + serviceInstanceId + "/Credentials/rangerPolicyId",
                 (String)credentials.get("rangerPolicyId"));
         etcdClient.write("/servicebroker/ocdp/instance/" + serviceInstanceId + "/dashboardUrl",

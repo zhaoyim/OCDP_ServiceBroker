@@ -85,7 +85,7 @@ public class CatalogConfig {
                     continue;
                 long defaultQuota = quotaItem.getDefault();
                 long maxQuota = quotaItem.getMax();
-                if(cuzQuota.get(quotaKey) != null){
+                if(cuzQuota != null && cuzQuota.get(quotaKey) != null){
                     // customize quota have input value
                     quota = (String)cuzQuota.get(quotaKey);
                     // If customize quota exceeds plan limitation, use default value

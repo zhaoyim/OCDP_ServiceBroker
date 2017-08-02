@@ -5,7 +5,6 @@ import java.lang.Thread;
 import java.util.List;
 import java.util.Map;
 import java.util.Collections;
-import java.util.UUID;
 import java.util.concurrent.Future;
 
 import com.asiainfo.bdx.ldp.datafoundry.servicebroker.ocdp.client.etcdClient;
@@ -220,6 +219,7 @@ public class OCDPServiceInstanceCommonService {
             }
         }
         // 2) Create policy for service instance or append user to an exists policy
+        String serviceInstanceId = instance.getServiceInstanceId();
         String serviceInstancePolicyId = (String) instance.getServiceInstanceCredentials().get("rangerPolicyId");
         String serviceDefinitionId = instance.getServiceDefinitionId();
         String resourceType = OCDPAdminServiceMapper.getOCDPResourceType(serviceDefinitionId);
@@ -227,7 +227,7 @@ public class OCDPServiceInstanceCommonService {
         if (serviceInstancePolicyId == null || serviceInstancePolicyId.length() == 0 ){
             // Create new ranger policy for service instance and update policy to service instance
             serviceInstancePolicyId = createPolicyForResources(
-                    ocdp, serviceInstanceResource, users, accesses, serviceDefinitionId);
+                    ocdp, serviceInstanceResource, users, accesses, serviceDefinitionId, serviceInstanceId);
             updateServiceInstanceCredentials(instance, "rangerPolicyId", serviceInstancePolicyId);
         } else {
             // Append users to service instance policy
@@ -342,11 +342,11 @@ public class OCDPServiceInstanceCommonService {
     }
 
     private String createPolicyForResources(
-            OCDPAdminService ocdp, String serviceInstanceResource, List<String> userList, List<String> accesses, String serviceDefinitionId){
+            OCDPAdminService ocdp, String serviceInstanceResource, List<String> userList, List<String> accesses,
+            String serviceDefinitionId, String serviceInstanceId){
         String policyId = null;
-        // BSI can be assigned to multiply users, so the policy name should be unique.
         //String policyName = OCDPAdminServiceMapper.getOCDPServiceName(serviceDefinitionId) + "_" + serviceInstanceResource;
-        String policyName = OCDPAdminServiceMapper.getOCDPServiceName(serviceDefinitionId) + "_" + UUID.randomUUID().toString();
+        String policyName = OCDPAdminServiceMapper.getOCDPServiceName(serviceDefinitionId) + "_" + serviceInstanceId;
         int i = 0;
         logger.info("Try to create ranger policy...");
         while(i++ <= 40){

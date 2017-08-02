@@ -105,6 +105,7 @@ public class HBaseAdminService implements OCDPAdminService{
                                            String groupName, List<String> permissions){
         logger.info("Assign read/write/create/admin permission to hbase namespace.");
         String policyId = null;
+        String serviceName = clusterConfig.getClusterName()+"_hbase";
         ArrayList<String> cfList = Lists.newArrayList("*");
         ArrayList<String> cList = Lists.newArrayList("*");
         ArrayList<String> groupList = Lists.newArrayList(groupName);
@@ -112,7 +113,7 @@ public class HBaseAdminService implements OCDPAdminService{
        // ArrayList<String> types = new ArrayList<String>(){{add("read");add("write");add("create");add("admin");}};
         ArrayList<String> conditions = Lists.newArrayList();
         RangerV2Policy rp = new RangerV2Policy(
-                policyName,"","This is HBase Policy", clusterConfig.getClusterName()+"_hbase",true,true);
+                policyName,"","This is HBase Policy",serviceName,true,true);
         ArrayList<String> nsList = new ArrayList<String>();
         // Convert namespace name to 'ns:*'
         for (String e : tableList){
@@ -126,7 +127,7 @@ public class HBaseAdminService implements OCDPAdminService{
         } else {
             rp.addPolicyItems(userList,groupList,conditions,false,permissions);
         }
-        String newPolicyString = rc.createV2Policy(rp);
+        String newPolicyString = rc.createV2Policy(serviceName, rp);
         if (newPolicyString != null){
             RangerV2Policy newPolicyObj = gson.fromJson(newPolicyString, RangerV2Policy.class);
             policyId = newPolicyObj.getPolicyId();

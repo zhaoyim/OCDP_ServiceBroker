@@ -82,7 +82,7 @@ public class KafkaAdminService implements OCDPAdminService{
 						Lists.newArrayList(defaultUser), Lists.newArrayList(groupName), Lists.newArrayList(), false, permissions);
 			}
 		}
-        String newPolicyString = ranger.createV2Policy(policy);
+        String newPolicyString = ranger.createV2Policy(sys_env.getClusterName()+"_kafka", policy);
         if (newPolicyString != null){
             RangerV2Policy newPolicyObj = gson.fromJson(newPolicyString, RangerV2Policy.class);
             policyId = newPolicyObj.getPolicyId();
@@ -341,7 +341,7 @@ public class KafkaAdminService implements OCDPAdminService{
 
 	/**
 	 * change partition size from GB to Bytes.
-	 * @param value
+	 * @param valueInGB
 	 * @return
 	 */
 	private String toBytes(String valueInGB) {

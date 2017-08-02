@@ -86,20 +86,21 @@ public class YarnCommonService {
     public synchronized String assignPermissionToQueue(String policyName, final String queueName, List<String> userList,
                                                        String groupName, List<String> permissions){
         String policyId = null;
+        String serviceName = clusterConfig.getClusterName()+"_yarn";
         ArrayList<String> queueList = Lists.newArrayList(queueName);
         ArrayList<String> groupList = Lists.newArrayList(groupName);
        // ArrayList<String> userList = new ArrayList<String>(){{add(userName);}};
         //ArrayList<String> types = new ArrayList<String>(){{add("submit-app");add("admin-queue");}};
         ArrayList<String> conditions = Lists.newArrayList();
         RangerV2Policy rp = new RangerV2Policy(
-                policyName,"","This is Yarn Policy",clusterConfig.getClusterName()+"_yarn",true,true);
+                policyName,"","This is Yarn Policy",serviceName,true,true);
         rp.addResources2(OCDPConstants.YARN_RANGER_RESOURCE_TYPE, queueList,false, true);
         if(permissions == null){
             rp.addPolicyItems(userList,groupList,conditions,false,ACCESSES);
         } else {
             rp.addPolicyItems(userList,groupList,conditions,false,permissions);
         }
-        String newPolicyString = rc.createV2Policy(rp);
+        String newPolicyString = rc.createV2Policy(serviceName, rp);
         if (newPolicyString != null){
             RangerV2Policy newPolicyObj = gson.fromJson(newPolicyString, RangerV2Policy.class);
             policyId = newPolicyObj.getPolicyId();
@@ -145,7 +146,7 @@ public class YarnCommonService {
     }
 
     public boolean unassignPermissionFromQueue(String policyId){
-        if (rc.getV2Policy(policyId) != null) {
+        if (rc.getV2PolicyById(policyId) != null) {
             logger.info("Unassign submit/admin permission to yarn queue.");
             return this.rc.removeV2Policy(policyId);
         }

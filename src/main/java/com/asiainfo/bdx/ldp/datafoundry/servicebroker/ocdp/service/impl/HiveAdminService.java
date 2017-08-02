@@ -122,7 +122,7 @@ public class HiveAdminService implements OCDPAdminService {
         for (String user : users) {
             logger.info("Create /user dir for user ", user);
             createHdfsPath("/user/" + user);
-            resourceAppendToHDFSPolicy = this.hdfsAdminService.appendResourcesToPolicy(policyIds[0], "/user/" + user);
+            resourceAppendToHDFSPolicy = this.hdfsAdminService.appendResourcesToPolicy(policyIds[1], "/user/" + user);
         }
         boolean userAppendToYarnPolicy = this.yarnCommonService.appendUsersToQueuePermission(
                 policyIds[2], groupName, users, Lists.newArrayList("submit-app", "admin-queue"));

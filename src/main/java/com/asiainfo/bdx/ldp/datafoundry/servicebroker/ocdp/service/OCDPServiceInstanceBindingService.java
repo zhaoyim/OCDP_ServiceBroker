@@ -184,8 +184,12 @@ public class OCDPServiceInstanceBindingService implements ServiceInstanceBinding
 
     private void removeServiceInstanceCredentialsItem(ServiceInstance instance, String key){
         Map<String, Object> credentials = instance.getServiceInstanceCredentials();
+		if (! credentials.containsKey(key)){
+			return;
+		}
         credentials.remove(key);
         instance.setCredential(credentials);
+		logger.debug("service instance credentials update to: " + credentials);
 		// delete old service instances
 		repository.delete(instance.getServiceInstanceId());
 		// save new service instance

@@ -133,6 +133,7 @@ public class RangerV2Policy{
     }
 
     public String getPolicyId(){return id;}
+    public String getPolicyName(){return name;}
     public List<PolicyItem> getPolicyItems(){return policyItems;}
     public List<String> getUserList(){
         List<String> users = new LinkedList<>();

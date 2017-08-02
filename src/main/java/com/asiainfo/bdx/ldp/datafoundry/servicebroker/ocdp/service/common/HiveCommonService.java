@@ -94,6 +94,7 @@ public class HiveCommonService {
                                              List<String> permissions){
         logger.info("Assigning select/update/create/drop/alter/index/lock/all permission to hive database.");
         String policyId = null;
+        String serviceName = clusterConfig.getClusterName()+"_hive";
         ArrayList<String> dbList = Lists.newArrayList(dbName);
         ArrayList<String> tbList = Lists.newArrayList("*");
         ArrayList<String> cList = Lists.newArrayList("*");
@@ -103,7 +104,7 @@ public class HiveCommonService {
        //     add("create"); add("drop"); add("alter"); add("index"); add("lock"); add("all");}};
         ArrayList<String> conditions = Lists.newArrayList();
         RangerV2Policy rp = new RangerV2Policy(
-                policyName,"","This is Hive Policy",clusterConfig.getClusterName()+"_hive",true,true);
+                policyName,"","This is Hive Policy",serviceName,true,true);
         rp.addResources(OCDPConstants.HIVE_RANGER_RESOURCE_TYPE, dbList, false);
         rp.addResources("table", tbList, false);
         rp.addResources("column", cList, false);
@@ -112,7 +113,7 @@ public class HiveCommonService {
         } else {
             rp.addPolicyItems(userList,groupList,conditions,false,permissions);
         }
-        String newPolicyString = rc.createV2Policy(rp);
+        String newPolicyString = rc.createV2Policy(serviceName, rp);
         if (newPolicyString != null){
             RangerV2Policy newPolicyObj = gson.fromJson(newPolicyString, RangerV2Policy.class);
             policyId = newPolicyObj.getPolicyId();

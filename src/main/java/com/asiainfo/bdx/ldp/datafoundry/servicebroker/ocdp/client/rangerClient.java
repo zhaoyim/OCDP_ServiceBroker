@@ -72,13 +72,17 @@ public class rangerClient {
         this.context = context;
     }
 
-    public String getV2Policy(String policyID){
+    public String getV2PolicyById(String policyID){
         return doGetPolicy("service/public/v2/api/policy", policyID);
     }
 
-    private String doGetPolicy(String url, String policyID){
+    public String getV2PolicyByName(String serviceName, String policyName) {
+        return doGetPolicy("service/public/v2/api/service/" + serviceName + "/policy", policyName);
+    }
+
+    private String doGetPolicy(String url, String policy){
         String policyDef = null;
-        URI uri = buildPolicyUri(url, policyID, "");
+        URI uri = buildPolicyUri(url, policy, "");
         HttpGet request = new HttpGet(uri);
         try{
             CloseableHttpResponse response = this.httpClient.execute(request, this.context);
@@ -92,12 +96,18 @@ public class rangerClient {
         return policyDef;
     }
 
-    public String createV2Policy(RangerV2Policy policy) {
-        return doCreateV2Policy("service/public/v2/api/policy", policy);
+    public String createV2Policy(String serviceName, RangerV2Policy policy) {
+        return doCreateV2Policy("service/public/v2/api/policy", serviceName, policy);
     }
 
-    private String doCreateV2Policy(String url, RangerV2Policy policy){
+    private String doCreateV2Policy(String url, String serviceName, RangerV2Policy policy){
         String newPolicyString = null;
+        String policyName = policy.getPolicyName();
+        // Check if there have policy with same name, get exist policy def string
+        newPolicyString = getV2PolicyByName(serviceName, policyName);
+        if (newPolicyString != null){
+            return newPolicyString;
+        }
         String policyDef = gson.toJson(policy);
         logger.info("DEBUG info:" + policyDef);
         URI uri = buildPolicyUri(url, "", "");
@@ -167,26 +177,26 @@ public class rangerClient {
     }
 
     public  List<String> getResourcsFromV2Policy(String policyId, String resourcetype){
-        String currentPolicy = getV2Policy(policyId);
+        String currentPolicy = getV2PolicyById(policyId);
         RangerV2Policy rp = gson.fromJson(currentPolicy, RangerV2Policy.class);
         return rp.getResourceValues(resourcetype);
     }
 
     public List<String> getUsersFromV2Policy(String policyId) {
-        String currentPolicy = getV2Policy(policyId);
+        String currentPolicy = getV2PolicyById(policyId);
         RangerV2Policy rp = gson.fromJson(currentPolicy, RangerV2Policy.class);
         return rp.getUserList();
     }
 
     public boolean appendResourceToV2Policy(String policyId, String serviceInstanceResource, String resourceType) {
-        String currentPolicy = getV2Policy(policyId);
+        String currentPolicy = getV2PolicyById(policyId);
         RangerV2Policy rp = gson.fromJson(currentPolicy, RangerV2Policy.class);
         rp.updateResource(resourceType, serviceInstanceResource);
         return updateV2Policy(policyId, rp);
     }
 
     public boolean removeResourceFromV2Policy(String policyId, String serviceInstanceResource, String resourceType){
-        String currentPolicy = getV2Policy(policyId);
+        String currentPolicy = getV2PolicyById(policyId);
         RangerV2Policy rp = gson.fromJson(currentPolicy, RangerV2Policy.class);
         rp.removeResource(resourceType, serviceInstanceResource);
         return updateV2Policy(policyId, rp);
@@ -194,7 +204,7 @@ public class rangerClient {
 
     public boolean appendUsersToV2Policy
             (String policyId, String groupName, List<String> users, List<String> permissions) {
-        String currentPolicy = getV2Policy(policyId);
+        String currentPolicy = getV2PolicyById(policyId);
         if (currentPolicy == null)
         {
             return false;
@@ -214,7 +224,7 @@ public class rangerClient {
     }
 
     public boolean removeUserFromV2Policy(String policyId, String userName){
-        String currentPolicy = getV2Policy(policyId);
+        String currentPolicy = getV2PolicyById(policyId);
         if (currentPolicy == null)
         {
             return false;

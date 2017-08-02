@@ -12,6 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
+import java.util.UUID;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -56,7 +57,7 @@ public class YarnAdminService implements OCDPAdminService {
             {
                 add(historyPath);
                 //add dummy path to avoid ranger error of existing resource path
-                //add("/tmp/dummy_" + UUID.randomUUID().toString());
+                add("/tmp/dummy_" + UUID.randomUUID().toString());
             }
         };
         for (String userName : userList) {
