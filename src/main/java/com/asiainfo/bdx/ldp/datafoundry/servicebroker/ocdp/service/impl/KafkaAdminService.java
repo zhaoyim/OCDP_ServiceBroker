@@ -197,7 +197,7 @@ public class KafkaAdminService implements OCDPAdminService{
 		Properties prop = new Properties();
 		String par_size = String.valueOf(quota.get(Constants.PAR_QUOTA));
 		String ttl = String.valueOf(quota.get(Constants.TOPIC_TTL));
-		prop.setProperty(Constants.CONFIG_PAR_SIZE, par_size);
+		prop.setProperty(Constants.CONFIG_PAR_SIZE, toBytes(par_size));
 		prop.setProperty(Constants.CONFIG_TTL, ttl);
 		return prop;
 	}
@@ -224,7 +224,6 @@ public class KafkaAdminService implements OCDPAdminService{
 		}
         Map<String, Object> planQuota = (Map<String,Object>)pQuota;
         checkQuota(quota, planQuota, cuzQuota);
-        LOG.info("Kafka quota been set to: " + quota);
 		return quota;
 	}
 	
