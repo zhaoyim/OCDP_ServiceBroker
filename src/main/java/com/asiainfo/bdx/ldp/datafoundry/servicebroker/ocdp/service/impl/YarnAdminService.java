@@ -49,7 +49,7 @@ public class YarnAdminService implements OCDPAdminService {
     @Override
     public String createPolicyForResources(String policyName, final List<String> resources, List<String> userList,
                                            String groupName, List<String> permissions) {
-        String historyPath = "/" + policyName.split("_")[0] + "_history";
+        String historyPath = "/" + policyName.split("_")[0] + "-history";
         // Temp fix: for 'create instance in tenant' case,
         // create one ranger policy for multiple user and multiple /user/<userName> dirs
         // Please refer to: https://github.com/OCManager/OCDP_ServiceBroker/issues/48
