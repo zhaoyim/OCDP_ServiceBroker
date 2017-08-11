@@ -26,6 +26,7 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.permission.FsPermission;
 import org.apache.hadoop.fs.permission.FsAction;
 import org.apache.hadoop.hdfs.DistributedFileSystem;
+import org.mortbay.log.Log;
 import org.apache.hadoop.conf.Configuration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -66,6 +67,8 @@ public class HDFSAdminService implements OCDPAdminService{
     private static final String HDFS_NAME_SPACE_QUOTA = "1000";
 
     private static final String HDFS_STORAGE_SPACE_QUOTA = "1000000000";
+    
+    private boolean krb_enabled;
 
     @Autowired
     public HDFSAdminService(ClusterConfig clusterConfig){
@@ -93,15 +96,19 @@ public class HDFSAdminService implements OCDPAdminService{
             this.hdfsRPCUrl = "hdfs://" + this.clusterConfig.getHdfsNameNode() + ":" + this.clusterConfig.getHdfsRpcPort();
 
         }
-
-
-        conf.set("hadoop.security.authentication", "Kerberos");
-        conf.set("hdfs.kerberos.principal", clusterConfig.getHdfsSuperUser());
-        conf.set("hdfs.keytab.file", clusterConfig.getHdfsUserKeytab());
-
-        System.setProperty("java.security.krb5.conf", clusterConfig.getKrb5FilePath());
+        
+        this.krb_enabled = this.clusterConfig.krbEnabled();
+        Log.info("Kerberos enabled: " + this.krb_enabled);
+        
+        if (krb_enabled) {
+            conf.set("hadoop.security.authentication", "Kerberos");
+            conf.set("hdfs.kerberos.principal", this.clusterConfig.getHdfsSuperUser());
+            conf.set("hdfs.keytab.file", this.clusterConfig.getHdfsUserKeytab());
+            System.setProperty("java.security.krb5.conf", this.clusterConfig.getKrb5FilePath());
+		}
 
         this.webHdfsUrl = "http://" + this.clusterConfig.getHdfsNameNode() + ":" + this.clusterConfig.getHdfsPort() + "/webhdfs/v1";
+        
     }
 
 
@@ -118,8 +125,11 @@ public class HDFSAdminService implements OCDPAdminService{
 
     public void createHDFSDir(String pathName, String nameSpaceQuota, String storageSpaceQuota) throws IOException{
         try{
-            BrokerUtil.authentication(
-                    this.conf, this.clusterConfig.getHdfsSuperUser(), this.clusterConfig.getHdfsUserKeytab());
+        	if (krb_enabled) {
+                BrokerUtil.authentication(
+                        this.conf, this.clusterConfig.getHdfsSuperUser(), this.clusterConfig.getHdfsUserKeytab());
+			}
+
             this.dfs.initialize(URI.create(this.hdfsRPCUrl), this.conf);
             if (! this.dfs.exists(new Path(pathName))){
                 this.dfs.mkdirs(new Path(pathName), FS_PERMISSION);
@@ -144,8 +154,10 @@ public class HDFSAdminService implements OCDPAdminService{
 
     public void setQuota(String pathName, String nameSpaceQuota, String storageSpaceQuota) throws IOException {
         try{
-            BrokerUtil.authentication(
-                    this.conf, this.clusterConfig.getHdfsSuperUser(), this.clusterConfig.getHdfsUserKeytab());
+        	if (krb_enabled) {
+                BrokerUtil.authentication(
+                        this.conf, this.clusterConfig.getHdfsSuperUser(), this.clusterConfig.getHdfsUserKeytab());
+			}
             this.dfs.initialize(URI.create(this.hdfsRPCUrl), this.conf);
             if(nameSpaceQuota == null || nameSpaceQuota.equals("")){
                 // Use default namespacequota if not pass.
@@ -208,8 +220,11 @@ public class HDFSAdminService implements OCDPAdminService{
     @Override
     public void deprovisionResources(String serviceInstanceResuorceName) throws Exception{
         try{
-            BrokerUtil.authentication(
-                    this.conf, this.clusterConfig.getHdfsSuperUser(), this.clusterConfig.getHdfsUserKeytab());
+        	if (krb_enabled) {
+                BrokerUtil.authentication(
+                        this.conf, this.clusterConfig.getHdfsSuperUser(), this.clusterConfig.getHdfsUserKeytab());
+			}
+
             this.dfs.initialize(URI.create(this.hdfsRPCUrl), this.conf);
             this.dfs.delete(new Path(serviceInstanceResuorceName), true);
             logger.info("Delete hdfs folder successful.");
