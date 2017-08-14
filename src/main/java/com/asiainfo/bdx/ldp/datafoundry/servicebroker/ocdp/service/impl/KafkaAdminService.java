@@ -56,7 +56,6 @@ public class KafkaAdminService implements OCDPAdminService{
     public KafkaAdminService(ClusterConfig clusterConfig){
         this.sys_env = clusterConfig;
         this.ranger = clusterConfig.getRangerClient();
-        initSysProperties();
     }
 	
 	@Override
@@ -355,12 +354,6 @@ public class KafkaAdminService implements OCDPAdminService{
 		credential.put("port", sys_env.getKafka_port());
 	}
 	
-	private void initSysProperties() {
-        System.setProperty("java.security.krb5.conf", this.sys_env.getKrb5FilePath());
-		System.setProperty("java.security.auth.login.config", this.sys_env.getKafka_jaas_path());
-		LOG.info("Krb conf and Jaas files been set to {}, {}", this.sys_env.getKrb5FilePath(), this.sys_env.getKafka_jaas_path());
-	}
-
 	public static class OCTopic
 	{
 		private static final String TOPIC_PREFIX =  "oc_";

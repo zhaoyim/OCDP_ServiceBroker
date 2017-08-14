@@ -5,7 +5,6 @@ import java.util.Properties;
 
 import org.I0Itec.zkclient.ZkClient;
 import org.I0Itec.zkclient.ZkConnection;
-import org.apache.kafka.common.security.JaasUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -39,9 +38,13 @@ public class KafkaClient {
 			{
 				if (instance == null) {
 					instance = new KafkaClient();
-					return instance;
 				}
 			}
+		}
+		if (instance.isSecure) {
+			// ensure jaas file path correct.
+			System.setProperty("java.security.auth.login.config", getEnv("KAFKA_JAAS_PATH"));
+            System.setProperty("java.security.krb5.conf", getEnv("KRB_KRB5FILEPATH"));
 		}
 		return instance;
 	}
@@ -227,15 +230,30 @@ public class KafkaClient {
 	 */
 	private static String getEnv(String n, String d)
 	{
-		String v = System.getenv(n);
+		String v = System.getenv(n).trim();
 		return v != null ? v : d;
+	}
+	
+	private static String getEnv(String n)
+	{
+		String v = System.getenv(n.trim());
+		if (v == null || v.isEmpty()) {
+			LOG.error("Environment parameter is null: " + n);
+			throw new RuntimeException("Environment parameter is null: " + n);
+		}
+		return v;
 	}
 	
 	private KafkaClient()
 	{
-		isSecure = JaasUtils.isZkSecurityEnabled();
-//		Boolean.valueOf(getEnv("OC_ZK_ISSECURITY", "true"));
-		LOG.info("Zookeeper isZkSecurityEnabled : " + isSecure);
+//		isSecure = JaasUtils.isZkSecurityEnabled();
+		isSecure = Boolean.valueOf(getEnv("KRB_ENABLE", "true"));
+        LOG.info("Kerberos enabled: " + isSecure);
+        if (isSecure) {
+            System.setProperty("java.security.krb5.conf", getEnv("KRB_KRB5FILEPATH"));
+    		System.setProperty("java.security.auth.login.config", getEnv("KAFKA_JAAS_PATH"));
+    		LOG.info("Krb conf and Jaas files been set to {}, {}", getEnv("KRB_KRB5FILEPATH"), getEnv("KAFKA_JAAS_PATH"));
+		}
 		zkClient = new ZKClient(isSecure);
 	}
 	
