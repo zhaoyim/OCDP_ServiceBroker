@@ -9,6 +9,7 @@ import com.google.common.collect.Lists;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import org.apache.hadoop.conf.Configuration;
+import org.mortbay.log.Log;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -49,27 +50,40 @@ public class HiveCommonService {
     private Connection conn;
 
     private String hiveJDBCUrl;
+    
+    private boolean krb_enabled;
+
 
     @Autowired
     public HiveCommonService(ClusterConfig clusterConfig){
         this.clusterConfig = clusterConfig;
 
         this.rc = clusterConfig.getRangerClient();
-
+        
+        this.krb_enabled = this.clusterConfig.krbEnabled();
+        Log.info("Kerberos enabled: " + this.krb_enabled);
+        
         this.conf = new Configuration();
-        conf.set("hadoop.security.authentication", "Kerberos");
-
-        System.setProperty("java.security.krb5.conf", clusterConfig.getKrb5FilePath());
-
+        
         this.hiveJDBCUrl = "jdbc:hive2://" + this.clusterConfig.getHiveHost() + ":" + this.clusterConfig.getHivePort() +
-                "/default;principal=" + this.clusterConfig.getHiveSuperUser();
+                "/default";
+        
+        if (krb_enabled) {
+            conf.set("hadoop.security.authentication", "Kerberos");
+            System.setProperty("java.security.krb5.conf", clusterConfig.getKrb5FilePath());
+            this.hiveJDBCUrl = "jdbc:hive2://" + this.clusterConfig.getHiveHost() + ":" + this.clusterConfig.getHivePort() +
+                    "/default;principal=" + this.clusterConfig.getHiveSuperUser();
+		}
     }
 
     public String createDatabase(String serviceInstanceId) throws Exception{
         String databaseName = serviceInstanceId.replaceAll("-", "");
         try{
-            BrokerUtil.authentication(
-                    this.conf, this.clusterConfig.getHiveSuperUser(), this.clusterConfig.getHiveSuperUserKeytab());
+        	if (krb_enabled) {
+        		BrokerUtil.authentication(
+                        this.conf, this.clusterConfig.getHiveSuperUser(), this.clusterConfig.getHiveSuperUserKeytab());
+			}
+            
             Class.forName(driverName);
             this.conn = DriverManager.getConnection(this.hiveJDBCUrl);
             Statement stmt = conn.createStatement();
@@ -136,8 +150,11 @@ public class HiveCommonService {
 
     public void deleteDatabase(String dbName) throws Exception{
         try{
-            BrokerUtil.authentication(
-                    this.conf, this.clusterConfig.getHiveSuperUser(), this.clusterConfig.getHiveSuperUserKeytab());
+        	if (krb_enabled) {
+                BrokerUtil.authentication(
+                        this.conf, this.clusterConfig.getHiveSuperUser(), this.clusterConfig.getHiveSuperUserKeytab());
+			}
+
             Class.forName(driverName);
             this.conn = DriverManager.getConnection(this.hiveJDBCUrl);
             Statement stmt = conn.createStatement();

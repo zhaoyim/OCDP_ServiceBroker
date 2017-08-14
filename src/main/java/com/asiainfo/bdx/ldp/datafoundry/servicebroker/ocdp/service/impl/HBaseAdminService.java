@@ -17,6 +17,7 @@ import org.apache.hadoop.hbase.TableName;
 import org.apache.hadoop.hbase.client.Admin;
 import org.apache.hadoop.hbase.client.Connection;
 import org.apache.hadoop.hbase.client.ConnectionFactory;
+import org.mortbay.log.Log;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -55,19 +56,29 @@ public class HBaseAdminService implements OCDPAdminService{
     private Connection connection;
 
     private static final List<String> ACCESSES = Lists.newArrayList("read", "write", "create", "admin");
+    
+    private boolean krb_enabled;
+
 
     @Autowired
     public HBaseAdminService(ClusterConfig clusterConfig){
         this.clusterConfig = clusterConfig;
 
         this.rc = clusterConfig.getRangerClient();
-
-        System.setProperty("java.security.krb5.conf", this.clusterConfig.getKrb5FilePath());
+        
+        this.krb_enabled = this.clusterConfig.krbEnabled();
+        Log.info("Kerberos enabled: " + this.krb_enabled);
+        
         this.conf = HBaseConfiguration.create();
-        conf.set("hadoop.security.authentication", "Kerberos");
-        conf.set("hbase.security.authentication", "Kerberos");
-        conf.set("hbase.master.kerberos.principal", this.clusterConfig.getHbaseMasterPrincipal());
-        conf.set("hbase.master.keytab.file", this.clusterConfig.getHbaseMasterUserKeytab());
+
+        if (krb_enabled) {
+            System.setProperty("java.security.krb5.conf", this.clusterConfig.getKrb5FilePath());
+            conf.set("hadoop.security.authentication", "Kerberos");
+            conf.set("hbase.security.authentication", "Kerberos");
+            conf.set("hbase.master.kerberos.principal", this.clusterConfig.getHbaseMasterPrincipal());
+            conf.set("hbase.master.keytab.file", this.clusterConfig.getHbaseMasterUserKeytab());
+		}
+        
         conf.set(HConstants.ZOOKEEPER_QUORUM, this.clusterConfig.getHbaseZookeeperQuorum());
         conf.set(HConstants.ZOOKEEPER_CLIENT_PORT, this.clusterConfig.getHbaseZookeeperClientPort());
         conf.set(HConstants.ZOOKEEPER_ZNODE_PARENT, this.clusterConfig.getHbaseZookeeperZnodeParent());
@@ -79,8 +90,11 @@ public class HBaseAdminService implements OCDPAdminService{
         String nsName = serviceInstanceId.replaceAll("-", "");
         Map<String, String> quota = this.getQuotaFromPlan(serviceDefinitionId, planId, cuzQuota);
         try{
-            BrokerUtil.authentication(
-                    this.conf, this.clusterConfig.getHbaseMasterPrincipal(), this.clusterConfig.getHbaseMasterUserKeytab());
+        	if (krb_enabled) {
+                BrokerUtil.authentication(
+                        this.conf, this.clusterConfig.getHbaseMasterPrincipal(), this.clusterConfig.getHbaseMasterUserKeytab());
+			}
+
             this.connection = ConnectionFactory.createConnection(conf);
             Admin admin = this.connection.getAdmin();
             NamespaceDescriptor namespaceDescriptor = NamespaceDescriptor.create(nsName).build();
@@ -149,9 +163,12 @@ public class HBaseAdminService implements OCDPAdminService{
     @Override
     public void deprovisionResources(String serviceInstanceResuorceName) throws Exception{
         try{
-            BrokerUtil.authentication(
-                    this.conf, this.clusterConfig.getHbaseMasterPrincipal(),
-                    this.clusterConfig.getHbaseMasterUserKeytab());
+        	if (krb_enabled) {
+                BrokerUtil.authentication(
+                        this.conf, this.clusterConfig.getHbaseMasterPrincipal(),
+                        this.clusterConfig.getHbaseMasterUserKeytab());
+			}
+
             this.connection = ConnectionFactory.createConnection(conf);
             Admin admin = this.connection.getAdmin();
             // Should drop all tables under such namespace
@@ -214,8 +231,11 @@ public class HBaseAdminService implements OCDPAdminService{
         String resourceType = OCDPAdminServiceMapper.getOCDPResourceType(serviceDefinitionId);
         String ns = (String)instance.getServiceInstanceCredentials().get(resourceType);
         try{
-            BrokerUtil.authentication(conf, clusterConfig.getHbaseMasterPrincipal(),
-                    clusterConfig.getHbaseMasterUserKeytab());
+        	if (krb_enabled) {
+                BrokerUtil.authentication(conf, clusterConfig.getHbaseMasterPrincipal(),
+                        clusterConfig.getHbaseMasterUserKeytab());
+			}
+
             this.connection = ConnectionFactory.createConnection(conf);
             Admin admin = connection.getAdmin();
             NamespaceDescriptor namespaceDescriptor = admin.getNamespaceDescriptor(ns);
