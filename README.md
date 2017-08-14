@@ -31,8 +31,9 @@ Configure connectivity properties (e.g. LDAP, kerberos, Hadoop ...) in system en
      export KRB_ADMIN_PASSWORD=<admin user password>>
      export KRB_REALM=<kerberos realm>
      export KRB_KRB5FILEPATH=<krb5.conf file path>
-
+     
      export CLUSTER_NAME=<Hadoop cluster name>
+     export KRB_ENABLE=<true if kerberos enabled in cluster, false otherwise>
 
      export RANGER_URL=<Ranger server URL>
      export RANGER_ADMIN_USER=<Ranger admin user name>
