@@ -67,9 +67,6 @@ Configure connectivity properties (e.g. LDAP, kerberos, Hadoop ...) in system en
      export YARN_RESOURCEMANAGER_HOST=<Yarn Resource Manager host>
      export YARN_RESOURCEMANAGER_PORT=<Yarn Resource Manager Port>
      export YARN_RESOURCEMANAGER_URL=<Yarn Resource Manager URL>
-     export YARN_SUPER_USER=<Yarn super user>
-     export YARN_SUPER_USER_KEYTAB=<Yarn super user keytab>
-
 
      export MR_HISTORY_URL=<MapReduce History server URL>
 

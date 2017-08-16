@@ -1,30 +1,37 @@
 package com.asiainfo.bdx.ldp.datafoundry.servicebroker.ocdp.service;
 
-import com.asiainfo.bdx.ldp.datafoundry.servicebroker.ocdp.config.ClusterConfig;
-import com.asiainfo.bdx.ldp.datafoundry.servicebroker.ocdp.client.etcdClient;
-import com.asiainfo.bdx.ldp.datafoundry.servicebroker.ocdp.exception.OCDPServiceException;
-import com.asiainfo.bdx.ldp.datafoundry.servicebroker.ocdp.model.*;
-import com.asiainfo.bdx.ldp.datafoundry.servicebroker.ocdp.repository.OCDPServiceInstanceRepository;
-import com.asiainfo.bdx.ldp.datafoundry.servicebroker.ocdp.service.common.OCDPServiceInstanceCommonService;
-import com.asiainfo.bdx.ldp.datafoundry.servicebroker.ocdp.utils.BrokerUtil;
-import com.asiainfo.bdx.ldp.datafoundry.servicebroker.ocdp.utils.OCDPAdminServiceMapper;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.concurrent.Future;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cloud.servicebroker.exception.ServiceBrokerInvalidParametersException;
 import org.springframework.cloud.servicebroker.exception.ServiceInstanceDoesNotExistException;
 import org.springframework.cloud.servicebroker.exception.ServiceInstanceExistsException;
-import org.springframework.cloud.servicebroker.model.*;
-import com.asiainfo.bdx.ldp.datafoundry.servicebroker.ocdp.model.ServiceInstance;
+import org.springframework.cloud.servicebroker.model.CreateServiceInstanceRequest;
+import org.springframework.cloud.servicebroker.model.CreateServiceInstanceResponse;
+import org.springframework.cloud.servicebroker.model.DeleteServiceInstanceRequest;
+import org.springframework.cloud.servicebroker.model.DeleteServiceInstanceResponse;
+import org.springframework.cloud.servicebroker.model.GetLastServiceOperationRequest;
+import org.springframework.cloud.servicebroker.model.GetLastServiceOperationResponse;
+import org.springframework.cloud.servicebroker.model.OperationState;
+import org.springframework.cloud.servicebroker.model.UpdateServiceInstanceRequest;
+import org.springframework.cloud.servicebroker.model.UpdateServiceInstanceResponse;
 import org.springframework.cloud.servicebroker.service.ServiceInstanceService;
 import org.springframework.context.ApplicationContext;
-import org.springframework.ldap.core.LdapTemplate;
 import org.springframework.stereotype.Service;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.UUID;
-import java.util.concurrent.Future;
+import com.asiainfo.bdx.ldp.datafoundry.servicebroker.ocdp.config.ClusterConfig;
+import com.asiainfo.bdx.ldp.datafoundry.servicebroker.ocdp.exception.OCDPServiceException;
+import com.asiainfo.bdx.ldp.datafoundry.servicebroker.ocdp.model.OCDPCreateServiceInstanceResponse;
+import com.asiainfo.bdx.ldp.datafoundry.servicebroker.ocdp.model.OCDPUpdateServiceInstanceResponse;
+import com.asiainfo.bdx.ldp.datafoundry.servicebroker.ocdp.model.OperationType;
+import com.asiainfo.bdx.ldp.datafoundry.servicebroker.ocdp.model.ServiceInstance;
+import com.asiainfo.bdx.ldp.datafoundry.servicebroker.ocdp.repository.OCDPServiceInstanceRepository;
+import com.asiainfo.bdx.ldp.datafoundry.servicebroker.ocdp.service.common.OCDPServiceInstanceCommonService;
+import com.asiainfo.bdx.ldp.datafoundry.servicebroker.ocdp.utils.OCDPAdminServiceMapper;
 
 /**
  * Created by baikai on 7/23/16.
@@ -40,8 +47,6 @@ public class OCDPServiceInstanceService implements ServiceInstanceService {
     @Autowired
     private OCDPServiceInstanceRepository repository;
 
-    private ClusterConfig clusterConfig;
-
     // Operation response cache
     private Map<String, Future<CreateServiceInstanceResponse>> instanceProvisionStateMap;
 
@@ -49,15 +54,8 @@ public class OCDPServiceInstanceService implements ServiceInstanceService {
 
     private Map<String, Future<UpdateServiceInstanceResponse>> instanceUpdateStateMap;
 
-    private LdapTemplate ldap;
-
-    private etcdClient etcdClient;
-
     @Autowired
     public OCDPServiceInstanceService(ClusterConfig clusterConfig) {
-        this.clusterConfig = clusterConfig;
-        this.ldap = clusterConfig.getLdapTemplate();
-        this.etcdClient = clusterConfig.getEtcdClient();
         this.instanceProvisionStateMap = new HashMap<>();
         this.instanceDeleteStateMap = new HashMap<>();
         this.instanceUpdateStateMap = new HashMap<>();
@@ -177,36 +175,21 @@ public class OCDPServiceInstanceService implements ServiceInstanceService {
             throws OCDPServiceException {
     	try {
             String serviceInstanceId = request.getServiceInstanceId();
-            Map<String, Object> params = request.getParameters();
             logger.info("Receiving update request: " + request);
-            String userName = (String)params.get("user_name");
             ServiceInstance instance = repository.findOne(serviceInstanceId);
             // Check service instance id
             if (instance == null) {
                 throw new ServiceInstanceDoesNotExistException(serviceInstanceId);
             }
-            String password;
-            if(! BrokerUtil.isLDAPUserExist(ldap, userName)){
-                password = UUID.randomUUID().toString();
-            }else {
-                password = etcdClient.readToString(
-                        "/servicebroker/ocdp/user/krbinfo/" + userName + "@" + clusterConfig.getKrbRealm() + "/password");
-                // Generate password for exist ldap user if krb password are missing
-                if (password == null){
-                    password = UUID.randomUUID().toString();
-                    etcdClient.write(
-                            "/servicebroker/ocdp/user/krbinfo/" + userName + "@" + clusterConfig.getKrbRealm() + "/password", password);
-                }
-            }
             UpdateServiceInstanceResponse response;
             OCDPServiceInstanceCommonService service = getOCDPServiceInstanceCommonService();
             if (request.isAsyncAccepted()){
                 Future<UpdateServiceInstanceResponse> responseFuture = service.doUpdateServiceInstanceAsync(
-                        request, instance, password);
+                        request, instance);
                 this.instanceUpdateStateMap.put(request.getServiceInstanceId(), responseFuture);
                 response = new OCDPUpdateServiceInstanceResponse().withAsync(true);
             }else {
-                response = service.doUpdateServiceInstance(request, instance, password);
+                response = service.doUpdateServiceInstance(request, instance);
             }
             return response;
 		} catch (Exception e) {
