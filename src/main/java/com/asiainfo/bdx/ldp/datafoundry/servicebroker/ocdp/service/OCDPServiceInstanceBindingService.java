@@ -57,11 +57,15 @@ public class OCDPServiceInstanceBindingService implements ServiceInstanceBinding
 
     private ClusterConfig clusterConfig;
 
+    private boolean krb_enabled;
+
     @Autowired
     public OCDPServiceInstanceBindingService(ClusterConfig clusterConfig) {
         this.clusterConfig = clusterConfig;
         this.etcdClient = clusterConfig.getEtcdClient();
         this.rc = clusterConfig.getRangerClient();
+        this.krb_enabled = clusterConfig.krbEnabled();
+        logger.info("Kerberos enabled: " + this.krb_enabled);
     }
 
 	@Override
@@ -91,14 +95,23 @@ public class OCDPServiceInstanceBindingService implements ServiceInstanceBinding
 	        	logger.error("Service instance not exit: " + serviceInstanceId);
 	            throw new ServiceInstanceDoesNotExistException(serviceInstanceId);
 	        }
+	        
 	        // Construct service instance credentials for binding user
-	        String userPrincipal = params.get("user_name") + "@" + clusterConfig.getKrbRealm();
-	        String password = etcdClient.readToString("/servicebroker/ocdp/user/krbinfo/" + userPrincipal + "/password");
-			String keytab = etcdClient.readToString("/servicebroker/ocdp/user/krbinfo/" + userPrincipal + "/keytab");
 	        Map<String, Object> serviceInstanceCredentials = instance.getServiceInstanceCredentials();
-	        serviceInstanceCredentials.put("username", userPrincipal);
-	        serviceInstanceCredentials.put("password", password);
-			serviceInstanceCredentials.put("keytab", keytab);
+	        
+	        if (krb_enabled) {
+		        String userPrincipal = params.get("user_name") + "@" + clusterConfig.getKrbRealm();
+		        String password = etcdClient.readToString("/servicebroker/ocdp/user/krbinfo/" + userPrincipal + "/password");
+				String keytab = etcdClient.readToString("/servicebroker/ocdp/user/krbinfo/" + userPrincipal + "/keytab");
+		        serviceInstanceCredentials.put("username", userPrincipal);
+		        serviceInstanceCredentials.put("password", password);
+				serviceInstanceCredentials.put("keytab", keytab);
+			}
+	        else {
+	        	// only username is needed to do authorization.
+		        serviceInstanceCredentials.put("username", params.get("user_name"));
+	        }
+			
 	        // save service instance binding
 	        String appGuid = request.getBoundAppGuid();
 	        ServiceInstanceBinding binding = new ServiceInstanceBinding(

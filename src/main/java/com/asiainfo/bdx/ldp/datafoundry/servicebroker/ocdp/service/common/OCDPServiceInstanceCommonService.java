@@ -1,34 +1,39 @@
 package com.asiainfo.bdx.ldp.datafoundry.servicebroker.ocdp.service.common;
 
 import java.io.IOException;
-import java.lang.Thread;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.Collections;
 import java.util.concurrent.Future;
 
-import com.asiainfo.bdx.ldp.datafoundry.servicebroker.ocdp.client.etcdClient;
-import com.asiainfo.bdx.ldp.datafoundry.servicebroker.ocdp.client.rangerClient;
-import com.asiainfo.bdx.ldp.datafoundry.servicebroker.ocdp.config.ClusterConfig;
-import com.asiainfo.bdx.ldp.datafoundry.servicebroker.ocdp.service.OCDPAdminService;
-import com.asiainfo.bdx.ldp.datafoundry.servicebroker.ocdp.utils.BrokerUtil;
-import com.google.common.collect.Lists;
-import org.springframework.cloud.servicebroker.model.*;
-import com.asiainfo.bdx.ldp.datafoundry.servicebroker.ocdp.model.OCDPCreateServiceInstanceResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import com.asiainfo.bdx.ldp.datafoundry.servicebroker.ocdp.exception.*;
-import com.asiainfo.bdx.ldp.datafoundry.servicebroker.ocdp.repository.OCDPServiceInstanceRepository;
-import com.asiainfo.bdx.ldp.datafoundry.servicebroker.ocdp.model.ServiceInstance;
-import com.asiainfo.bdx.ldp.datafoundry.servicebroker.ocdp.client.krbClient;
-import com.asiainfo.bdx.ldp.datafoundry.servicebroker.ocdp.utils.OCDPAdminServiceMapper;
-
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cloud.servicebroker.model.CreateServiceInstanceRequest;
+import org.springframework.cloud.servicebroker.model.CreateServiceInstanceResponse;
+import org.springframework.cloud.servicebroker.model.DeleteServiceInstanceRequest;
+import org.springframework.cloud.servicebroker.model.DeleteServiceInstanceResponse;
+import org.springframework.cloud.servicebroker.model.UpdateServiceInstanceRequest;
+import org.springframework.cloud.servicebroker.model.UpdateServiceInstanceResponse;
 import org.springframework.context.ApplicationContext;
 import org.springframework.ldap.core.LdapTemplate;
-import org.springframework.stereotype.Service;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.AsyncResult;
+import org.springframework.stereotype.Service;
+
+import com.asiainfo.bdx.ldp.datafoundry.servicebroker.ocdp.client.etcdClient;
+import com.asiainfo.bdx.ldp.datafoundry.servicebroker.ocdp.client.krbClient;
+import com.asiainfo.bdx.ldp.datafoundry.servicebroker.ocdp.client.rangerClient;
+import com.asiainfo.bdx.ldp.datafoundry.servicebroker.ocdp.config.ClusterConfig;
+import com.asiainfo.bdx.ldp.datafoundry.servicebroker.ocdp.exception.KerberosOperationException;
+import com.asiainfo.bdx.ldp.datafoundry.servicebroker.ocdp.exception.OCDPServiceException;
+import com.asiainfo.bdx.ldp.datafoundry.servicebroker.ocdp.model.OCDPCreateServiceInstanceResponse;
+import com.asiainfo.bdx.ldp.datafoundry.servicebroker.ocdp.model.ServiceInstance;
+import com.asiainfo.bdx.ldp.datafoundry.servicebroker.ocdp.repository.OCDPServiceInstanceRepository;
+import com.asiainfo.bdx.ldp.datafoundry.servicebroker.ocdp.service.OCDPAdminService;
+import com.asiainfo.bdx.ldp.datafoundry.servicebroker.ocdp.utils.BrokerUtil;
+import com.asiainfo.bdx.ldp.datafoundry.servicebroker.ocdp.utils.OCDPAdminServiceMapper;
+import com.google.common.collect.Lists;
 
 /**
  * OCDP impl to manage hadoop service instances.  Creating a service does the following:
@@ -59,6 +64,8 @@ public class OCDPServiceInstanceCommonService {
     private etcdClient etcdClient;
 
     private rangerClient rc;
+    
+    private boolean krb_enabled;
 
     @Autowired
     public OCDPServiceInstanceCommonService(ClusterConfig clusterConfig) {
@@ -67,6 +74,8 @@ public class OCDPServiceInstanceCommonService {
         this.kc = new krbClient(clusterConfig);
         this.etcdClient = clusterConfig.getEtcdClient();
         this.rc = clusterConfig.getRangerClient();
+        this.krb_enabled = clusterConfig.krbEnabled();
+        logger.info("Kerberos enabled: " + this.krb_enabled);
     }
 
     @Async
@@ -203,19 +212,23 @@ public class OCDPServiceInstanceCommonService {
             // no need to check/create again.
             String username = users.get(0);
             if (createLDAPUser(username)){
-                // New LDAP user created, should create krb principal/keytab too
-                createKrbPricAndKeytab(username, password);
+            	if (krb_enabled) {
+                    // New LDAP user created, should create krb principal/keytab too
+                    createKrbPricAndKeytab(username, password);
+				}
             } else {
-                // Exists LDAP user, no need to create again;
-                // but need generate keytab if keytab not created before.
-                String principalName = username + "@" + clusterConfig.getKrbRealm();
-                String keytab = etcdClient.readToString(
-                        "/servicebroker/ocdp/user/krbinfo/" + principalName + "/keytab");
-                if (keytab == null){
-                    keytab = kc.createKeyTabString(principalName, password, null);
-                    etcdClient.write("/servicebroker/ocdp/user/krbinfo/" + principalName + "/keytab", keytab);
-                    logger.info("Generate keytab string " + keytab + " for exists principal " + principalName);
-                }
+            	if (krb_enabled) {
+                    // Exists LDAP user, no need to create again;
+                    // but need generate keytab if keytab not created before.
+                    String principalName = username + "@" + clusterConfig.getKrbRealm();
+                    String keytab = etcdClient.readToString(
+                            "/servicebroker/ocdp/user/krbinfo/" + principalName + "/keytab");
+                    if (keytab == null){
+                        keytab = kc.createKeyTabString(principalName, password, null);
+                        etcdClient.write("/servicebroker/ocdp/user/krbinfo/" + principalName + "/keytab", keytab);
+                        logger.info("Generate keytab string " + keytab + " for exists principal " + principalName);
+                    }
+				}
             }
         }
         // 2) Create policy for service instance or append user to an exists policy
