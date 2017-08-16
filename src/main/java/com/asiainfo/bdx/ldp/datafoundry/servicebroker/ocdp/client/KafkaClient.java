@@ -230,8 +230,8 @@ public class KafkaClient {
 	 */
 	private static String getEnv(String n, String d)
 	{
-		String v = System.getenv(n).trim();
-		return v != null ? v : d;
+		String v = System.getenv(n);
+		return v != null ? v.trim() : d;
 	}
 	
 	private static String getEnv(String n)

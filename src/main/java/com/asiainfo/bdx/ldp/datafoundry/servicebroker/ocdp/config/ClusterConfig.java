@@ -126,10 +126,6 @@ public class ClusterConfig implements EnvironmentAware{
     private String yarn_rm_url;
     private String yarn_rm_url2;
 
-    private String yarn_superUser;
-
-    private String yarn_superUserKeytab;
-
     //Hadoop MapReduce History server
     private String mr_history_url;
 
@@ -201,8 +197,6 @@ public class ClusterConfig implements EnvironmentAware{
         this.yarn_rm_port = env.getProperty("YARN_RESOURCEMANAGER_PORT");
         this.yarn_rm_url = env.getProperty("YARN_RESOURCEMANAGER_URL");
         this.yarn_rm_url2 = env.getProperty("YARN_RESOURCEMANAGER_URL2");
-        this.yarn_superUser = env.getProperty("YARN_SUPER_USER");
-        this.yarn_superUserKeytab = env.getProperty("YARN_SUPER_USER_KEYTAB");
         this.mr_history_url = env.getProperty("MR_HISTORY_URL");
         this.spark_history_url = env.getProperty("SPARK_HISTORY_URL");
         this.spark_thrift_server = env.getProperty("SPARK_THRIFT_SERVER");
@@ -283,8 +277,6 @@ public class ClusterConfig implements EnvironmentAware{
     public String getYarnRMHost(){return yarn_rm_host;}
     public String getYarnRMPort() { return yarn_rm_port; }
     public String getYarnRMUrl(){return yarn_rm_url;}
-    public String getYarnSuperUser(){return yarn_superUser;}
-    public String getYarnSuperUserKeytab(){return yarn_superUserKeytab;}
 
     public String getMRHistoryURL() { return mr_history_url; }
 
