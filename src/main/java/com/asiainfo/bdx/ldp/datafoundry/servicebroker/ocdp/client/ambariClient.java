@@ -1,5 +1,6 @@
 package com.asiainfo.bdx.ldp.datafoundry.servicebroker.ocdp.client;
 
+import com.google.common.base.Preconditions;
 import com.google.common.base.Splitter;
 import com.google.gson.internal.LinkedTreeMap;
 import org.apache.http.HttpHost;
@@ -205,6 +206,7 @@ public class ambariClient {
      */
     private String getVersionTagFromJson(String jsonStr)
     {
+    	Preconditions.checkNotNull(jsonStr, "Response is null from RM restAPI.");
         String finalStr = null;
         try {
             Map<?, ?> response = null;
@@ -236,6 +238,7 @@ public class ambariClient {
             }
             response.close();
         }catch (IOException e){
+        	logger.error("Error while execute HTTP request: " + request.getURI(), e);
             e.printStackTrace();
         }
         return responseDef;
