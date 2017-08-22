@@ -155,7 +155,7 @@ public class rangerClient {
     private boolean doUpdatePolicy(String url, String policyID, RangerV2Policy policy){
         boolean status = false;
         String policyUpdateDef = gson.toJson(policy);
-        logger.info("DEBUG info:" + policyUpdateDef);
+        logger.debug("Update policy: " + policyUpdateDef);
         URI uri = buildPolicyUri(url + policyID, "", "");
         HttpPut request = new HttpPut(uri);
         StringEntity entity = new StringEntity(policyUpdateDef, HTTP.UTF_8);
@@ -171,6 +171,7 @@ public class rangerClient {
             }
             response.close();
         }catch (IOException e){
+        	logger.error("Update policy failed: " + policyID, e);
             e.printStackTrace();
         }
         return status;
