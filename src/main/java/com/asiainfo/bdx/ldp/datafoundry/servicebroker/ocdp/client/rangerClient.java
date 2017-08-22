@@ -125,7 +125,7 @@ public class rangerClient {
             }
             response.close();
         }catch (IOException e){
-            e.printStackTrace();
+        	logger.error("Ranger policy create exception: ", e);
         }
         return newPolicyString;
     }
