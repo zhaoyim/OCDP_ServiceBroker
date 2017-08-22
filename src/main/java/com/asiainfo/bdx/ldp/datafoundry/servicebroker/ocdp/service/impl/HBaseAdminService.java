@@ -116,7 +116,7 @@ public class HBaseAdminService implements OCDPAdminService{
     @Override
     public String createPolicyForResources(String policyName, List<String> tableList, List<String> userList,
                                            String groupName, List<String> permissions){
-        logger.info("Assign read/write/create/admin permission to hbase namespace.");
+        logger.info("Assign permissions [{}] to user [{}] of hbase namespace [{}].", permissions, userList, tableList);
         String policyId = null;
         String serviceName = clusterConfig.getClusterName()+"_hbase";
         ArrayList<String> cfList = Lists.newArrayList("*");
