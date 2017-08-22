@@ -109,7 +109,7 @@ public class rangerClient {
             return newPolicyString;
         }
         String policyDef = gson.toJson(policy);
-        logger.info("DEBUG info:" + policyDef);
+        logger.debug("Creating policy by: " + policyDef);
         URI uri = buildPolicyUri(url, "", "");
         HttpPost request = new HttpPost(uri);
         StringEntity entity = new StringEntity(policyDef, HTTP.UTF_8);
@@ -121,11 +121,11 @@ public class rangerClient {
             {
                 newPolicyString = EntityUtils.toString(response.getEntity(),"UTF-8");
             }else{
-                logger.error("Ranger policy create fail due to: " + response.getStatusLine());
+                logger.error("Failed to create ranger policy [{}] due to: {}",  policyName, response.getStatusLine());
             }
             response.close();
         }catch (IOException e){
-        	logger.error("Ranger policy create exception: ", e);
+        	logger.error("Exception while creating ranger policy: ", e);
         }
         return newPolicyString;
     }

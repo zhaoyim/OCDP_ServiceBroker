@@ -344,9 +344,9 @@ public class OCDPServiceInstanceBindingService implements ServiceInstanceBinding
 			List<String> accesses) {
 		int i = 0;
 		boolean policyUpdateResult = false;
-		logger.info("Try to append user to ranger policy...");
 		List<String> userList = Arrays.asList(new String[] {user});
 		while (i++ <= 40) {
+			logger.info("Trying to append user [{}] to ranger policy [{}] with privileges [{}]", user, serviceInstancePolicyId, accesses);
 			policyUpdateResult = ocdp.appendUsersToPolicy(serviceInstancePolicyId, this.clusterConfig.getLdapGroup(),
 					userList, accesses);
 			if (!policyUpdateResult) {
@@ -356,13 +356,13 @@ public class OCDPServiceInstanceBindingService implements ServiceInstanceBinding
 					e.printStackTrace();
 				}
 			} else {
-				logger.info("Append user to ranger policy succeed. Policy ID = " + serviceInstancePolicyId);
+				logger.info("Successfully append user [{}] to ranger policy [{}] with privileges [{}].", user, serviceInstancePolicyId, accesses);
 				break;
 			}
 		}
 		if (!policyUpdateResult) {
-			logger.error("Fail to append user [{}] to ranger policy [{}].", userList, serviceInstancePolicyId);
-			throw new OCDPServiceException("Fail to append user to ranger policy.");
+			logger.error("Failed to append user [{}] to ranger policy [{}] with privileges [{}].", user, serviceInstancePolicyId, accesses);
+			throw new OCDPServiceException("Failed to append user to ranger policy.");
 		}
 	}
 
@@ -415,9 +415,9 @@ public class OCDPServiceInstanceBindingService implements ServiceInstanceBinding
 		// serviceInstanceResource;
 		String policyName = OCDPAdminServiceMapper.getOCDPServiceName(serviceDefinitionId) + "_" + serviceInstanceId;
 		int i = 0;
-		logger.info("Try to create ranger policy...");
 		List<String> userList = Arrays.asList(new String[] {user});
 		while (i++ <= 40) {
+			logger.info("Trying to create ranger policy [{}] for user [{}] with resources [{}]", policyName, user, serviceInstanceResource);
 			policyId = ocdp.createPolicyForResources(policyName, Lists.newArrayList(serviceInstanceResource), userList,
 					clusterConfig.getLdapGroup(), accesses);
 			// TODO Need get a way to force sync up ldap users with ranger service, for temp
@@ -429,13 +429,13 @@ public class OCDPServiceInstanceBindingService implements ServiceInstanceBinding
 					e.printStackTrace();
 				}
 			} else {
-				logger.info("Ranger policy created. Policy ID = " + policyId);
+				logger.info("Successfully created ranger policy [{}] of policyID [{}] for user [{}] with privileges [{}] to resources [{}]",policyName, policyId, user, accesses, serviceInstanceResource);
 				break;
 			}
 		}
 		if (policyId == null) {
-			logger.error("Ranger policy create fail.");
-			throw new OCDPServiceException("Ranger policy create fail.");
+			logger.error("Failed to create ranger policy [{}] for user [{}] with resources [{}]", policyName, user, serviceInstanceResource);
+			throw new OCDPServiceException("Failed to create ranger policy " + policyName + " for user " + user);
 		}
 		return policyId;
 	}
