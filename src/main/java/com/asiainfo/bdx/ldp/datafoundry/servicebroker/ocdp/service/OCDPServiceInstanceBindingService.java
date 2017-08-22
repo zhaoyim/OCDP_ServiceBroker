@@ -119,7 +119,7 @@ public class OCDPServiceInstanceBindingService implements ServiceInstanceBinding
 			
 			return new CreateServiceInstanceAppBindingResponse().withCredentials(credentials);
 		} catch (Exception e) {
-			logger.error("Error while binding: ", e);
+			logger.error("Error while binding instance: " + request.getServiceInstanceId(), e);
 			throw e;
 		}
 	}
@@ -329,9 +329,11 @@ public class OCDPServiceInstanceBindingService implements ServiceInstanceBinding
 	}
 
 	private void updateServiceInstanceCredentials(ServiceInstance instance, String key, String value) {
-		Map<String, Object> credentials = instance.getServiceInstanceCredentials();
-		credentials.replace(key, value);
-		instance.setCredential(credentials);
+		if (value == null) {
+			logger.warn("Policy id is null(Policy creating failed), skipping update ETCD of instance: " + instance.getServiceInstanceId());
+			return;
+		}
+		instance.getServiceInstanceCredentials().replace(key, value);
 		// delete old service instance
 		repository.delete(instance.getServiceInstanceId());
 		// save new service instance
