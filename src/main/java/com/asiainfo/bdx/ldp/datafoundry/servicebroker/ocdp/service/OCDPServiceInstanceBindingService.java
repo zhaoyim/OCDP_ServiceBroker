@@ -285,31 +285,14 @@ public class OCDPServiceInstanceBindingService implements ServiceInstanceBinding
 
 	private void addUserToServiceInstance(OCDPAdminService ocdp, ServiceInstance instance, String username,
 			String password, List<String> accesses) {
-		// 1) Create LDAP user and krb principal for tenant user if it not exits
-		// Temp fix for issue: https://github.com/OCManager/OCDP_ServiceBroker/issues/48
-		// Create new ldap user only for 'add new user for tenant' case;
-		// because in 'create instance for tenant' case, all tenant users are already
-		// exist,
-		// no need to check/create again.
-		if (createLDAPUser(username)) {
-			if (krb_enabled) {
-				// New LDAP user created, should create krb principal/keytab too
-				createKrbPricAndKeytab(username, password);
-			}
-		} else {
-			if (krb_enabled) {
-				// Exists LDAP user, no need to create again;
-				// but need generate keytab if keytab not created before.
-				String principalName = username + "@" + clusterConfig.getKrbRealm();
-				String keytab = etcdClient
-						.readToString("/servicebroker/ocdp/user/krbinfo/" + principalName + "/keytab");
-				if (keytab == null) {
-					keytab = kc.createKeyTabString(principalName, password, null);
-					etcdClient.write("/servicebroker/ocdp/user/krbinfo/" + principalName + "/keytab", keytab);
-					logger.info("Generate keytab string " + keytab + " for exists principal " + principalName);
-				}
-			}
+		// check if user exist in Ldap, create user if not exist
+		checkLDAPUser(username);
+		
+		if (krb_enabled) {
+			// check if user exist in KDC, create if not.
+			checkKerberosUser(username, password);
 		}
+		
 		// 2) Create policy for service instance or append user to an exists policy
 		String serviceInstanceId = instance.getServiceInstanceId();
 		String serviceInstancePolicyId = (String) instance.getServiceInstanceCredentials().get("rangerPolicyId");
@@ -325,6 +308,18 @@ public class OCDPServiceInstanceBindingService implements ServiceInstanceBinding
 		} else {
 			// Append users to service instance policy
 			updateUsersToPolicy(ocdp, serviceInstancePolicyId, username, accesses);
+		}
+	}
+
+	private void checkKerberosUser(String username, String password) {
+		// read keytab string from ETCD if user exist, or create user in KDC then return generated keytab string
+		String keyString = genKrbCrendential(username, password);
+		if (keyString == null) {
+			logger.warn("Keytab string null, regenerating keytab string...");
+			String principalName = username + "@" + clusterConfig.getKrbRealm();
+			keyString = kc.createKeyTabString(principalName, password, null);
+			etcdClient.write("/servicebroker/ocdp/user/krbinfo/" + principalName + "/keytab", keyString);
+			logger.info("Successfully Regenerated keytab string [" + keyString + "] for principal: " + principalName);
 		}
 	}
 
@@ -366,42 +361,43 @@ public class OCDPServiceInstanceBindingService implements ServiceInstanceBinding
 		}
 	}
 
-	private boolean createLDAPUser(String userName) {
-		boolean newCreatedLDAPUser = false;
+	private void checkLDAPUser(String userName) {
 		try {
 			if (!BrokerUtil.isLDAPUserExist(this.ldap, userName)) {
-				logger.info("create new ldap user: " + userName);
-				newCreatedLDAPUser = true;
+				logger.info("User not exist in Ldap, going to create: " + userName);
 				BrokerUtil.createLDAPUser(this.ldap, this.etcdClient, userName, clusterConfig.getLdapGroup(),
 						clusterConfig.getLdapGroupId());
+				logger.info("Successfully created new ldap user: " + userName);
+				return;
 			}
+			logger.info("User already exist in Ldap, no need to create: " + userName);
+			return;
 		} catch (Exception e) {
-			logger.error("LDAP user create fail due to: " + e.getLocalizedMessage());
-			e.printStackTrace();
+			logger.error("LDAP user [{}] creating failed due to: {}", userName, e.getLocalizedMessage());
 			throw new OCDPServiceException("LDAP user create fail due to: " + e.getLocalizedMessage());
 		}
-		return newCreatedLDAPUser;
 	}
 
-	private String createKrbPricAndKeytab(String userName, String password) {
-		logger.info("create new kerberos principal.");
+	private String genKrbCrendential(String userName, String password) {
 		String principalName = userName + "@" + clusterConfig.getKrbRealm();
+		logger.info("To create new kerberos principal: " + principalName);
 		// Generate krb password and store it to etcd
 		etcdClient.write("/servicebroker/ocdp/user/krbinfo/" + principalName + "/password", password);
 		try {
 			// If principal exists, not need to create again.
 			if (kc.principalExists(principalName)) {
-				return "";
+				String keytab = etcdClient
+						.readToString("/servicebroker/ocdp/user/krbinfo/" + principalName + "/keytab");
+				logger.warn("Principal existed: " + principalName + ". Reading keytab string from ETCD: " + keytab);
+				return keytab;
 			}
 			kc.createPrincipal(principalName, password);
-			// Return base64 encoded keytab string for principal
 			String keytab = kc.createKeyTabString(principalName, password, null);
+			logger.info("Generated keytab string [" + keytab + "] for principal: " + principalName);
 			etcdClient.write("/servicebroker/ocdp/user/krbinfo/" + principalName + "/keytab", keytab);
-			logger.info("Generate keytab string " + keytab + " for principal " + principalName);
 			return keytab;
 		} catch (KerberosOperationException e) {
-			logger.error("Kerberos principal create fail due to: " + e.getLocalizedMessage());
-			e.printStackTrace();
+			logger.error("Kerberos principal [{}] create fail due to: {}", principalName, e.getLocalizedMessage());
 			// rollbackLDAPUser(userName);
 			throw new OCDPServiceException("Kerberos principal create fail due to: " + e.getLocalizedMessage());
 		}
