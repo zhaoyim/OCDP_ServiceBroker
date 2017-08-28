@@ -42,10 +42,7 @@ public class HDFSAdminService implements OCDPAdminService{
     static final Gson gson = new GsonBuilder().create();
 
     private static final FsPermission FS_PERMISSION = new FsPermission(FsAction.ALL, FsAction.ALL,
-            FsAction.NONE);
-
-    private static final FsPermission FS_USER_PERMISSION = new FsPermission(FsAction.ALL, FsAction.NONE,
-            FsAction.NONE);
+    		 FsAction.ALL);
 
     private static final List<String> ACCESSES = Lists.newArrayList("read", "write", "execute");
 
