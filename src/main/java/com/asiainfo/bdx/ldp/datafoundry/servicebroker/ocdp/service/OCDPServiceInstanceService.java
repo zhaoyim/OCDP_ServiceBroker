@@ -145,10 +145,11 @@ public class OCDPServiceInstanceService implements ServiceInstanceService {
     	try {
             logger.info("Receiving delete request: " + request);
             String serviceInstanceId = request.getServiceInstanceId();
-            logger.info("Receive request to delete service instance " + serviceInstanceId + " .");
+            logger.info("To delete service instance " + serviceInstanceId);
             ServiceInstance instance = repository.findOne(serviceInstanceId);
             // Check service instance id
             if (instance == null) {
+            	logger.error("Instance not exist: " + serviceInstanceId);
                 throw new ServiceInstanceDoesNotExistException(serviceInstanceId);
             }
             logger.info("Start to delete OCDPServiceInstance: " + serviceInstanceId + "...");
