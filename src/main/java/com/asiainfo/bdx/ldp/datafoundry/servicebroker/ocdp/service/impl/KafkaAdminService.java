@@ -60,9 +60,9 @@ public class KafkaAdminService implements OCDPAdminService{
 	
 	@Override
 	public String provisionResources(String serviceDefinitionId, String planId, String serviceInstanceId,
-			Map<String, Object> cuzQuota) throws Exception {
-		OCTopic topic = new OCTopic(serviceInstanceId);
-		return createResources(topic, quotaPolicy(serviceDefinitionId, planId, cuzQuota));
+			Map<String, Object> paras) throws Exception {
+		OCTopic topic = new OCTopic(String.valueOf(paras.get("cuzBsiName")));
+		return createResources(topic, quotaPolicy(serviceDefinitionId, planId, paras));
 	}
 
 	@Override
@@ -152,9 +152,9 @@ public class KafkaAdminService implements OCDPAdminService{
 	}
 	
 	@Override
-	public Map<String, Object> generateCredentialsInfo(String serviceInstanceId) {
+	public Map<String, Object> generateCredentialsInfo(String topicName) {
 		HashMap<String, Object> credential = new HashMap<>();
-		genKafkaCredential(credential, new OCTopic(serviceInstanceId));
+		genKafkaCredential(credential, new OCTopic(topicName));
 		return credential;
 	}
 	
@@ -356,22 +356,20 @@ public class KafkaAdminService implements OCDPAdminService{
 	
 	public static class OCTopic
 	{
-		private static final String TOPIC_PREFIX =  "oc_";
-		
 		private String name;
 		
 		/**
 		 * Get OCKafka topic name
-		 * @param serviceInstanceId
+		 * @param resourceName
 		 * @return
 		 */
-		public OCTopic(String serviceInstanceId)
+		public OCTopic(String resourceName)
 		{
-			if (serviceInstanceId == null || serviceInstanceId.isEmpty()) {
+			if (resourceName == null || resourceName.isEmpty()) {
 				LOG.error("Service instanceId must not be null.");
 				throw new RuntimeException("Service instanceId must not be null.");
 			}
-			this.name = TOPIC_PREFIX + serviceInstanceId;
+			this.name = resourceName;
 		}
 		
 		public String name()

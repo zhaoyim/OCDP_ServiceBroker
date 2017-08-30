@@ -75,7 +75,7 @@ public class OCDPServiceInstanceCommonService {
                 ocdp, serviceDefinitionId, planId, serviceInstanceId, params);
 
         // 2) Generate service instance credential info
-        Map<String, Object> credentials = ocdp.generateCredentialsInfo(serviceInstanceId);
+        Map<String, Object> credentials = ocdp.generateCredentialsInfo(String.valueOf(params.get("cuzBsiName")));
         String serviceResourceType = OCDPAdminServiceMapper.getOCDPResourceType(serviceDefinitionId);
         // For spark/mr instance provision, need append queue name into credentials,
         // because function generateCredentialsInfo not append it
@@ -156,9 +156,9 @@ public class OCDPServiceInstanceCommonService {
     }
 
     public Map<String, Object> getOCDPServiceCredential(
-            String serviceDefinitionId, String serviceInstanceId){
+            String serviceDefinitionId, String resourceName){
         OCDPAdminService ocdp = getOCDPAdminService(serviceDefinitionId);
-        return ocdp.generateCredentialsInfo(serviceInstanceId);
+        return ocdp.generateCredentialsInfo(resourceName);
     }
 
     private OCDPAdminService getOCDPAdminService(String serviceDefinitionId){
