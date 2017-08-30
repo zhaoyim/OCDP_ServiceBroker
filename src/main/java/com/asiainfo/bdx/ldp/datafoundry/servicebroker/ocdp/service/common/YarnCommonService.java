@@ -62,13 +62,13 @@ public class YarnCommonService {
         this.yClient = clusterConfig.getYarnClient();
     }
 
-    public synchronized String createQueue(String quota) throws IOException{
+    public synchronized String createQueue(String quota, String queueName) throws IOException{
         String queue_suffix;
         String queuePath;
         logger.info("Try to calculate queue capacity using quota [{}] GB", quota);
         try {
             renewCapacityCaculater();
-            queue_suffix = capacityCalculator.applyQueue(new Long(quota));
+            queue_suffix = capacityCalculator.applyQueue(new Long(quota), queueName);
             if(queue_suffix == null)
                 throw new OCDPServiceException("Not Enough Queue Capacity to apply!");
             queuePath = "root."+queue_suffix;

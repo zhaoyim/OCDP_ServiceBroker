@@ -41,9 +41,10 @@ public class YarnAdminService implements OCDPAdminService {
 
     @Override
     public String provisionResources(String serviceDefinitionId, String planId, String serviceInstanceId,
-                                     Map<String, Object> cuzQuota) throws Exception {
-        Map<String, String> quota = this.yarnCommonService.getQuotaFromPlan(serviceDefinitionId, planId, cuzQuota);
-        return yarnCommonService.createQueue(quota.get(OCDPConstants.YARN_QUEUE_QUOTA));
+                                     Map<String, Object> parameters) throws Exception {
+        String queueName = parameters.get("cuzBsiName") == null ? null : String.valueOf(parameters.get("cuzBsiName"));
+        Map<String, String> quota = this.yarnCommonService.getQuotaFromPlan(serviceDefinitionId, planId, parameters);
+        return yarnCommonService.createQueue(quota.get(OCDPConstants.YARN_QUEUE_QUOTA), queueName);
     }
 
     @Override
