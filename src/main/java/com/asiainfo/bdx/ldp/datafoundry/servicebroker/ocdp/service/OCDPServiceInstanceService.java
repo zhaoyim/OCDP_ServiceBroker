@@ -69,6 +69,7 @@ public class OCDPServiceInstanceService implements ServiceInstanceService {
             String serviceInstanceId = request.getServiceInstanceId();
             String planId = request.getPlanId();
             Map<String, Object> params = request.getParameters();
+            String resource = params.get("cuzBsiName") == null ? serviceInstanceId : String.valueOf(params.get("cuzBsiName"));
 
             ServiceInstance instance = repository.findOne(serviceInstanceId);
             // Check service instance and planid
@@ -83,13 +84,13 @@ public class OCDPServiceInstanceService implements ServiceInstanceService {
             CreateServiceInstanceResponse response;
             OCDPServiceInstanceCommonService service = getOCDPServiceInstanceCommonService();
             if(request.isAsyncAccepted()){
-                Future<CreateServiceInstanceResponse> responseFuture = service.doCreateServiceInstanceAsync(request);
+                Future<CreateServiceInstanceResponse> responseFuture = service.doCreateServiceInstanceAsync(request, resource);
                 this.instanceProvisionStateMap.put(request.getServiceInstanceId(), responseFuture);
                 //CITIC case: return service credential info in provision response body
-                Map<String, Object> credential = service.getOCDPServiceCredential(serviceDefinitionId, String.valueOf(params.get("cuzBsiName")));
+                Map<String, Object> credential = service.getOCDPServiceCredential(serviceDefinitionId, resource);
                 response = new OCDPCreateServiceInstanceResponse().withCredential(credential).withAsync(true);
             } else {
-                response = service.doCreateServiceInstance(request);
+                response = service.doCreateServiceInstance(request, resource);
             }
             return response;
 		} catch (Exception e) {
