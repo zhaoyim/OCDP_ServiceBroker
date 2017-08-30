@@ -110,7 +110,7 @@ public class OCDPServiceInstanceBindingService implements ServiceInstanceBinding
 				logger.warn("Empty 'accesses' parameter in request, none privileges assigned to user: " + userList);
 			}
 
-			Map<String, Object> credentials = assembleCredential(instance, userList.get(0), password);
+			Map<String, Object> credentials = assembleCredential(instance, userList.get(0));
 
 			save(request, credentials);
 			
@@ -134,15 +134,10 @@ public class OCDPServiceInstanceBindingService implements ServiceInstanceBinding
 		bindingRepository.save(binding);		
 	}
 
-	private Map<String, Object> assembleCredential(ServiceInstance instance, String userName, String password) {
+	private Map<String, Object> assembleCredential(ServiceInstance instance, String userName) {
 		Map<String, Object> credentials = instance.getServiceInstanceCredentials();
 		if (krb_enabled) {
-			String userPrincipal = userName + "@" + clusterConfig.getKrbRealm();
-			String keytab = etcdClient
-					.readToString("/servicebroker/ocdp/user/krbinfo/" + userPrincipal + "/keytab");
-			credentials.put("username", userPrincipal);
-			credentials.put("password", password);
-			credentials.put("keytab", keytab);
+			credentials.put("username", userName + "@" + clusterConfig.getKrbRealm());
 		} else {
 			// only username is needed for authorization.
 			credentials.put("username", userName);
@@ -312,14 +307,21 @@ public class OCDPServiceInstanceBindingService implements ServiceInstanceBinding
 	}
 
 	private void checkKerberosUser(String username, String password) {
-		// read keytab string from ETCD if user exist, or create user in KDC then return generated keytab string
-		String keyString = genKrbCrendential(username, password);
-		if (keyString == null) {
-			logger.warn("Keytab string null, regenerating keytab string...");
-			String principalName = username + "@" + clusterConfig.getKrbRealm();
-			keyString = kc.createKeyTabString(principalName, password, null);
-			etcdClient.write("/servicebroker/ocdp/user/krbinfo/" + principalName + "/keytab", keyString);
-			logger.info("Successfully Regenerated keytab string [" + keyString + "] for principal: " + principalName);
+		String principalName = username + "@" + clusterConfig.getKrbRealm();
+		logger.info("To create new kerberos principal: " + principalName);
+		try {
+			// If principal exists, not need to create again.
+			if (kc.principalExists(principalName)) {
+				logger.info("kerberos principal " + principalName + " exists, no need to create again");
+				return;
+			}
+			kc.createPrincipal(principalName, password);
+			// Generate krb password and store it to etcd
+			etcdClient.write("/servicebroker/ocdp/user/krbinfo/" + principalName + "/password", password);
+		} catch (KerberosOperationException e) {
+			logger.error("Kerberos principal [{}] create fail due to: {}", principalName, e.getLocalizedMessage());
+			// rollbackLDAPUser(userName);
+			throw new OCDPServiceException("Kerberos principal create fail due to: " + e.getLocalizedMessage());
 		}
 	}
 
@@ -375,31 +377,6 @@ public class OCDPServiceInstanceBindingService implements ServiceInstanceBinding
 		} catch (Exception e) {
 			logger.error("LDAP user [{}] creating failed due to: {}", userName, e.getLocalizedMessage());
 			throw new OCDPServiceException("LDAP user create fail due to: " + e.getLocalizedMessage());
-		}
-	}
-
-	private String genKrbCrendential(String userName, String password) {
-		String principalName = userName + "@" + clusterConfig.getKrbRealm();
-		logger.info("To create new kerberos principal: " + principalName);
-		// Generate krb password and store it to etcd
-		etcdClient.write("/servicebroker/ocdp/user/krbinfo/" + principalName + "/password", password);
-		try {
-			// If principal exists, not need to create again.
-			if (kc.principalExists(principalName)) {
-				String keytab = etcdClient
-						.readToString("/servicebroker/ocdp/user/krbinfo/" + principalName + "/keytab");
-				logger.warn("Principal existed: " + principalName + ". Reading keytab string from ETCD: " + keytab);
-				return keytab;
-			}
-			kc.createPrincipal(principalName, password);
-			String keytab = kc.createKeyTabString(principalName, password, null);
-			logger.info("Generated keytab string [" + keytab + "] for principal: " + principalName);
-			etcdClient.write("/servicebroker/ocdp/user/krbinfo/" + principalName + "/keytab", keytab);
-			return keytab;
-		} catch (KerberosOperationException e) {
-			logger.error("Kerberos principal [{}] create fail due to: {}", principalName, e.getLocalizedMessage());
-			// rollbackLDAPUser(userName);
-			throw new OCDPServiceException("Kerberos principal create fail due to: " + e.getLocalizedMessage());
 		}
 	}
 

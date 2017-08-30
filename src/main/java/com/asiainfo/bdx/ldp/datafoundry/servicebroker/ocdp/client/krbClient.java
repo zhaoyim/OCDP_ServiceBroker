@@ -1,5 +1,7 @@
 package com.asiainfo.bdx.ldp.datafoundry.servicebroker.ocdp.client;
 
+import java.text.NumberFormat;
+import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -9,6 +11,8 @@ import java.util.Collections;
 import java.io.File;
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import com.asiainfo.bdx.ldp.datafoundry.servicebroker.ocdp.utils.ShellCommandUtil;
 import com.asiainfo.bdx.ldp.datafoundry.servicebroker.ocdp.exception.*;
@@ -46,6 +50,7 @@ public class krbClient {
                 add(EncryptionType.AES128_CTS_HMAC_SHA1_96);
                 add(EncryptionType.AES256_CTS_HMAC_SHA1_96);
             }});
+    private final static Pattern PATTERN_GET_KEY_NUMBER = Pattern.compile("^.*?Key: vno (\\d+).*$", Pattern.DOTALL);
     private Set<EncryptionType> ciphers = new HashSet<EncryptionType>(DEFAULT_CIPHERS);
     private String userPrincipal;
     private String keytabLocation;
@@ -230,11 +235,10 @@ public class krbClient {
      *
      * @param principal a String containing the principal to test
      * @param password  a String containing the password to use when creating the principal
-     * @param keyNumber a Integer indicating the key number for the keytab entries
      * @return the created Keytab
      * @throws KerberosOperationException
      */
-    public Keytab createKeyTab(String principal, String password, Integer keyNumber)
+    public Keytab createKeyTab(String principal, String password)
             throws KerberosOperationException {
         if (StringUtils.isEmpty(principal)) {
             throw new KerberosOperationException("Failed to create keytab file, missing principal");
@@ -253,6 +257,7 @@ public class krbClient {
             Map<EncryptionType, EncryptionKey> keys = KerberosKeyFactory.getKerberosKeys(principal, password, ciphers);
 
             if (keys != null) {
+                Integer keyNumber = getKeyNumber(principal);
                 byte keyVersion = (keyNumber == null) ? 0 : keyNumber.byteValue();
                 KerberosTime timestamp = new KerberosTime();
 
@@ -295,13 +300,13 @@ public class krbClient {
      * <p/>
      * @param principal a String containing the principal to test
      * @param password  a String containing the password to use when creating the principal
-     * @param keyNumber a Integer indicating the key number for the keytab entries
      * @return a keytab string using the base64 encode if keytab was successfully created; empty string otherwise
      */
-    public  String createKeyTabString(String principal, String password, Integer keyNumber){
+    public  String createKeyTabString(String principal, String password){
         String keyTabString = "";
         try{
-            Keytab keytab = this.createKeyTab(principal, password, keyNumber);
+            Keytab keytab = this.createKeyTab(principal, password);
+            logger.info("keytab version is: " + keytab.getKeytabVersion());
             KeytabEncoder keytabEncoder = new KeytabEncoder();
             ByteBuffer keytabByteBuffer = keytabEncoder.write(keytab.getKeytabVersion(), keytab.getEntries());
             keyTabString = Base64.encodeBase64String(keytabByteBuffer.array());
@@ -309,6 +314,56 @@ public class krbClient {
             e.printStackTrace();
         }
         return keyTabString;
+    }
+
+    /**
+     * Retrieves the current key number assigned to the identity identified by the specified principal
+     *
+     * @param principal a String declaring the principal to look up
+     * @return an Integer declaring the current key number
+     * @throws KerberosKDCConnectionException       if a connection to the KDC cannot be made
+     * @throws KerberosAdminAuthenticationException if the administrator credentials fail to authenticate
+     * @throws KerberosRealmException               if the realm does not map to a KDC
+     * @throws KerberosOperationException           if an unexpected error occurred
+     */
+    private Integer getKeyNumber(String principal) throws KerberosOperationException {
+        if (StringUtils.isEmpty(principal)) {
+            throw new KerberosOperationException("Failed to get key number for principal  - no principal specified");
+        } else {
+            // Create the kdamin query:  get_principal <principal>
+            ShellCommandUtil.Result result = invokeKAdmin(String.format("get_principal %s", principal));
+
+            String stdOut = result.getStdout();
+            if (stdOut == null) {
+                String message = String.format("Failed to get key number for %s:\n\tExitCode: %s\n\tSTDOUT: NULL\n\tSTDERR: %s",
+                        principal, result.getExitCode(), result.getStderr());
+                logger.warn(message);
+                throw new KerberosOperationException(message);
+            }
+
+            Matcher matcher = PATTERN_GET_KEY_NUMBER.matcher(stdOut);
+            if (matcher.matches()) {
+                NumberFormat numberFormat = NumberFormat.getIntegerInstance();
+                String keyNumber = matcher.group(1);
+
+                numberFormat.setGroupingUsed(false);
+                try {
+                    Number number = numberFormat.parse(keyNumber);
+                    logger.info("Get key number for principal " + principal + " is " + keyNumber + ".");
+                    return (number == null) ? 0 : number.intValue();
+                } catch (ParseException e) {
+                    String message = String.format("Failed to get key number for %s - invalid key number value (%s):\n\tExitCode: %s\n\tSTDOUT: NULL\n\tSTDERR: %s",
+                            principal, keyNumber, result.getExitCode(), result.getStderr());
+                    logger.warn(message);
+                    throw new KerberosOperationException(message);
+                }
+            } else {
+                String message = String.format("Failed to get key number for %s - unexpected STDOUT data:\n\tExitCode: %s\n\tSTDOUT: NULL\n\tSTDERR: %s",
+                        principal, result.getExitCode(), result.getStderr());
+                logger.warn(message);
+                throw new KerberosOperationException(message);
+            }
+        }
     }
 
     private void ensureKeytabFolderExists(String keytabFilePath) {
