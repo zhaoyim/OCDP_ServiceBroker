@@ -156,9 +156,9 @@ public class OCDPServiceInstanceCommonService {
     }
 
     public Map<String, Object> getOCDPServiceCredential(
-            String serviceDefinitionId, String serviceInstanceId){
+            String serviceDefinitionId, String resourceName){
         OCDPAdminService ocdp = getOCDPAdminService(serviceDefinitionId);
-        return ocdp.generateCredentialsInfo(serviceInstanceId);
+        return ocdp.generateCredentialsInfo(resourceName);
     }
 
     private OCDPAdminService getOCDPAdminService(String serviceDefinitionId){
