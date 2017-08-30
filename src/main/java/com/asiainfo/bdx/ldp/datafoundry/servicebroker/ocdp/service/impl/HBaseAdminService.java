@@ -85,9 +85,10 @@ public class HBaseAdminService implements OCDPAdminService{
 
     @Override
     public String provisionResources(String serviceDefinitionId, String planId, String serviceInstanceId,
-                                     Map<String, Object> cuzQuota) throws Exception{
-        String nsName = serviceInstanceId.replaceAll("-", "");
-        Map<String, String> quota = this.getQuotaFromPlan(serviceDefinitionId, planId, cuzQuota);
+                                     Map<String, Object> parameters) throws Exception{
+        String nsName = parameters.get("cuzBsiName") == null ? serviceInstanceId.replaceAll("-", "") : String.valueOf(parameters.get("cuzBsiName")).replaceAll("-", "");
+
+        Map<String, String> quota = this.getQuotaFromPlan(serviceDefinitionId, planId, parameters);
         try{
         	if (krb_enabled) {
                 BrokerUtil.authentication(
@@ -206,13 +207,13 @@ public class HBaseAdminService implements OCDPAdminService{
     }
 
     @Override
-    public Map<String, Object> generateCredentialsInfo(String serviceInstanceId){
+    public Map<String, Object> generateCredentialsInfo(String rawResourceName){
         return new HashMap<String, Object>(){
             {
                 put("uri", "http://" + clusterConfig.getHbaseMaster() + ":" + clusterConfig.getHbaseRestPort());
                 put("host", clusterConfig.getHbaseMaster());
                 put("port", clusterConfig.getHbaseRestPort());
-                put(OCDPConstants.HBASE_RESOURCE_TYPE, serviceInstanceId.replaceAll("-", ""));
+                put(OCDPConstants.HBASE_RESOURCE_TYPE, rawResourceName.replaceAll("-", ""));
             }
         };
     }
