@@ -112,9 +112,11 @@ public class HDFSAdminService implements OCDPAdminService{
 
     @Override
     public String provisionResources(String serviceDefinitionId, String planId, String serviceInstanceId,
-                                     Map<String, Object> cuzQuota) throws Exception{
-        String pathName = "/servicebroker/" + serviceInstanceId;
-        Map<String, String> quota = this.getQuotaFromPlan(serviceDefinitionId, planId, cuzQuota);
+                                     Map<String, Object> parameters) throws Exception{
+        String pathName = parameters.get("cuzBsiName") == null ? serviceInstanceId : String.valueOf(parameters.get("cuzBsiName"));
+        
+//        String pathName = "/servicebroker/" + serviceInstanceId;
+        Map<String, String> quota = this.getQuotaFromPlan(serviceDefinitionId, planId, parameters);
         this.createHDFSDir(
                 pathName, quota.get(OCDPConstants.HDFS_NAMESPACE_QUOTA), quota.get(OCDPConstants.HDFS_STORAGE_QUOTA));
         return pathName;
@@ -257,13 +259,15 @@ public class HDFSAdminService implements OCDPAdminService{
     }
 
     @Override
-    public Map<String, Object> generateCredentialsInfo(String serviceInstanceId){
+    public Map<String, Object> generateCredentialsInfo(String resourceName){
         return new HashMap<String, Object>(){
             {
-                put("uri", webHdfsUrl + "/servicebroker/" + serviceInstanceId);
+                put("uri", webHdfsUrl + resourceName);
+//                put("uri", webHdfsUrl + "/servicebroker/" + resourceName);
                 put("host", clusterConfig.getHdfsNameNode());
                 put("port", clusterConfig.getHdfsPort());
-                put(OCDPConstants.HDFS_RESOURCE_TYPE, "/servicebroker/" + serviceInstanceId);
+//                put(OCDPConstants.HDFS_RESOURCE_TYPE, "/servicebroker/" + resourceName);
+                put(OCDPConstants.HDFS_RESOURCE_TYPE, resourceName);
             }
         };
     }

@@ -76,8 +76,7 @@ public class HiveCommonService {
 		}
     }
 
-    public String createDatabase(String serviceInstanceId) throws Exception{
-        String databaseName = serviceInstanceId.replaceAll("-", "");
+    public String createDatabase(String databaseName) throws Exception{
         try{
         	if (krb_enabled) {
         		BrokerUtil.authentication(

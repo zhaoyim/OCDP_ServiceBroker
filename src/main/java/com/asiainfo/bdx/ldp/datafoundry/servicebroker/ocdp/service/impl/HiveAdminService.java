@@ -51,9 +51,12 @@ public class HiveAdminService implements OCDPAdminService {
 
     @Override
     public String provisionResources(String serviceDefinitionId, String planId, String serviceInstanceId,
-                                     Map<String, Object> cuzQuota) throws Exception{
-        Map<String, String> quota = this.getQuotaFromPlan(serviceDefinitionId, planId, cuzQuota);
-        String dbName = hiveCommonService.createDatabase(serviceInstanceId);
+                                     Map<String, Object> parameters) throws Exception{
+        String resource = parameters.get("cuzBsiName") == null ? serviceInstanceId : String.valueOf(parameters.get("cuzBsiName"));
+
+        Map<String, String> quota = this.getQuotaFromPlan(serviceDefinitionId, planId, parameters);
+//        String dbName = hiveCommonService.createDatabase(serviceInstanceId);
+        String dbName = hiveCommonService.createDatabase(resource.replaceAll("-", ""));
         // Set database storage quota
         if(dbName != null){
             hdfsAdminService.setQuota(
@@ -176,8 +179,8 @@ public class HiveAdminService implements OCDPAdminService {
     }
 
     @Override
-    public Map<String, Object> generateCredentialsInfo(String serviceInstanceId){
-        String dbName = serviceInstanceId.replaceAll("-", "");
+    public Map<String, Object> generateCredentialsInfo(String resourceName){
+        String dbName = resourceName.replaceAll("-", "");
         return new HashMap<String, Object>(){
             {
                 put("uri", "jdbc:hive2://" + clusterConfig.getHiveHost() + ":" +

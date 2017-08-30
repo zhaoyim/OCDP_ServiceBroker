@@ -15,7 +15,7 @@ import java.util.Map;
 public interface OCDPAdminService {
 
 	String provisionResources(String serviceDefinitionId, String planId, String serviceInstanceId,
-                              Map<String, Object> cuzQuota) throws Exception;
+                              Map<String, Object> parameters) throws Exception;
 
     String createPolicyForResources(String policyName, List<String> resources, List<String> userList,
                                     String groupName, List<String> permissions);
@@ -24,7 +24,7 @@ public interface OCDPAdminService {
 
     boolean appendUsersToPolicy(String policyId, String groupName, List<String> users, List<String> permissions);
 
-    void deprovisionResources(String serviceInstanceResuorceName) throws  Exception;
+    void deprovisionResources(String resourceName) throws  Exception;
 
     boolean deletePolicyForResources(String policyId);
 
@@ -34,8 +34,8 @@ public interface OCDPAdminService {
 
     List<String> getResourceFromPolicy(String policyId);
 
-    Map<String, Object> generateCredentialsInfo(String serviceInstanceId);
+    Map<String, Object> generateCredentialsInfo(String resourceName);
 
-    void resizeResourceQuota(ServiceInstance instance, Map<String, Object> cuzQuota) throws IOException;
+    void resizeResourceQuota(ServiceInstance instance, Map<String, Object> parameters) throws IOException;
 
 }
