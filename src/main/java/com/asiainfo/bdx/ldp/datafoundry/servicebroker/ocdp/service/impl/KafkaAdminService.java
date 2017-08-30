@@ -61,7 +61,8 @@ public class KafkaAdminService implements OCDPAdminService{
 	@Override
 	public String provisionResources(String serviceDefinitionId, String planId, String serviceInstanceId,
 			Map<String, Object> paras) throws Exception {
-		OCTopic topic = new OCTopic(String.valueOf(paras.get("cuzBsiName")));
+        String resource = paras.get("cuzBsiName") == null ? serviceInstanceId : String.valueOf(paras.get("cuzBsiName"));
+		OCTopic topic = new OCTopic(resource);
 		return createResources(topic, quotaPolicy(serviceDefinitionId, planId, paras));
 	}
 

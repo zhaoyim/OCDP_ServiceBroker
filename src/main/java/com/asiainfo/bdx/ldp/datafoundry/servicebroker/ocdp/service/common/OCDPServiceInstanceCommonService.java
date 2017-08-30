@@ -56,14 +56,14 @@ public class OCDPServiceInstanceCommonService {
 
     @Async
     public Future<CreateServiceInstanceResponse> doCreateServiceInstanceAsync(
-            CreateServiceInstanceRequest request) throws OCDPServiceException {
+            CreateServiceInstanceRequest request, String resource) throws OCDPServiceException {
         return new AsyncResult<CreateServiceInstanceResponse>(
-                doCreateServiceInstance(request)
+                doCreateServiceInstance(request, resource)
         );
     }
 
     public CreateServiceInstanceResponse doCreateServiceInstance(
-            CreateServiceInstanceRequest request) throws OCDPServiceException {
+            CreateServiceInstanceRequest request, String resource) throws OCDPServiceException {
         String serviceDefinitionId = request.getServiceDefinitionId();
         String serviceInstanceId = request.getServiceInstanceId();
         String planId = request.getPlanId();
@@ -75,7 +75,7 @@ public class OCDPServiceInstanceCommonService {
                 ocdp, serviceDefinitionId, planId, serviceInstanceId, params);
 
         // 2) Generate service instance credential info
-        Map<String, Object> credentials = ocdp.generateCredentialsInfo(String.valueOf(params.get("cuzBsiName")));
+        Map<String, Object> credentials = ocdp.generateCredentialsInfo(resource);
         String serviceResourceType = OCDPAdminServiceMapper.getOCDPResourceType(serviceDefinitionId);
         // For spark/mr instance provision, need append queue name into credentials,
         // because function generateCredentialsInfo not append it
