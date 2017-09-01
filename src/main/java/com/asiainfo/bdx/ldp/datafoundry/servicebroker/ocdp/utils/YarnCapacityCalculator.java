@@ -13,11 +13,6 @@ import java.util.UUID;
  */
 public class YarnCapacityCalculator {
 
-//    private String planId;
-
-//    private String serviceInstanceId;
-
-//    private CapacitySchedulerConfig csConfig;
     private Logger logger = LoggerFactory.getLogger(YarnCapacityCalculator.class);
     private Map<String,String> properties;
     private String allQueues;
@@ -27,12 +22,10 @@ public class YarnCapacityCalculator {
 
     public YarnCapacityCalculator(String totalMem, CapacitySchedulerConfig csConfig){
 
-//        this.planId = planId;
-//        this.serviceInstanceId = serviceInstanceId;
-//        this.csConfig = csConfig;
         this.properties = csConfig.getItems().get(0).getProperties();
         this.totalMemory = Double.parseDouble(totalMem);
         this.availableCapacity = Double.parseDouble(properties.get("yarn.scheduler.capacity.root.default.capacity"));
+        this.allQueues =  properties.get("yarn.scheduler.capacity.root.queues");
     }
 
     public Map<String,String> getProperties(){ return properties;}
@@ -51,6 +44,8 @@ public class YarnCapacityCalculator {
 //            throw new OCDPServiceException("Not Enough Capacity to apply!");
             return null;
         }
+        // Get latest value of prop yarn.scheduler.capacity.root.queues
+        this.allQueues =  properties.get("yarn.scheduler.capacity.root.queues");
         // Queue creation logic:
         // 1) use queue name that assigned by ocmanager
         // 2) get first empty queue if ocmaneger not assign queue name
@@ -104,14 +99,8 @@ public class YarnCapacityCalculator {
     }
 
     private String getFirstEmptyQueue(){
-
-//        ArrayList<String> queues = new ArrayList<String>();
-//        String emptyQueue = null;
-        String queuesStr = properties.get("yarn.scheduler.capacity.root.queues");
-        this.allQueues = queuesStr;
-        for(String queue : Splitter.on(",").split(queuesStr))
+        for(String queue : Splitter.on(",").split(allQueues))
         {
-//            queues.add(queue);
             if(properties.get("yarn.scheduler.capacity.root."+queue+".capacity").equals("0")
                     &&properties.get("yarn.scheduler.capacity.root."+queue+".maximum-capacity").equals("0"))
             {
