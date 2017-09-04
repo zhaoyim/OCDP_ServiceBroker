@@ -41,7 +41,6 @@ public class YarnCapacityCalculator {
         String targetQueueCapacity = String.format("%.2f", ((100 * quota) / (totalMemory / 1024)));
         String resourcePoolCapacity = String.format("%.2f", (availableCapacity - (Double.parseDouble(targetQueueCapacity))));
         if(Double.parseDouble(targetQueueCapacity) > availableCapacity){
-//            throw new OCDPServiceException("Not Enough Capacity to apply!");
             return null;
         }
         // Get latest value of prop yarn.scheduler.capacity.root.queues
@@ -63,7 +62,7 @@ public class YarnCapacityCalculator {
                 queueName = newQueue;
             }
         }
-        resetQueueCapacity("default", null, resourcePoolCapacity);
+        resetQueueCapacity("root.default", null, resourcePoolCapacity);
         return queueName;
     }
 
@@ -72,11 +71,12 @@ public class YarnCapacityCalculator {
         String originQueueCapacity = properties.get("yarn.scheduler.capacity."+
                 queueName+".capacity");
         String targetQueueCapacity = String.format("%.2f", ((100 * quota) / (totalMemory / 1024)));
-        String resourcePoolCapacity = String.format("%.2f", (availableCapacity - (Double.parseDouble(targetQueueCapacity) - Double.parseDouble(originQueueCapacity))));
+        String resourcePoolCapacity = String.format("%.2f",
+                (availableCapacity - (Double.parseDouble(targetQueueCapacity) - Double.parseDouble(originQueueCapacity))));
         // Update queue
         resetQueueCapacity(queueName, null, targetQueueCapacity);
         // Update default queue
-        resetQueueCapacity("default", null, resourcePoolCapacity);
+        resetQueueCapacity("root.default", null, resourcePoolCapacity);
     }
 
     /**
@@ -93,7 +93,7 @@ public class YarnCapacityCalculator {
             // Set queue capacity to zero
             resetQueueCapacity(serviceInstanceResuorceName, targetQueueCapacity, "0");
             // Update defauly queue
-            resetQueueCapacity("default", null, resourcePoolCapacity);
+            resetQueueCapacity("root.default", null, resourcePoolCapacity);
         }
         return true;
     }
@@ -164,7 +164,7 @@ public class YarnCapacityCalculator {
 
     public String addQueueMapping(String user, String queue){
         String absoluteQueueName = queue.substring(5);
-        String newQueueMapStr = null;
+        String newQueueMapStr;
         String queueMapStr = this.properties.get("yarn.scheduler.capacity.queue-mappings");
 
         if(queueMapStr == null||queueMapStr.equals(""))
@@ -179,11 +179,11 @@ public class YarnCapacityCalculator {
 
     private void resetQueueCapacity(String queueName, String oldQueueCapacity, String targetQueueCapacity) {
         if (oldQueueCapacity == null){
-            properties.replace("yarn.scheduler.capacity.root."+queueName+".capacity", targetQueueCapacity);
-            properties.replace("yarn.scheduler.capacity.root."+queueName+".maximum-capacity",targetQueueCapacity);
+            properties.replace("yarn.scheduler.capacity."+queueName+".capacity", targetQueueCapacity);
+            properties.replace("yarn.scheduler.capacity."+queueName+".maximum-capacity",targetQueueCapacity);
         } else {
-            properties.replace("yarn.scheduler.capacity.root."+queueName+".capacity",oldQueueCapacity, targetQueueCapacity);
-            properties.replace("yarn.scheduler.capacity.root."+queueName+".maximum-capacity",oldQueueCapacity,targetQueueCapacity);
+            properties.replace("yarn.scheduler.capacity."+queueName+".capacity",oldQueueCapacity, targetQueueCapacity);
+            properties.replace("yarn.scheduler.capacity."+queueName+".maximum-capacity",oldQueueCapacity,targetQueueCapacity);
         }
     }
 
