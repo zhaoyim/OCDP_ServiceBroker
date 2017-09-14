@@ -58,7 +58,15 @@ public class KafkaAdminService implements OCDPAdminService{
     public KafkaAdminService(ClusterConfig clusterConfig){
         this.sys_env = clusterConfig;
         this.ranger = clusterConfig.getRangerClient();
-        this.repFactor = Integer.valueOf(clusterConfig.getKafka_rep());
+        String rep = clusterConfig.getKafka_rep();
+        if (rep == null || rep.isEmpty()) {
+			LOG.warn("Replication factor of Kafka is set to null, use default(1) instead!");
+	        this.repFactor = 1;
+		}
+        else {
+        	LOG.info("Replication factor of Kafka is set to: " + rep);
+            this.repFactor = Integer.valueOf(rep);
+        }
     }
 	
 	@Override
