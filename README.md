@@ -76,7 +76,7 @@ Configure connectivity properties (e.g. LDAP, kerberos, Hadoop ...) in system en
      export KAFKA_JAAS_PATH=<KafkaJaas conf file path>
      export KAFKA_HOSTS=<Kafka hosts>
      export KAFKA_PORT=<Kafka port>
-     
+     export KAFKA_REP_FACTOR=<Integer of Kafka Replication Factor>
 
 If NameNode and ResourceManager HA enabled, you need to configure following environment variables.
 

@@ -142,6 +142,8 @@ public class ClusterConfig implements EnvironmentAware{
     
 	private String kafka_port;
 	
+	private String kafka_rep;
+	
 	private boolean krb_enable = true;
     
 	@Override
@@ -205,6 +207,7 @@ public class ClusterConfig implements EnvironmentAware{
         this.kafka_jaas_path = env.getProperty("KAFKA_JAAS_PATH");
         this.kafka_hosts = env.getProperty("KAFKA_HOSTS");
         this.kafka_port = env.getProperty("KAFKA_PORT");
+        this.kafka_rep = env.getProperty("KAFKA_REP_FACTOR");
         this.krb_enable = Boolean.valueOf(env.getProperty("KRB_ENABLE").trim());
     }
 
@@ -335,5 +338,9 @@ public class ClusterConfig implements EnvironmentAware{
 
 	public String getKafka_port() {
 		return kafka_port;
+	}
+	
+	public String getKafka_rep() {
+		return kafka_rep;
 	}
 }

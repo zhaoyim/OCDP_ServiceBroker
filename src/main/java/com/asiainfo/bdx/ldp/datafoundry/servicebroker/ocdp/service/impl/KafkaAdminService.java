@@ -37,6 +37,8 @@ public class KafkaAdminService implements OCDPAdminService{
 	
     private static final List<String> ACCESSES = Lists.newArrayList("publish", "consume", "configure", "describe", "create", "delete", "kafka_admin");
 	
+    private int repFactor = 1; // topic replication factor
+
     private Gson gson = new GsonBuilder().create();
     
 	private ClusterConfig sys_env;
@@ -56,6 +58,7 @@ public class KafkaAdminService implements OCDPAdminService{
     public KafkaAdminService(ClusterConfig clusterConfig){
         this.sys_env = clusterConfig;
         this.ranger = clusterConfig.getRangerClient();
+        this.repFactor = Integer.valueOf(clusterConfig.getKafka_rep());
     }
 	
 	@Override
@@ -184,7 +187,7 @@ public class KafkaAdminService implements OCDPAdminService{
 		try {
 			Properties props = buildProperties(quota);
 			String par_num = String.valueOf(quota.get(Constants.TOPIC_QUOTA));
-			KafkaClient.getClient().createTopic(topic.name(), Integer.valueOf(par_num), Constants.REP_FACTOR, props);
+			KafkaClient.getClient().createTopic(topic.name(), Integer.valueOf(par_num), repFactor, props);
 			LOG.info("Topic {} created successful with {} partitions and config: {}", topic, par_num, props);
 			return topic.name();
 		} catch (OCKafkaException e) {
@@ -402,8 +405,6 @@ public class KafkaAdminService implements OCDPAdminService{
 		
 		/**resource type which is passed into ranger policy as kafka resources name*/
 		public static final String REROURCE_TYPE = "topic";
-		
-		public static final int REP_FACTOR = 1; // topic replication factor
 		
 		public static final String CONFIG_TTL = "retention.ms";
 		
