@@ -33,8 +33,6 @@ public class KafkaAdminService implements OCDPAdminService{
 	
 	private static final Logger LOG = LoggerFactory.getLogger(KafkaAdminService.class);
 	
-	private static final String ZK_CONN_KEY = "ZooKeeper_URI";
-	
     private static final List<String> ACCESSES = Lists.newArrayList("publish", "consume", "configure", "describe", "create", "delete", "kafka_admin");
 	
     private int repFactor = 1; // topic replication factor
@@ -361,7 +359,7 @@ public class KafkaAdminService implements OCDPAdminService{
 
 	private void genKafkaCredential(HashMap<String, Object> credential, OCTopic topic) {
 		credential.put(Constants.REROURCE_TYPE, topic.name());
-		credential.put(ZK_CONN_KEY, sys_env.getZk_connection());
+		credential.put("uri", sys_env.getZk_connection());
 		credential.put("host", sys_env.getKafka_hosts());
 		credential.put("port", sys_env.getKafka_port());
 	}
