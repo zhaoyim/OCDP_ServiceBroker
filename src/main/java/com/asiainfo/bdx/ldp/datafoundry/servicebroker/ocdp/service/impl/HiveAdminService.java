@@ -71,7 +71,7 @@ public class HiveAdminService implements OCDPAdminService {
     	int loop = 0;
     	while (true) {
         	try {
-                hdfsAdminService.setQuota(path, null, quota.get(OCDPConstants.HDFS_STORAGE_QUOTA));
+                hdfsAdminService.setQuota(path, "-1", quota.get(OCDPConstants.HDFS_STORAGE_QUOTA));
                 return;
 			} catch (PathIOException e) {
 				// In case path hasn't been created yet
