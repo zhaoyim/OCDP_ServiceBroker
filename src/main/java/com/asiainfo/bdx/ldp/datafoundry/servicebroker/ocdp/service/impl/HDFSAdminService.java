@@ -177,7 +177,7 @@ public class HDFSAdminService implements OCDPAdminService{
                     ", set storage space quota to " + storageSpaceQuota + ".");
         }
     }
-
+    
     @Override
     public String createPolicyForResources(String policyName, List<String> resources, List<String> userList,
                                            String groupName, List<String> permissions){
@@ -284,18 +284,21 @@ public class HDFSAdminService implements OCDPAdminService{
         Map<String, String> quota = getQuotaFromPlan(serviceDefinitionId, planId, cuzQuota);
         String resourceType = OCDPAdminServiceMapper.getOCDPResourceType(serviceDefinitionId);
         String path = (String)instance.getServiceInstanceCredentials().get(resourceType);
-        // Construct hive database path for hive case
-        if(resourceType.equals(OCDPConstants.HIVE_RESOURCE_TYPE)){
-            path = "/apps/hive/warehouse/" + path.split(":")[0] + ".db";
-        }
         try{
+        	// Construct hive database path for hive case
+	        if(resourceType.equals(OCDPConstants.HIVE_RESOURCE_TYPE)){
+	            path = "/apps/hive/warehouse/" + path.split(":")[0] + ".db";
+	            setQuota(path, "-1", quota.get(OCDPConstants.HDFS_STORAGE_QUOTA));
+	            return;
+	        }
+
             setQuota(path, quota.get(OCDPConstants.HDFS_NAMESPACE_QUOTA), quota.get(OCDPConstants.HDFS_STORAGE_QUOTA));
         } catch (IOException e){
             e.printStackTrace();
             throw e;
         }
     }
-
+    
     private Map<String, String> getQuotaFromPlan(String serviceDefinitionId, String planId, Map<String, Object> cuzQuota){
         CatalogConfig catalogConfig = (CatalogConfig) this.context.getBean("catalogConfig");
         return catalogConfig.getQuotaFromPlan(serviceDefinitionId, planId, cuzQuota);

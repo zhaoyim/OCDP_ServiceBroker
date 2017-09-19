@@ -6,6 +6,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.hadoop.fs.PathIOException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -59,14 +60,32 @@ public class HiveAdminService implements OCDPAdminService {
         String dbName = hiveCommonService.createDatabase(resource.replaceAll("-", ""));
         // Set database storage quota
         if(dbName != null){
-            hdfsAdminService.setQuota(
-                    "/apps/hive/warehouse/" + dbName + ".db", null, quota.get(OCDPConstants.HDFS_STORAGE_QUOTA));
+        	setQuota(dbName, quota);
         }
         String queueName = yarnCommonService.createQueue(quota.get(OCDPConstants.YARN_QUEUE_QUOTA), resource);
         return dbName + ":" + queueName;
     }
 
-    @Override
+    private void setQuota(String dbName, Map<String, String> quota) throws IOException, InterruptedException {
+    	String path = "/apps/hive/warehouse/" + dbName + ".db";
+    	int loop = 0;
+    	while (true) {
+        	try {
+                hdfsAdminService.setQuota(path, "-1", quota.get(OCDPConstants.HDFS_STORAGE_QUOTA));
+                return;
+			} catch (PathIOException e) {
+				// In case path hasn't been created yet
+				if (loop++ < 5) {
+					Thread.sleep(2000);
+					continue;
+				}
+				logger.error("Error while setting quota for path: " + path, e);
+				throw e;
+			}
+		}		
+	}
+
+	@Override
     public String createPolicyForResources(String policyName, List<String> resources, List<String> userList,
                                            String groupName, List<String> permissions){
         String[] resourcesList = resources.get(0).split(":");
