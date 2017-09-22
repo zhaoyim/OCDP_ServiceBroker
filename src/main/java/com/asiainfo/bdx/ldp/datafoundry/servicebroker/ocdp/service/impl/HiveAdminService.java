@@ -76,10 +76,11 @@ public class HiveAdminService implements OCDPAdminService {
 			} catch (PathIOException e) {
 				// In case path hasn't been created yet
 				if (loop++ < 5) {
+					logger.warn("Path abnormal while setting quota, waiting and retrying: "+ loop  + ", "+ e.getMessage());
 					Thread.sleep(2000);
 					continue;
 				}
-				logger.error("Error while setting quota for path: " + path, e);
+				logger.error("Failed to set quota for path: " + path, e);
 				throw e;
 			}
 		}		
