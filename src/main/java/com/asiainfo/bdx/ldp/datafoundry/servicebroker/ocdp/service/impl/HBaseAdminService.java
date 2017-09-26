@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Pattern;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hbase.HBaseConfiguration;
@@ -57,7 +58,8 @@ public class HBaseAdminService implements OCDPAdminService{
     private static final List<String> ACCESSES = Lists.newArrayList("read", "write", "create", "admin");
     
     private boolean krb_enabled;
-
+    
+    private static final Pattern REG = Pattern.compile("/(\\w|.)*@");
 
     @Autowired
     public HBaseAdminService(ClusterConfig clusterConfig){
@@ -74,8 +76,8 @@ public class HBaseAdminService implements OCDPAdminService{
             System.setProperty("java.security.krb5.conf", this.clusterConfig.getKrb5FilePath());
             conf.set("hadoop.security.authentication", "Kerberos");
             conf.set("hbase.security.authentication", "Kerberos");
-            conf.set("hbase.master.kerberos.principal", this.clusterConfig.getHbaseMasterPrincipal());
-            conf.set("hbase.master.keytab.file", this.clusterConfig.getHbaseMasterUserKeytab());
+            conf.set("hbase.master.kerberos.principal", toCommonString(this.clusterConfig.getHbaseMasterPrincipal()));
+//            conf.set("hbase.master.keytab.file", this.clusterConfig.getHbaseMasterUserKeytab());
 		}
         
         conf.set(HConstants.ZOOKEEPER_QUORUM, this.clusterConfig.getHbaseZookeeperQuorum());
@@ -83,7 +85,13 @@ public class HBaseAdminService implements OCDPAdminService{
         conf.set(HConstants.ZOOKEEPER_ZNODE_PARENT, this.clusterConfig.getHbaseZookeeperZnodeParent());
     }
 
-    @Override
+    private String toCommonString(String hbaseMasterPrincipal) {
+    	String principal = REG.matcher(hbaseMasterPrincipal).replaceFirst("/_HOST@");
+    	logger.debug("HMaster principal [{}] transformed to [{}]", hbaseMasterPrincipal, principal);
+    	return principal;
+	}
+
+	@Override
     public String provisionResources(String serviceDefinitionId, String planId, String serviceInstanceId,
                                      Map<String, Object> parameters) throws Exception{
         String nsName = parameters.get("cuzBsiName") == null ? serviceInstanceId.replaceAll("-", "") : String.valueOf(parameters.get("cuzBsiName")).replaceAll("-", "");
