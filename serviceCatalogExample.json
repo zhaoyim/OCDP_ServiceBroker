@@ -219,7 +219,7 @@
 	          "desc": "Number of partitions in a topic."
 	        },
 	        "partitionSize": {
-	          "default": -1,
+	          "default": 1024,
 	          "max": -1,
 	          "price": 10,
 	          "unit": "GB",
