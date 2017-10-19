@@ -56,10 +56,11 @@ public class YarnAdminService implements OCDPAdminService {
         // Please refer to: https://github.com/OCManager/OCDP_ServiceBroker/issues/48
         List <String> hdfsFolderForJobExec = new ArrayList<String>(){
             {
-                add("/" + policyName.split("_")[0] + "2-history"); // suport for spark2
                 add(historyPath);
                 //add dummy path to avoid ranger error of existing resource path
                 add("/tmp/dummy_" + UUID.randomUUID().toString());
+            	if (historyPath.contains("spark"))
+            		add(historyPath.replace("spark", "spark2"));// suport spark2
             }
         };
         for (String userName : userList) {
