@@ -59,6 +59,8 @@ public class YarnAdminService implements OCDPAdminService {
                 add(historyPath);
                 //add dummy path to avoid ranger error of existing resource path
                 add("/tmp/dummy_" + UUID.randomUUID().toString());
+            	if (historyPath.contains("spark"))
+            		add(historyPath.replace("spark", "spark2"));// suport spark2
             }
         };
         for (String userName : userList) {
