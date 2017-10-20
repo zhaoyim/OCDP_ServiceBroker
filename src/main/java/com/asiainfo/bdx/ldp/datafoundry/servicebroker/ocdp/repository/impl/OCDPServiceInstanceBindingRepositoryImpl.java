@@ -78,6 +78,9 @@ public class OCDPServiceInstanceBindingRepositoryImpl implements OCDPServiceInst
             String thriftUri = etcdClient.readToString("/servicebroker/ocdp/instance/" + serviceInstanceId + "/bindings/" +
                     bindingId + "/Credentials/thriftUri");
             credentials.put("thriftUri", thriftUri);
+            String queueName = etcdClient.readToString("/servicebroker/ocdp/instance/" + serviceInstanceId + "/bindings/" +
+                            bindingId + "/Credentials/"+ OCDPConstants.YARN_RESOURCE_TYPE);
+            credentials.put(OCDPConstants.YARN_RESOURCE_TYPE, queueName);
         }
 
         return new ServiceInstanceBinding(id, serviceInstanceId, credentials,syslogDrainUrl, appGuid, planId);
@@ -112,6 +115,9 @@ public class OCDPServiceInstanceBindingRepositoryImpl implements OCDPServiceInst
         if (resourceType.equals(OCDPConstants.HIVE_RESOURCE_TYPE)){
             etcdClient.write("/servicebroker/ocdp/instance/" + serviceInstanceId + "/bindings/" +
                     bindingId + "/Credentials/thriftUri", (String)credentials.get("thriftUri"));
+            String yarnResourceType = OCDPConstants.YARN_RESOURCE_TYPE;
+            etcdClient.write("/servicebroker/ocdp/instance/" + serviceInstanceId + "/bindings/" +
+                            bindingId + "/Credentials/" + yarnResourceType, (String)credentials.get(yarnResourceType));
         }
         etcdClient.write("/servicebroker/ocdp/instance/" + serviceInstanceId + "/bindings/" +
                         bindingId + "/Credentials/username", (String)credentials.get("username"));

@@ -14,6 +14,7 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Service;
 
 import com.asiainfo.bdx.ldp.datafoundry.servicebroker.ocdp.config.CatalogConfig;
+import com.asiainfo.bdx.ldp.datafoundry.servicebroker.ocdp.client.etcdClient;
 import com.asiainfo.bdx.ldp.datafoundry.servicebroker.ocdp.config.ClusterConfig;
 import com.asiainfo.bdx.ldp.datafoundry.servicebroker.ocdp.model.ServiceInstance;
 import com.asiainfo.bdx.ldp.datafoundry.servicebroker.ocdp.service.OCDPAdminService;
@@ -41,6 +42,8 @@ public class HiveAdminService implements OCDPAdminService {
 
     private YarnCommonService yarnCommonService;
 
+    private etcdClient etcdClient;
+
     @Autowired
     public HiveAdminService(ClusterConfig clusterConfig, HiveCommonService hiveCommonService, HDFSAdminService hdfsAdminService,
                             YarnCommonService yarnCommonService){
@@ -48,6 +51,7 @@ public class HiveAdminService implements OCDPAdminService {
         this.hiveCommonService = hiveCommonService;
         this.hdfsAdminService = hdfsAdminService;
         this.yarnCommonService = yarnCommonService;
+        this.etcdClient = clusterConfig.getEtcdClient();
     }
 
     @Override
@@ -63,6 +67,9 @@ public class HiveAdminService implements OCDPAdminService {
         	setQuota(dbName, quota);
         }
         String queueName = yarnCommonService.createQueue(quota.get(OCDPConstants.YARN_QUEUE_QUOTA), resource);
+        // Cache queue name in etcd
+        etcdClient.write("/servicebroker/ocdp/instance/" + serviceInstanceId + "/Credentials/" +
+                OCDPConstants.YARN_RESOURCE_TYPE, queueName);
         return dbName + ":" + queueName;
     }
 
@@ -201,6 +208,8 @@ public class HiveAdminService implements OCDPAdminService {
     @Override
     public Map<String, Object> generateCredentialsInfo(String resourceName){
         String dbName = resourceName.replaceAll("-", "");
+        String queueName = etcdClient.readToString(
+                "/servicebroker/ocdp/instance/" + resourceName + "/Credentials/" + OCDPConstants.YARN_RESOURCE_TYPE);
         return new HashMap<String, Object>(){
             {
                 put("uri", "jdbc:hive2://" + clusterConfig.getHiveHost() + ":" +
@@ -212,6 +221,7 @@ public class HiveAdminService implements OCDPAdminService {
                 put("host", clusterConfig.getHiveHost());
                 put("port", clusterConfig.getHivePort());
                 put(OCDPConstants.HIVE_RESOURCE_TYPE, dbName);
+                put(OCDPConstants.YARN_RESOURCE_TYPE, queueName);
             }
         };
     }

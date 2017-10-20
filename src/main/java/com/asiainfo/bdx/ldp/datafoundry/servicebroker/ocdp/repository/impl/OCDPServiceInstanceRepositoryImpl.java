@@ -71,6 +71,9 @@ public class OCDPServiceInstanceRepositoryImpl implements OCDPServiceInstanceRep
             String thriftUri = etcdClient.readToString("/servicebroker/ocdp/instance/" + serviceInstanceId +
                     "/Credentials/thriftUri");
             Credential.put("thriftUri", thriftUri);
+            String queueName = etcdClient.readToString("/servicebroker/ocdp/instance/" + serviceInstanceId +
+                    "/Credentials/" + OCDPConstants.YARN_RESOURCE_TYPE);
+            Credential.put(OCDPConstants.YARN_RESOURCE_TYPE, queueName);
         }
         instance.setCredential(Credential);
 
