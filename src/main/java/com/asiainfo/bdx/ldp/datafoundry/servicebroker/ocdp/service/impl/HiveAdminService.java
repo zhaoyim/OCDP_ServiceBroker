@@ -213,7 +213,8 @@ public class HiveAdminService implements OCDPAdminService {
         return new HashMap<String, Object>(){
             {
                 put("uri", "jdbc:hive2://" + clusterConfig.getHiveHost() + ":" +
-                        clusterConfig.getHivePort() + "/" + dbName + ";principal=" + clusterConfig.getHiveSuperUser());
+                        clusterConfig.getHivePort() + "/" + dbName + ";principal=" + clusterConfig.getHiveSuperUser() +
+                        "?mapreduce.job.queuename=" + queueName);
                 // Temp fix for Spark SQL application access to hive database:
                 // append a thrift URL to hive bsi's credentials info
                 put("thriftUri", "jdbc:hive2://" + clusterConfig.getSparkThriftServer() + ":" +
