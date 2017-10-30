@@ -143,14 +143,18 @@ public class HBaseAdminService implements OCDPAdminService{
 			admin.createNamespace(namespaceDescriptor);
 
 			// for the namespace REQUEST_SIZE quota
-			QuotaSettings sizeSettings = getQpsQuotaSettings(nsName, "REQUEST_SIZE", qpsRequestSize);
-			if (qpsRequestSize != null && sizeSettings != null) {
-				admin.setQuota(sizeSettings);
+			if (qpsRequestSize != null) {
+				QuotaSettings sizeSettings = getQpsQuotaSettings(nsName, "REQUEST_SIZE", qpsRequestSize);
+				if (sizeSettings != null) {
+					admin.setQuota(sizeSettings);
+				}
 			}
 			// for the namespace REQUEST_NUMBER quota
-			QuotaSettings numberSettings = getQpsQuotaSettings(nsName, "REQUEST_NUMBER", qpsRequestNumber);
-			if (qpsRequestNumber != null && numberSettings != null) {
-				admin.setQuota(numberSettings);
+			if (qpsRequestNumber != null) {
+				QuotaSettings numberSettings = getQpsQuotaSettings(nsName, "REQUEST_NUMBER", qpsRequestNumber);
+				if (numberSettings != null) {
+					admin.setQuota(numberSettings);
+				}
 			}
 
 			admin.close();
