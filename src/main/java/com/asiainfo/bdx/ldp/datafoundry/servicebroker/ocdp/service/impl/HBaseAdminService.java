@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
 
 import org.apache.hadoop.conf.Configuration;
@@ -15,6 +16,9 @@ import org.apache.hadoop.hbase.TableName;
 import org.apache.hadoop.hbase.client.Admin;
 import org.apache.hadoop.hbase.client.Connection;
 import org.apache.hadoop.hbase.client.ConnectionFactory;
+import org.apache.hadoop.hbase.quotas.QuotaSettings;
+import org.apache.hadoop.hbase.quotas.QuotaSettingsFactory;
+import org.apache.hadoop.hbase.quotas.ThrottleType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -91,36 +95,78 @@ public class HBaseAdminService implements OCDPAdminService{
     	return principal;
 	}
 
-	@Override
-    public String provisionResources(String serviceDefinitionId, String planId, String serviceInstanceId,
-                                     Map<String, Object> parameters) throws Exception{
-        String nsName = parameters.get("cuzBsiName") == null ? serviceInstanceId.replaceAll("-", "") : String.valueOf(parameters.get("cuzBsiName")).replaceAll("-", "");
+	private QuotaSettings getQpsQuotaSettings(String namespaceName, String type, String value) {
 
-        Map<String, String> quota = this.getQuotaFromPlan(serviceDefinitionId, planId, parameters);
-        try{
-        	if (krb_enabled) {
-                BrokerUtil.authentication(
-                        this.conf, this.clusterConfig.getHbaseMasterPrincipal(), this.clusterConfig.getHbaseMasterUserKeytab());
+		QuotaSettings settings = null;
+		String[] valueArray = value.split("/");
+		try {
+			// if the parameters is the correct 2 value
+			if (valueArray.length == 2) {
+				settings = QuotaSettingsFactory.throttleNamespace(namespaceName, ThrottleType.valueOf(type),
+						Integer.parseInt(valueArray[0]), TimeUnit.valueOf(valueArray[1].toUpperCase()));
+			}
+		} catch (NumberFormatException e) {
+			logger.error("HBase set namespace qps quota " + type + " fail due to: " + e.getLocalizedMessage());
+			e.printStackTrace();
+		} catch (IllegalArgumentException e) {
+			logger.error("HBase set namespace qps quota " + type + " fail due to: " + e.getLocalizedMessage());
+			e.printStackTrace();
+		}
+		return settings;
+	}
+
+	@Override
+	public String provisionResources(String serviceDefinitionId, String planId, String serviceInstanceId,
+			Map<String, Object> parameters) throws Exception {
+		String nsName = parameters.get("cuzBsiName") == null ? serviceInstanceId.replaceAll("-", "")
+				: String.valueOf(parameters.get("cuzBsiName")).replaceAll("-", "");
+		// support the Hbase qps quota
+		String qpsRequestSize = parameters.get("REQUEST_SIZE") == null ? null
+				: String.valueOf(parameters.get("REQUEST_SIZE"));
+		String qpsRequestNumber = parameters.get("REQUEST_NUMBER") == null ? null
+				: String.valueOf(parameters.get("REQUEST_NUMBER"));
+
+		Map<String, String> quota = this.getQuotaFromPlan(serviceDefinitionId, planId, parameters);
+		try {
+			if (krb_enabled) {
+				BrokerUtil.authentication(this.conf, this.clusterConfig.getHbaseMasterPrincipal(),
+						this.clusterConfig.getHbaseMasterUserKeytab());
 			}
 
-            this.connection = ConnectionFactory.createConnection(conf);
-            Admin admin = this.connection.getAdmin();
-            NamespaceDescriptor namespaceDescriptor = NamespaceDescriptor.create(nsName).build();
-            namespaceDescriptor.setConfiguration(
-                    "hbase.namespace.quota.maxtables", quota.get(OCDPConstants.HBASE_NAMESPACE_TABLE_QUOTA));
-            namespaceDescriptor.setConfiguration(
-                    "hbase.namespace.quota.maxregions", quota.get(OCDPConstants.HBASE_NAMESPACE_REGION_QUOTA));
-            admin.createNamespace(namespaceDescriptor);
-            admin.close();
-        }catch(IOException e){
-            logger.error("HBase namespace create fail due to: " + e.getLocalizedMessage());
-            e.printStackTrace();
-            throw e;
-        }finally {
-            this.connection.close();
-        }
-        return nsName;
-    }
+			this.connection = ConnectionFactory.createConnection(conf);
+			Admin admin = this.connection.getAdmin();
+			NamespaceDescriptor namespaceDescriptor = NamespaceDescriptor.create(nsName).build();
+			namespaceDescriptor.setConfiguration("hbase.namespace.quota.maxtables",
+					quota.get(OCDPConstants.HBASE_NAMESPACE_TABLE_QUOTA));
+			namespaceDescriptor.setConfiguration("hbase.namespace.quota.maxregions",
+					quota.get(OCDPConstants.HBASE_NAMESPACE_REGION_QUOTA));
+			admin.createNamespace(namespaceDescriptor);
+
+			// for the namespace REQUEST_SIZE quota
+			if (qpsRequestSize != null) {
+				QuotaSettings sizeSettings = getQpsQuotaSettings(nsName, "REQUEST_SIZE", qpsRequestSize);
+				if (sizeSettings != null) {
+					admin.setQuota(sizeSettings);
+				}
+			}
+			// for the namespace REQUEST_NUMBER quota
+			if (qpsRequestNumber != null) {
+				QuotaSettings numberSettings = getQpsQuotaSettings(nsName, "REQUEST_NUMBER", qpsRequestNumber);
+				if (numberSettings != null) {
+					admin.setQuota(numberSettings);
+				}
+			}
+
+			admin.close();
+		} catch (IOException e) {
+			logger.error("HBase namespace create fail due to: " + e.getLocalizedMessage());
+			e.printStackTrace();
+			throw e;
+		} finally {
+			this.connection.close();
+		}
+		return nsName;
+	}
 
     @Override
     public String createPolicyForResources(String policyName, List<String> tableList, List<String> userList,
