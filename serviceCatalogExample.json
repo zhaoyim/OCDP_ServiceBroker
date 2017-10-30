@@ -224,7 +224,7 @@
 	          "price": 10,
 	          "unit": "GB",
 	          "step": 10,
-	          "desc": "Storage(Bytes) of one partition in a topic."
+	          "desc": "Storage(GB) of one partition in a topic."
 	        }
 	      }
 	    },

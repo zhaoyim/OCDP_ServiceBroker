@@ -91,7 +91,8 @@ public class CatalogConfig {
                     // If customize quota exceeds plan limitation, use default value
                     logger.info("Quota:[{}], maxQuota:[{}],defaultQuota:[{}].", quota, maxQuota, defaultQuota);
                     if(Long.parseLong(quota) > maxQuota){
-                        quota = Long.toString(defaultQuota);
+                    	logger.warn("Requested quota exceeded maximum quota, using max quota instead: " + maxQuota);
+                        quota = Long.toString(maxQuota);
                     }
                 } else {
                     // customize quota have not input value, use default value
