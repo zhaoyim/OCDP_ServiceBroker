@@ -1,20 +1,20 @@
 package com.asiainfo.bdx.ldp.datafoundry.servicebroker.ocdp.repository.impl;
 
 
-import com.asiainfo.bdx.ldp.datafoundry.servicebroker.ocdp.config.ClusterConfig;
-import com.asiainfo.bdx.ldp.datafoundry.servicebroker.ocdp.client.etcdClient;
-import com.asiainfo.bdx.ldp.datafoundry.servicebroker.ocdp.utils.OCDPAdminServiceMapper;
-import com.asiainfo.bdx.ldp.datafoundry.servicebroker.ocdp.utils.OCDPConstants;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import com.asiainfo.bdx.ldp.datafoundry.servicebroker.ocdp.model.ServiceInstanceBinding;
-import com.asiainfo.bdx.ldp.datafoundry.servicebroker.ocdp.repository.OCDPServiceInstanceBindingRepository;
-
 import java.util.HashMap;
 import java.util.Map;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import com.asiainfo.bdx.ldp.datafoundry.servicebroker.ocdp.client.etcdClient;
+import com.asiainfo.bdx.ldp.datafoundry.servicebroker.ocdp.config.ClusterConfig;
+import com.asiainfo.bdx.ldp.datafoundry.servicebroker.ocdp.model.ServiceInstanceBinding;
+import com.asiainfo.bdx.ldp.datafoundry.servicebroker.ocdp.repository.OCDPServiceInstanceBindingRepository;
+import com.asiainfo.bdx.ldp.datafoundry.servicebroker.ocdp.utils.OCDPAdminServiceMapper;
+import com.asiainfo.bdx.ldp.datafoundry.servicebroker.ocdp.utils.OCDPConstants;
 
 /**
  * Implementation of Repository for ServiceInstanceBinding objects
@@ -78,9 +78,6 @@ public class OCDPServiceInstanceBindingRepositoryImpl implements OCDPServiceInst
             String thriftUri = etcdClient.readToString("/servicebroker/ocdp/instance/" + serviceInstanceId + "/bindings/" +
                     bindingId + "/Credentials/thriftUri");
             credentials.put("thriftUri", thriftUri);
-            String queueName = etcdClient.readToString("/servicebroker/ocdp/instance/" + serviceInstanceId + "/bindings/" +
-                            bindingId + "/Credentials/"+ OCDPConstants.YARN_RESOURCE_TYPE);
-            credentials.put(OCDPConstants.YARN_RESOURCE_TYPE, queueName);
         }
 
         return new ServiceInstanceBinding(id, serviceInstanceId, credentials,syslogDrainUrl, appGuid, planId);
@@ -115,9 +112,6 @@ public class OCDPServiceInstanceBindingRepositoryImpl implements OCDPServiceInst
         if (resourceType.equals(OCDPConstants.HIVE_RESOURCE_TYPE)){
             etcdClient.write("/servicebroker/ocdp/instance/" + serviceInstanceId + "/bindings/" +
                     bindingId + "/Credentials/thriftUri", (String)credentials.get("thriftUri"));
-            String yarnResourceType = OCDPConstants.YARN_RESOURCE_TYPE;
-            etcdClient.write("/servicebroker/ocdp/instance/" + serviceInstanceId + "/bindings/" +
-                            bindingId + "/Credentials/" + yarnResourceType, (String)credentials.get(yarnResourceType));
         }
         etcdClient.write("/servicebroker/ocdp/instance/" + serviceInstanceId + "/bindings/" +
                         bindingId + "/Credentials/username", (String)credentials.get("username"));
