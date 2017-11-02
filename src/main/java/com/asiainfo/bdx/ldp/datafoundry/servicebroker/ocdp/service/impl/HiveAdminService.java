@@ -182,7 +182,7 @@ public class HiveAdminService implements OCDPAdminService {
 	@SuppressWarnings("serial")
 	@Override
 	public Map<String, Object> generateCredentialsInfo(String resourceName) {
-		String dbName = resourceName.replaceAll("-", "");
+		String dbName = resourceName.replaceAll("-", "").toLowerCase();
 		return new HashMap<String, Object>() {
 			{
 				put("uri", "jdbc:hive2://" + clusterConfig.getHiveHost() + ":" + clusterConfig.getHivePort() + "/"
