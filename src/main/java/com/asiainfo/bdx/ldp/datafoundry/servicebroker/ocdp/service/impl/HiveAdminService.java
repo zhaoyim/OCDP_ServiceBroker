@@ -53,7 +53,7 @@ public class HiveAdminService implements OCDPAdminService {
 				: String.valueOf(parameters.get("cuzBsiName"));
 
 		Map<String, String> quota = this.getQuotaFromPlan(serviceDefinitionId, planId, parameters);
-		String dbName = hiveCommonService.createDatabase(resource.replaceAll("-", ""));
+		String dbName = hiveCommonService.createDatabase(resource.replaceAll("-", "").toLowerCase());
 		// Set database storage quota
 		if (dbName != null) {
 			setQuota(dbName, quota);
