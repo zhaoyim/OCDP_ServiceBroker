@@ -85,18 +85,17 @@ public class HiveAdminService implements OCDPAdminService {
 	@Override
 	public String createPolicyForResources(String policyName, List<String> resources, List<String> userList,
 			String groupName, List<String> permissions) {
-		String[] resourcesList = resources.get(0).split(":");
-		String hivePolicyId = this.hiveCommonService.assignPermissionToDatabase(policyName, resourcesList[0], userList,
+		String hivePolicyId = this.hiveCommonService.assignPermissionToDatabase(policyName, resources.get(0), userList,
 				groupName, permissions);
 		logger.info("Creating hive policy for user [{}] with resource [{}] with result policyid [{}].",
-				userList.toString(), resourcesList[0], hivePolicyId);
+				userList.toString(), resources.get(0), hivePolicyId);
 		// Temp fix: for 'create instance in tenant' case,
 		// create one ranger policy for multiple user and multiple /user/<userName> dirs
 		// Please refer to: https://github.com/OCManager/OCDP_ServiceBroker/issues/48
 		@SuppressWarnings("serial")
 		List<String> hdfsFolders = new ArrayList<String>() {
 			{
-				add("/apps/hive/warehouse/" + resourcesList[0] + ".db");
+				add("/apps/hive/warehouse/" + resources.get(0) + ".db");
 				add("/tmp/hive");
 				add("/ats/active");
 			}
