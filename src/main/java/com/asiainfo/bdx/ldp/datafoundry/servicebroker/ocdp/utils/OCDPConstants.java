@@ -21,8 +21,6 @@ public class OCDPConstants {
 
     public static final String SPARK_RESOURCE_TYPE = "Yarn Queue";
 
-    public static final String YARN_RESOURCE_TYPE = "YARN Queue";
-
     public static final String YARN_RANGER_RESOURCE_TYPE = "queue";
 
     public static final String KAFKA_RESOURCE_TYPE = "topic";
