@@ -154,7 +154,7 @@ public class CatalogConfig {
                     put("customize", planMetadataObj.getCustomize());
                 }
             };
-            Plan plan = new Plan(planId, planName, planDescription, planMetadataMap, Boolean.getBoolean(planFree));
+            Plan plan = new Plan(planId, planName, planDescription, planMetadataMap, Boolean.parseBoolean(planFree));
             List<Plan> plans = new ArrayList<Plan>(){
                 {
                     add(plan);
@@ -162,8 +162,8 @@ public class CatalogConfig {
             };
             HashMap<String,Object> metadataMap = gson.fromJson(metadata, HashMap.class);
             List<String> tagsList = Arrays.asList(tags.split(","));
-            //ServiceDefinition sd = new ServiceDefinition(id, name, description, Boolean.getBoolean(bindable), plans);
-            ServiceDefinition sd = new ServiceDefinition(id, name, description, Boolean.getBoolean(bindable), Boolean.getBoolean(planupdatable), plans, tagsList, metadataMap, null, null);
+            ServiceDefinition sd = new ServiceDefinition(id, name, description, Boolean.parseBoolean(bindable),
+                    Boolean.parseBoolean(planupdatable), plans, tagsList, metadataMap, null, null);
             sds.add(sd);
         }
         if (sds.size() != 0){
