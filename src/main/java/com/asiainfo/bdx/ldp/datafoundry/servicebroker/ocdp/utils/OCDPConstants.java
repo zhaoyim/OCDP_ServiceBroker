@@ -5,21 +5,21 @@ package com.asiainfo.bdx.ldp.datafoundry.servicebroker.ocdp.utils;
  */
 public class OCDPConstants {
 
-    public static final String HDFS_RESOURCE_TYPE = "HDFS Path";
+    public static final String HDFS_RESOURCE_TYPE = "HDFS_Path";
 
     public static final String HDFS_RANGER_RESOURCE_TYPE = "path";
 
-    public static final String HBASE_RESOURCE_TYPE = "HBase NameSpace";
+    public static final String HBASE_RESOURCE_TYPE = "HBase_NameSpace";
 
     public static final String HBASE_RANGER_RESOURCE_TYPE = "table";
 
-    public static final String HIVE_RESOURCE_TYPE = "Hive database";
+    public static final String HIVE_RESOURCE_TYPE = "Hive_Database";
 
     public static final String HIVE_RANGER_RESOURCE_TYPE = "database";
 
-    public static final String MAPREDUCE_RESOURCE_TYPE = "Yarn Queue";
+    public static final String MAPREDUCE_RESOURCE_TYPE = "Yarn_Queue";
 
-    public static final String SPARK_RESOURCE_TYPE = "Yarn Queue";
+    public static final String SPARK_RESOURCE_TYPE = "Yarn_Queue";
 
     public static final String YARN_RANGER_RESOURCE_TYPE = "queue";
 
