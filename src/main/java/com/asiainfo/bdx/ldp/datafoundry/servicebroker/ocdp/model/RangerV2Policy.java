@@ -77,7 +77,7 @@ public class RangerV2Policy{
     }
 
     public void updateResource(String resourceType, String resourceName) {
-        if (resourceType.equals(OCDPConstants.HDFS_RESOURCE_TYPE) ||
+        if (resourceType.equals(OCDPConstants.HDFS_RANGER_RESOURCE_TYPE) ||
                 resourceType.equals(OCDPConstants.KAFKA_RESOURCE_TYPE) ||
                 resourceType.equals(OCDPConstants.YARN_RANGER_RESOURCE_TYPE)){
             RangerResource2 rr = (RangerResource2)resources.get(resourceType);
