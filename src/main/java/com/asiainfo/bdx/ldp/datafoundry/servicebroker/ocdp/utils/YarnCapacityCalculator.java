@@ -190,7 +190,7 @@ public class YarnCapacityCalculator {
     }
 
     private void setNewQueueCapacity(String queueName, String targetQueueCapacity) {
-    	if (!Arrays.asList(allQueues.split(",")).contains(queueName)) {
+    	if (allQueues.indexOf(queueName) < 0) {
             properties.replace("yarn.scheduler.capacity.root.queues",allQueues,allQueues+","+queueName);
 		}
         properties.put("yarn.scheduler.capacity.root."+queueName+".capacity",targetQueueCapacity);
