@@ -69,7 +69,7 @@ public class RangerV2Policy{
 
     // For HDFS/Kafka/Yarn ranger policy
     public void addResources2(String resourceType, List<String> resourceList, boolean isExcludes, boolean isRecursive){
-        RangerResource2 rr = new RangerResource2();
+        RangerResource rr = new RangerResource();
         rr.values.addAll(resourceList);
         rr.isExcludes = isExcludes;
         rr.isRecursive = isRecursive;
@@ -80,7 +80,7 @@ public class RangerV2Policy{
         if (resourceType.equals(OCDPConstants.HDFS_RANGER_RESOURCE_TYPE) ||
                 resourceType.equals(OCDPConstants.KAFKA_RESOURCE_TYPE) ||
                 resourceType.equals(OCDPConstants.YARN_RANGER_RESOURCE_TYPE)){
-            RangerResource2 rr = (RangerResource2)resources.get(resourceType);
+            RangerResource rr = resources.get(resourceType);
             rr.values.add(resourceName);
         } else {
             RangerResource rr = resources.get(resourceType);
@@ -152,12 +152,9 @@ public class RangerV2Policy{
         return resources.get(resourceType).values;
     }
 
-    class RangerResource2 extends RangerResource{
-        boolean isRecursive;
-    }
-
     class RangerResource{
         boolean isExcludes;
+        boolean isRecursive;
         List<String> values = new ArrayList<String>();
     }
 
