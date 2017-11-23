@@ -5,6 +5,7 @@ import com.google.common.base.Splitter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Arrays;
 import java.util.Map;
 import java.util.UUID;
 
@@ -188,7 +189,9 @@ public class YarnCapacityCalculator {
     }
 
     private void setNewQueueCapacity(String queueName, String targetQueueCapacity) {
-        properties.replace("yarn.scheduler.capacity.root.queues",allQueues,allQueues+","+queueName);
+    	if (!Arrays.asList(allQueues.split(",")).contains(queueName)) {
+            properties.replace("yarn.scheduler.capacity.root.queues",allQueues,allQueues+","+queueName);
+		}
         properties.put("yarn.scheduler.capacity.root."+queueName+".capacity",targetQueueCapacity);
         properties.put("yarn.scheduler.capacity.root."+queueName+".maximum-capacity",targetQueueCapacity);
     }
