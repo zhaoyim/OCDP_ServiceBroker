@@ -279,6 +279,12 @@ public class HBaseAdminService implements OCDPAdminService{
 
     @Override
     public void resizeResourceQuota(ServiceInstance instance, Map<String, Object> cuzQuota) throws IOException{
+		// support the Hbase qps quota
+		String qpsRequestSize = cuzQuota.get("REQUEST_SIZE") == null ? null
+				: String.valueOf(cuzQuota.get("REQUEST_SIZE"));
+		String qpsRequestNumber = cuzQuota.get("REQUEST_NUMBER") == null ? null
+				: String.valueOf(cuzQuota.get("REQUEST_NUMBER"));
+
         String serviceDefinitionId = instance.getServiceDefinitionId();
         String planId = instance.getPlanId();
         Map<String, String> quota = getQuotaFromPlan(serviceDefinitionId, planId, cuzQuota);
@@ -298,6 +304,22 @@ public class HBaseAdminService implements OCDPAdminService{
             namespaceDescriptor.setConfiguration(
                     "hbase.namespace.quota.maxregions", quota.get(OCDPConstants.HBASE_NAMESPACE_REGION_QUOTA));
             admin.modifyNamespace(namespaceDescriptor);
+
+			// for the namespace REQUEST_SIZE quota
+			if (qpsRequestSize != null) {
+				QuotaSettings sizeSettings = getQpsQuotaSettings(ns, "REQUEST_SIZE", qpsRequestSize);
+				if (sizeSettings != null) {
+					admin.setQuota(sizeSettings);
+				}
+			}
+			// for the namespace REQUEST_NUMBER quota
+			if (qpsRequestNumber != null) {
+				QuotaSettings numberSettings = getQpsQuotaSettings(ns, "REQUEST_NUMBER", qpsRequestNumber);
+				if (numberSettings != null) {
+					admin.setQuota(numberSettings);
+				}
+			}
+
             admin.close();
         } catch (IOException e){
             e.printStackTrace();
