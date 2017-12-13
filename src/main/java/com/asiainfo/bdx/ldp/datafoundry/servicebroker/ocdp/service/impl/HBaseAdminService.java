@@ -103,7 +103,7 @@ public class HBaseAdminService implements OCDPAdminService{
 			// if the parameters is the correct 2 value
 			if (valueArray.length == 2) {
 				settings = QuotaSettingsFactory.throttleNamespace(namespaceName, ThrottleType.valueOf(type),
-						Integer.parseInt(valueArray[0]), TimeUnit.valueOf(valueArray[1].toUpperCase()));
+						Long.parseLong(valueArray[0]), TimeUnit.valueOf(valueArray[1].toUpperCase()));
 			}
 		} catch (NumberFormatException e) {
 			logger.error("HBase set namespace qps quota " + type + " fail due to: " + e.getLocalizedMessage());
