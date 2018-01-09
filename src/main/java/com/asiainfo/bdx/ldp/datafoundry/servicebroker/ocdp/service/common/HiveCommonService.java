@@ -66,7 +66,7 @@ public class HiveCommonService {
         this.conf = new Configuration();
         
         this.hiveJDBCUrl = "jdbc:hive2://" + this.clusterConfig.getHiveHost() + ":" + this.clusterConfig.getHivePort() +
-                "/default";
+                "/default;user=" + this.clusterConfig.getHiveSuperUser() + ";password=" + this.clusterConfig.getHiveSuperUserKeytab();
         
         if (krb_enabled) {
             conf.set("hadoop.security.authentication", "Kerberos");
@@ -102,7 +102,7 @@ public class HiveCommonService {
         }
         return databaseName;
     }
-
+    
     public String assignPermissionToDatabase(String policyName, final String dbName, List<String> userList, String groupName,
                                              List<String> permissions){
         logger.info("Assigning select/update/create/drop/alter/index/lock/all permission to hive database.");
