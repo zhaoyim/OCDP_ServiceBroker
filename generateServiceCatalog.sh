@@ -15,7 +15,7 @@ etcdPort=$4
 #hdfs
 curl http://$etcdUsername:$etcdUserpwd@$etcdHost:$etcdPort/v2/keys/servicebroker/ocdp/catalog/ae67d4ba-5c4e-4937-a68b-5b47cfe356d8 -XPUT -d dir=true
 
-curl http://$etcdUsername:$etcdUserpwd@$etcdHost:$etcdPort/v2/keys/servicebroker/ocdp/catalog/ae67d4ba-5c4e-4937-a68b-5b47cfe356d8/metadata -XPUT -d value='{"longDescription":"Hadoop分布式文件系统(HDFS)是一个的分布式的，可扩展的，轻量级的文件系统。","documentationUrl":"http://hadoop.apache.org/docs/current/hadoop-project-dist/hadoop-hdfs/HdfsUserGuide.html","providerDisplayName":"Asiainfo","displayName":"HDFS","imageUrl":"https://hadoop.apache.org/images/hadoop-logo.jpg","supportUrl":"http://hadoop.apache.org/docs/current/hadoop-project-dist/hadoop-hdfs/HdfsUserGuide.html"}'
+curl http://$etcdUsername:$etcdUserpwd@$etcdHost:$etcdPort/v2/keys/servicebroker/ocdp/catalog/ae67d4ba-5c4e-4937-a68b-5b47cfe356d8/metadata -XPUT -d value='{"longDescription":"Hadoop分布式文件系统(HDFS)是一个的分布式的，可扩展的，轻量级的文件系统。","documentationUrl":"http://hadoop.apache.org/docs/current/hadoop-project-dist/hadoop-hdfs/HdfsUserGuide.html","providerDisplayName":"Asiainfo","displayName":"HDFS","imageUrl":"https://hadoop.apache.org/images/hadoop-logo.jpg","supportUrl":"http://hadoop.apache.org/docs/current/hadoop-project-dist/hadoop-hdfs/HdfsUserGuide.html","type":"hdfs"}'
 
 curl http://$etcdUsername:$etcdUserpwd@$etcdHost:$etcdPort/v2/keys/servicebroker/ocdp/catalog/ae67d4ba-5c4e-4937-a68b-5b47cfe356d8/plan -XPUT -d dir=true
 
@@ -42,7 +42,7 @@ curl http://$etcdUsername:$etcdUserpwd@$etcdHost:$etcdPort/v2/keys/servicebroker
 # hbase
 curl http://$etcdUsername:$etcdUserpwd@$etcdHost:$etcdPort/v2/keys/servicebroker/ocdp/catalog/d9845ade-9410-4c7f-8689-4e032c1a8450 -XPUT -d dir=true
 
-curl http://$etcdUsername:$etcdUserpwd@$etcdHost:$etcdPort/v2/keys/servicebroker/ocdp/catalog/d9845ade-9410-4c7f-8689-4e032c1a8450/metadata -XPUT -d value='{"longDescription":"HBase是一个开源的，非关系型的，分布式数据库，类似于Google的BigTable。","documentationUrl":"http://hbase.apache.org/","providerDisplayName":"Asiainfo","displayName":"HBase","imageUrl":"http://hbase.apache.org/images/hbase_logo_with_orca_large.png","supportUrl":"http://hbase.apache.org/book.html"}'
+curl http://$etcdUsername:$etcdUserpwd@$etcdHost:$etcdPort/v2/keys/servicebroker/ocdp/catalog/d9845ade-9410-4c7f-8689-4e032c1a8450/metadata -XPUT -d value='{"longDescription":"HBase是一个开源的，非关系型的，分布式数据库，类似于Google的BigTable。","documentationUrl":"http://hbase.apache.org/","providerDisplayName":"Asiainfo","displayName":"HBase","imageUrl":"http://hbase.apache.org/images/hbase_logo_with_orca_large.png","supportUrl":"http://hbase.apache.org/book.html","type":"hbase"}'
 
 curl http://$etcdUsername:$etcdUserpwd@$etcdHost:$etcdPort/v2/keys/servicebroker/ocdp/catalog/d9845ade-9410-4c7f-8689-4e032c1a8450/plan -XPUT -d dir=true
 
@@ -69,7 +69,7 @@ curl http://$etcdUsername:$etcdUserpwd@$etcdHost:$etcdPort/v2/keys/servicebroker
 #hive
 curl http://$etcdUsername:$etcdUserpwd@$etcdHost:$etcdPort/v2/keys/servicebroker/ocdp/catalog/2ef26018-003d-4b2b-b786-0481d4ee9fa3 -XPUT -d dir=true
 
-curl http://$etcdUsername:$etcdUserpwd@$etcdHost:$etcdPort/v2/keys/servicebroker/ocdp/catalog/2ef26018-003d-4b2b-b786-0481d4ee9fa3/metadata -XPUT -d value='{"longDescription":"Hive是一个可以通过SQL去读写，管理存储在分布式存储系统上的大规模数据集的数据仓库解决方案。","documentationUrl":"http://hive.apache.org/","providerDisplayName":"Asiainfo","displayName":"Hive","imageUrl":"https://hive.apache.org/images/hive_logo_medium.jpg","supportUrl":"https://cwiki.apache.org/confluence/display/Hive/Home#Home-UserDocumentation"}'
+curl http://$etcdUsername:$etcdUserpwd@$etcdHost:$etcdPort/v2/keys/servicebroker/ocdp/catalog/2ef26018-003d-4b2b-b786-0481d4ee9fa3/metadata -XPUT -d value='{"longDescription":"Hive是一个可以通过SQL去读写，管理存储在分布式存储系统上的大规模数据集的数据仓库解决方案。","documentationUrl":"http://hive.apache.org/","providerDisplayName":"Asiainfo","displayName":"Hive","imageUrl":"https://hive.apache.org/images/hive_logo_medium.jpg","supportUrl":"https://cwiki.apache.org/confluence/display/Hive/Home#Home-UserDocumentation","type":"hive"}'
 
 curl http://$etcdUsername:$etcdUserpwd@$etcdHost:$etcdPort/v2/keys/servicebroker/ocdp/catalog/2ef26018-003d-4b2b-b786-0481d4ee9fa3/plan -XPUT -d dir=true
 
@@ -96,7 +96,7 @@ curl http://$etcdUsername:$etcdUserpwd@$etcdHost:$etcdPort/v2/keys/servicebroker
 #mr2
 curl http://$etcdUsername:$etcdUserpwd@$etcdHost:$etcdPort/v2/keys/servicebroker/ocdp/catalog/ae0f2324-27a8-415b-9c7f-64ab6cd88d40 -XPUT -d dir=true
 
-curl http://$etcdUsername:$etcdUserpwd@$etcdHost:$etcdPort/v2/keys/servicebroker/ocdp/catalog/ae0f2324-27a8-415b-9c7f-64ab6cd88d40/metadata -XPUT -d value='{"longDescription":"Hadoop MapReduce是一个可以快速编写能够在大规模集群(数千节点)上处理大规模数据(TB级)的可靠的，容错的应用的软件框架。","documentationUrl":"http://hadoop.apache.org/docs/current/hadoop-mapreduce-client/hadoop-mapreduce-client-core/MapReduceTutorial.html ","providerDisplayName":"Asiainfo","displayName":"MapReduce","imageUrl":"https://hadoop.apache.org/images/hadoop-logo.jpg","supportUrl":"http://hadoop.apache.org/docs/current/hadoop-mapreduce-client/hadoop-mapreduce-client-core/MapReduceTutorial.html"}'
+curl http://$etcdUsername:$etcdUserpwd@$etcdHost:$etcdPort/v2/keys/servicebroker/ocdp/catalog/ae0f2324-27a8-415b-9c7f-64ab6cd88d40/metadata -XPUT -d value='{"longDescription":"Hadoop MapReduce是一个可以快速编写能够在大规模集群(数千节点)上处理大规模数据(TB级)的可靠的，容错的应用的软件框架。","documentationUrl":"http://hadoop.apache.org/docs/current/hadoop-mapreduce-client/hadoop-mapreduce-client-core/MapReduceTutorial.html ","providerDisplayName":"Asiainfo","displayName":"MapReduce","imageUrl":"https://hadoop.apache.org/images/hadoop-logo.jpg","supportUrl":"http://hadoop.apache.org/docs/current/hadoop-mapreduce-client/hadoop-mapreduce-client-core/MapReduceTutorial.html","type":"mapreduce"}'
 
 curl http://$etcdUsername:$etcdUserpwd@$etcdHost:$etcdPort/v2/keys/servicebroker/ocdp/catalog/ae0f2324-27a8-415b-9c7f-64ab6cd88d40/plan -XPUT -d dir=true
 
@@ -123,7 +123,7 @@ curl http://$etcdUsername:$etcdUserpwd@$etcdHost:$etcdPort/v2/keys/servicebroker
 #spark
 curl http://$etcdUsername:$etcdUserpwd@$etcdHost:$etcdPort/v2/keys/servicebroker/ocdp/catalog/d3b9a485-f038-4605-9b9b-29792f5c61d1 -XPUT -d dir=true
 
-curl http://$etcdUsername:$etcdUserpwd@$etcdHost:$etcdPort/v2/keys/servicebroker/ocdp/catalog/d3b9a485-f038-4605-9b9b-29792f5c61d1/metadata -XPUT -d value='{"longDescription":"Apache Spark是一个快速的，通用性的集群计算系统。","documentationUrl":"http://spark.apache.org/","providerDisplayName":"Asiainfo","displayName":"Spark","imageUrl":"https://spark.apache.org/images/spark-logo.png","supportUrl":"http://spark.apache.org/docs/1.6.0/"}'
+curl http://$etcdUsername:$etcdUserpwd@$etcdHost:$etcdPort/v2/keys/servicebroker/ocdp/catalog/d3b9a485-f038-4605-9b9b-29792f5c61d1/metadata -XPUT -d value='{"longDescription":"Apache Spark是一个快速的，通用性的集群计算系统。","documentationUrl":"http://spark.apache.org/","providerDisplayName":"Asiainfo","displayName":"Spark","imageUrl":"https://spark.apache.org/images/spark-logo.png","supportUrl":"http://spark.apache.org/docs/1.6.0/","type":"spark"}'
 
 curl http://$etcdUsername:$etcdUserpwd@$etcdHost:$etcdPort/v2/keys/servicebroker/ocdp/catalog/d3b9a485-f038-4605-9b9b-29792f5c61d1/plan -XPUT -d dir=true
 
@@ -150,7 +150,7 @@ curl http://$etcdUsername:$etcdUserpwd@$etcdHost:$etcdPort/v2/keys/servicebroker
 #kafka
 curl http://$etcdUsername:$etcdUserpwd@$etcdHost:$etcdPort/v2/keys/servicebroker/ocdp/catalog/7b738c78-d412-422b-ac3e-43a9fc72a4a7 -XPUT -d dir=true
 
-curl http://$etcdUsername:$etcdUserpwd@$etcdHost:$etcdPort/v2/keys/servicebroker/ocdp/catalog/7b738c78-d412-422b-ac3e-43a9fc72a4a7/metadata -XPUT -d value='{"longDescription":"Apache Kafka 是一种支持分布式、高吞吐的消息系统。","documentationUrl":"https://kafka.apache.org/","providerDisplayName":"Asiainfo","displayName":"Kafka","imageUrl":"https://spark.apache.org/images/spark-logo.png","supportUrl":"https://kafka.apache.org/documentation/"}'
+curl http://$etcdUsername:$etcdUserpwd@$etcdHost:$etcdPort/v2/keys/servicebroker/ocdp/catalog/7b738c78-d412-422b-ac3e-43a9fc72a4a7/metadata -XPUT -d value='{"longDescription":"Apache Kafka 是一种支持分布式、高吞吐的消息系统。","documentationUrl":"https://kafka.apache.org/","providerDisplayName":"Asiainfo","displayName":"Kafka","imageUrl":"https://spark.apache.org/images/spark-logo.png","supportUrl":"https://kafka.apache.org/documentation/","type":"kafka"}'
 
 curl http://$etcdUsername:$etcdUserpwd@$etcdHost:$etcdPort/v2/keys/servicebroker/ocdp/catalog/7b738c78-d412-422b-ac3e-43a9fc72a4a7/plan -XPUT -d dir=true
 
