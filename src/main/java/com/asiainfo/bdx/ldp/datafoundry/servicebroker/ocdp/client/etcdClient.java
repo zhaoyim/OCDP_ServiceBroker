@@ -1,11 +1,13 @@
 package com.asiainfo.bdx.ldp.datafoundry.servicebroker.ocdp.client;
 
 import java.net.URI;
+import java.util.List;
 
 import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
 import com.justinsb.etcd.EtcdClient;
 import com.justinsb.etcd.EtcdClientException;
+import com.justinsb.etcd.EtcdNode;
 import com.justinsb.etcd.EtcdResult;
 
 /**
@@ -16,77 +18,95 @@ import com.justinsb.etcd.EtcdResult;
  */
 public class etcdClient {
 
-    private EtcdClient innerClient;
-    private final String PATH_PREFIX;
+	private EtcdClient innerClient;
+	private final String PATH_PREFIX;
 
-    public etcdClient(String etcd_host, String etcd_port, String etcd_user, String etcd_password, String brokerId){
-    	Preconditions.checkArgument(!Strings.isNullOrEmpty(brokerId), "BrokerID must not be null");
-        this.innerClient = new EtcdClient(URI.create(
-                "http://" +  etcd_user + ":" + etcd_password + "@" + etcd_host + ":" + etcd_port));
-        PATH_PREFIX = "/dp-brokers/" + brokerId;
-    }
+	public etcdClient(String etcd_host, String etcd_port, String etcd_user, String etcd_password, String brokerId) {
+		Preconditions.checkArgument(!Strings.isNullOrEmpty(brokerId), "BrokerID must not be null");
+		this.innerClient = new EtcdClient(
+				URI.create("http://" + etcd_user + ":" + etcd_password + "@" + etcd_host + ":" + etcd_port));
+		PATH_PREFIX = "/dp-brokers/" + brokerId;
+		check();
+	}
 
-    private String assemblePath(String suffix) {
-    	if (!suffix.startsWith("/")) {
+	private void check() {
+		if (noChildren(PATH_PREFIX)) {
+			System.out.println("ERROR: Illegal etcd path, path has no children: " + PATH_PREFIX);
+			throw new RuntimeException("Illegal etcd path, path has no children： " + PATH_PREFIX);
+		}
+	}
+
+	private boolean noChildren(String pATH_PREFIX2) {
+		List<EtcdNode> children = null;
+		try {
+			children = innerClient.listDirectory(PATH_PREFIX);
+		} catch (EtcdClientException e) {
+			e.printStackTrace();
+		}
+		return (children == null || children.isEmpty());
+	}
+
+	private String assemblePath(String suffix) {
+		if (!suffix.startsWith("/")) {
 			System.out.println("ERROR: Path not start with '/': " + suffix);
 			throw new RuntimeException("Path must start with '/': " + suffix);
 		}
-    	return this.PATH_PREFIX + suffix;
-    }
-    
-    public EtcdResult read(String key){
-        EtcdResult result = new EtcdResult();
-        try{
-            result = this.innerClient.get(assemblePath(key));
-        }catch(EtcdClientException e){
-            e.printStackTrace();
-        }
-        return result;
-    }
+		return this.PATH_PREFIX + suffix;
+	}
 
-    public String readToString(String key){
-        EtcdResult result = this.read(key);
-        return (result != null && result.node != null) ? result.node.value : null;
-    }
+	public EtcdResult read(String key) {
+		EtcdResult result = new EtcdResult();
+		try {
+			result = this.innerClient.get(assemblePath(key));
+		} catch (EtcdClientException e) {
+			e.printStackTrace();
+		}
+		return result;
+	}
 
-    public EtcdResult write(String key, String value){
-        EtcdResult result = new EtcdResult();
-        try{
-            result = this.innerClient.set(assemblePath(key), value);
-        }catch(EtcdClientException e){
-            e.printStackTrace();
-        }
-        return result;
-    }
+	public String readToString(String key) {
+		EtcdResult result = this.read(key);
+		return (result != null && result.node != null) ? result.node.value : null;
+	}
 
-    public EtcdResult createDir(String key) {
-        EtcdResult result = new EtcdResult();
-        try {
-            result = this.innerClient.createDirectory(assemblePath(key));
-        } catch (EtcdClientException e) {
-            e.printStackTrace();
-        }
-        return result;
-    }
+	public EtcdResult write(String key, String value) {
+		EtcdResult result = new EtcdResult();
+		try {
+			result = this.innerClient.set(assemblePath(key), value);
+		} catch (EtcdClientException e) {
+			e.printStackTrace();
+		}
+		return result;
+	}
 
-    public EtcdResult delete(String key){
-        EtcdResult result = new EtcdResult();
-        try{
-            result = this.innerClient.delete(assemblePath(key));
-        }catch(EtcdClientException e){
-            e.printStackTrace();
-        }
-        return result;
-    }
+	public EtcdResult createDir(String key) {
+		EtcdResult result = new EtcdResult();
+		try {
+			result = this.innerClient.createDirectory(assemblePath(key));
+		} catch (EtcdClientException e) {
+			e.printStackTrace();
+		}
+		return result;
+	}
 
-    public EtcdResult deleteDir(String key, boolean recursive){
-        EtcdResult result = new EtcdResult();
-        try {
-            result = this.innerClient.deleteDirectory(assemblePath(key), recursive);
-        } catch (EtcdClientException e) {
-            e.printStackTrace();
-        }
-        return result;
-    }
+	public EtcdResult delete(String key) {
+		EtcdResult result = new EtcdResult();
+		try {
+			result = this.innerClient.delete(assemblePath(key));
+		} catch (EtcdClientException e) {
+			e.printStackTrace();
+		}
+		return result;
+	}
+
+	public EtcdResult deleteDir(String key, boolean recursive) {
+		EtcdResult result = new EtcdResult();
+		try {
+			result = this.innerClient.deleteDirectory(assemblePath(key), recursive);
+		} catch (EtcdClientException e) {
+			e.printStackTrace();
+		}
+		return result;
+	}
 
 }
