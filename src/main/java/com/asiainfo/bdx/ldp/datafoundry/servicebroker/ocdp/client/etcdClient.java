@@ -11,9 +11,11 @@ import com.justinsb.etcd.EtcdNode;
 import com.justinsb.etcd.EtcdResult;
 
 /**
- * Java Client for manipulate Etcd.
+ * ETCD client for DP-Brokers. Opertions of both read/write to ETCD by this client
+ * would have prefix of <code>/dp-brokers/broker-id</code>  appended to the head of 
+ * path(the prefix is supposed to support for sharing ETCD storage of multiple brokers).
  *
- * @author whitebai1986@gmail.com
+ * @author Ethan
  *
  */
 public class etcdClient {
