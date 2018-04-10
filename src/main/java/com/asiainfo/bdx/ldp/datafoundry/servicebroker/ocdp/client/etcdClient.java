@@ -31,8 +31,8 @@ public class etcdClient {
 
 	private void check() {
 		if (noChildren(PATH_PREFIX)) {
-			System.out.println("ERROR: Illegal etcd path, path has no children: " + PATH_PREFIX);
-			throw new RuntimeException("Illegal etcd path, path has no children： " + PATH_PREFIX);
+			System.out.println("ERROR: Broker path not found in ETCD: " + PATH_PREFIX);
+			throw new RuntimeException("Broker path not found in ETCD: " + PATH_PREFIX);
 		}
 	}
 
