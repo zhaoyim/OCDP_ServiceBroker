@@ -1,16 +1,17 @@
 package com.asiainfo.bdx.ldp.datafoundry.servicebroker.ocdp.config;
 
-import com.asiainfo.bdx.ldp.datafoundry.servicebroker.ocdp.client.ambariClient;
-import com.asiainfo.bdx.ldp.datafoundry.servicebroker.ocdp.client.etcdClient;
-
-import com.asiainfo.bdx.ldp.datafoundry.servicebroker.ocdp.client.rangerClient;
-import com.asiainfo.bdx.ldp.datafoundry.servicebroker.ocdp.client.yarnClient;
+import org.springframework.context.EnvironmentAware;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.env.Environment;
-import org.springframework.context.EnvironmentAware;
 import org.springframework.ldap.core.LdapTemplate;
 import org.springframework.ldap.core.support.LdapContextSource;
+
+import com.asiainfo.bdx.ldp.datafoundry.servicebroker.ocdp.client.ambariClient;
+import com.asiainfo.bdx.ldp.datafoundry.servicebroker.ocdp.client.etcdClient;
+import com.asiainfo.bdx.ldp.datafoundry.servicebroker.ocdp.client.rangerClient;
+import com.asiainfo.bdx.ldp.datafoundry.servicebroker.ocdp.client.yarnClient;
+import com.google.common.base.Strings;
 
 
 /**
@@ -145,9 +146,12 @@ public class ClusterConfig implements EnvironmentAware{
 	private String kafka_rep;
 	
 	private boolean krb_enable = true;
+	
+	private String brokerId;
     
 	@Override
     public void setEnvironment(Environment env){
+		this.brokerId = env.getProperty("BROKER_ID");
         this.etcd_host = env.getProperty("ETCD_HOST");
         this.etcd_port = env.getProperty("ETCD_PORT");
         this.etcd_user = env.getProperty("ETCD_USER");
@@ -288,7 +292,11 @@ public class ClusterConfig implements EnvironmentAware{
     public String getSparkHistoryURL() { return spark_history_url; }
 
     public etcdClient getEtcdClient(){
-        return new etcdClient(etcd_host, etcd_port, etcd_user, etcd_pwd);
+    	if (Strings.isNullOrEmpty(brokerId)) {
+			System.out.println("ERROR: BROKER_ID is null in Env.");
+			throw new RuntimeException("BROKER_ID can not be null in Env.");
+		}
+        return new etcdClient(etcd_host, etcd_port, etcd_user, etcd_pwd, brokerId);
     }
 
     @Bean
@@ -343,4 +351,5 @@ public class ClusterConfig implements EnvironmentAware{
 	public String getKafka_rep() {
 		return kafka_rep;
 	}
+	
 }
