@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-
+ 
 if [ $# != 5 ];
 then
  echo "Please run script like ./generateServiceCatalog.sh <etcd username> <etcd password> <etcd host> <etcd port> <brokerid>"
