@@ -23,7 +23,7 @@ public class etcdClient {
     	Preconditions.checkArgument(!Strings.isNullOrEmpty(brokerId), "BrokerID must not be null");
         this.innerClient = new EtcdClient(URI.create(
                 "http://" +  etcd_user + ":" + etcd_password + "@" + etcd_host + ":" + etcd_port));
-        PATH_PREFIX = "/brokers/" + brokerId;
+        PATH_PREFIX = "/dp-brokers/" + brokerId;
     }
 
     private String assemblePath(String suffix) {
