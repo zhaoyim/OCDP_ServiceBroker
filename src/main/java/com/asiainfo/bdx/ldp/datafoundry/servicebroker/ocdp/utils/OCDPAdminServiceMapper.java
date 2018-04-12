@@ -8,8 +8,6 @@ import java.util.Set;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Component;
 
 import com.asiainfo.bdx.ldp.datafoundry.servicebroker.ocdp.client.etcdClient;
@@ -26,8 +24,6 @@ import com.justinsb.etcd.EtcdResult;
 @Component("OCDPAdminServiceMapper")
 public class OCDPAdminServiceMapper {
 	private static final Logger LOG = LoggerFactory.getLogger(OCDPAdminServiceMapper.class);
-//	@Autowired
-//	private ApplicationContext context;
 	private  List<String> OCDP_SERVICE_DEFINITION_IDS = new ArrayList<String>();
 	private  Map<String, String> OCDP_SERVICE_PLAN_MAP = new HashMap<String, String>();
 	private  Map<String, String> OCDP_SERVICE_NAME_MAP = new HashMap<String, String>();
