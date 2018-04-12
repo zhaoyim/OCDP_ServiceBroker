@@ -10,6 +10,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
+import org.springframework.context.annotation.Configuration;
 
 import com.asiainfo.bdx.ldp.datafoundry.servicebroker.ocdp.client.etcdClient;
 import com.asiainfo.bdx.ldp.datafoundry.servicebroker.ocdp.config.ClusterConfig;
@@ -22,6 +23,7 @@ import com.justinsb.etcd.EtcdResult;
 /**
  * Created by baikai on 5/19/16.
  */
+@Configuration
 public class OCDPAdminServiceMapper {
 	private static final Logger LOG = LoggerFactory.getLogger(OCDPAdminServiceMapper.class);
 	@Autowired
@@ -40,7 +42,7 @@ public class OCDPAdminServiceMapper {
 			throw new RuntimeException("Error while init class: ", e);
 		}
 	}
-
+	
 	private static void initMappers() {
 		ClusterConfig clusterConfig = (ClusterConfig) context.getBean("clusterConfig");
 		etcdClient etcdClient = clusterConfig.getEtcdClient();
