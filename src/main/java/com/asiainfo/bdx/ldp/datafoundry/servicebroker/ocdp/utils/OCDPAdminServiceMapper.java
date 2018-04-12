@@ -23,11 +23,11 @@ import com.justinsb.etcd.EtcdResult;
 /**
  * Created by baikai on 5/19/16.
  */
-@Component
+@Component("OCDPAdminServiceMapper")
 public class OCDPAdminServiceMapper {
 	private static final Logger LOG = LoggerFactory.getLogger(OCDPAdminServiceMapper.class);
-	@Autowired
-	private ApplicationContext context;
+//	@Autowired
+//	private ApplicationContext context;
 	private  List<String> OCDP_SERVICE_DEFINITION_IDS = new ArrayList<String>();
 	private  Map<String, String> OCDP_SERVICE_PLAN_MAP = new HashMap<String, String>();
 	private  Map<String, String> OCDP_SERVICE_NAME_MAP = new HashMap<String, String>();
@@ -39,7 +39,7 @@ public class OCDPAdminServiceMapper {
 	}
 	
 	private void initMappers() {
-		ClusterConfig clusterConfig = (ClusterConfig) context.getBean("clusterConfig");
+		ClusterConfig clusterConfig = (ClusterConfig) SpringUtils.getContext().getBean("clusterConfig");
 		etcdClient etcdClient = clusterConfig.getEtcdClient();
 		List<EtcdNode> catalog = etcdClient.read("/servicebroker/ocdp/catalog").node.nodes;
 		if (catalog == null || catalog.isEmpty()) {
