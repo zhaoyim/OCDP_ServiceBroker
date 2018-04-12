@@ -103,64 +103,6 @@ public class OCDPAdminServiceMapper {
 		}
 	}
 
-	public static void main(String[] args) {
-		etcdClient etcdClient = new etcdClient("10.1.236.112", "2379", "admin", "admin", "001");
-		List<EtcdNode> catalog = etcdClient.read("/servicebroker/ocdp/catalog").node.nodes;
-		if (catalog == null || catalog.isEmpty()) {
-			LOG.error("No service found in catalog: " + etcdClient.PATH_PREFIX + "/servicebroker/ocdp/catalog");
-			throw new RuntimeException(
-					"No service found in catalog: " + etcdClient.PATH_PREFIX + "/servicebroker/ocdp/catalog");
-		}
-		catalog.forEach(service -> {
-			String longid = service.key;
-			String id = longid.substring(longid.lastIndexOf("/") + 1);
-			OCDP_SERVICE_DEFINITION_IDS.add(id);
-			OCDP_SERVICE_PLAN_MAP.put(id, getPlanID(etcdClient, "/servicebroker/ocdp/catalog/"+id));
-			String serviceType = getType(etcdClient, "/servicebroker/ocdp/catalog/"+id);
-			switch (serviceType) {
-			case "hdfs":
-				OCDP_SERVICE_NAME_MAP.put(id, "hdfs");
-				OCDP_SERVICE_RESOURCE_MAP.put(id, OCDPConstants.HDFS_RESOURCE_TYPE);
-				OCDP_ADMIN_SERVICE_MAP.put(id, "HDFSAdminService");
-				break;
-
-			case "hbase":
-				OCDP_SERVICE_NAME_MAP.put(id, "hbase");
-				OCDP_SERVICE_RESOURCE_MAP.put(id, OCDPConstants.HBASE_RESOURCE_TYPE);
-				OCDP_ADMIN_SERVICE_MAP.put(id, "HBaseAdminService");
-				break;
-			case "hive":
-				OCDP_SERVICE_NAME_MAP.put(id, "hive");
-				OCDP_SERVICE_RESOURCE_MAP.put(id, OCDPConstants.HIVE_RESOURCE_TYPE);
-				OCDP_ADMIN_SERVICE_MAP.put(id, "hiveAdminService");
-				break;
-
-			case "mapreduce":
-				OCDP_SERVICE_NAME_MAP.put(id, "mr");
-				OCDP_SERVICE_RESOURCE_MAP.put(id, OCDPConstants.MAPREDUCE_RESOURCE_TYPE);
-				OCDP_ADMIN_SERVICE_MAP.put(id, "yarnAdminService");
-				break;
-
-			case "spark":
-				OCDP_SERVICE_NAME_MAP.put(id, "spark");
-				OCDP_SERVICE_RESOURCE_MAP.put(id, OCDPConstants.SPARK_RESOURCE_TYPE);
-				OCDP_ADMIN_SERVICE_MAP.put(id, "yarnAdminService");
-				break;
-
-			case "kafka":
-				OCDP_SERVICE_NAME_MAP.put(id, "kafka");
-				OCDP_SERVICE_RESOURCE_MAP.put(id, OCDPConstants.KAFKA_RESOURCE_TYPE);
-				OCDP_ADMIN_SERVICE_MAP.put(id, "kafkaAdminService");
-				break;
-
-			default:
-				LOG.error("Unknow service type: " + serviceType);
-				throw new RuntimeException("Unknow service type: " + serviceType);
-			}
-		});
-		System.out.println(">>> end of main.");
-	}
-
 	private static String getType(etcdClient etcdClient, String serviceid) {
 		EtcdResult node = etcdClient.read(serviceid);
 		List<EtcdNode> subnodes = node.node.nodes;
