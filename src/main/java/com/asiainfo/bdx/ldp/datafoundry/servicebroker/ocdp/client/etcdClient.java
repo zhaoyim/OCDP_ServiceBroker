@@ -21,7 +21,7 @@ import com.justinsb.etcd.EtcdResult;
 public class etcdClient {
 
 	private EtcdClient innerClient;
-	private final String PATH_PREFIX;
+	public final String PATH_PREFIX;
 
 	public etcdClient(String etcd_host, String etcd_port, String etcd_user, String etcd_password, String brokerId) {
 		Preconditions.checkArgument(!Strings.isNullOrEmpty(brokerId), "BrokerID must not be null");
