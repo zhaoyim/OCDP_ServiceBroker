@@ -7,6 +7,7 @@ import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Service;
 
 import com.asiainfo.bdx.ldp.datafoundry.servicebroker.ocdp.client.etcdClient;
@@ -26,7 +27,9 @@ import com.asiainfo.bdx.ldp.datafoundry.servicebroker.ocdp.utils.OCDPConstants;
 public class OCDPServiceInstanceBindingRepositoryImpl implements OCDPServiceInstanceBindingRepository {
 
     private Logger logger = LoggerFactory.getLogger(OCDPServiceInstanceBindingRepositoryImpl.class);
-
+	@Autowired
+	private ApplicationContext context;
+	
     private etcdClient etcdClient;
 
     @Autowired
@@ -37,11 +40,13 @@ public class OCDPServiceInstanceBindingRepositoryImpl implements OCDPServiceInst
     @Override
     public ServiceInstanceBinding findOne(String serviceInstanceId, String bindingId) {
         logger.info("Try to find one OCDPServiceInstanceBinding: " + bindingId);
+		OCDPAdminServiceMapper mapper = (OCDPAdminServiceMapper) this.context.getBean("OCDPAdminServiceMapper");
+
         if(etcdClient.read("/servicebroker/ocdp/instance/" + serviceInstanceId + "/bindings/" + bindingId) == null){
             return null;
         }
         String serviceDefinitionId = etcdClient.readToString("/servicebroker/ocdp/instance/" + serviceInstanceId + "/id");
-        String resourceType = OCDPAdminServiceMapper.getOCDPResourceType(serviceDefinitionId);
+        String resourceType = mapper.getOCDPResourceType(serviceDefinitionId);
         String id = etcdClient.readToString("/servicebroker/ocdp/instance/" + serviceInstanceId + "/bindings/" +
                 bindingId +"/id");
         String syslogDrainUrl = etcdClient.readToString("/servicebroker/ocdp/instance/" + serviceInstanceId + "/bindings/" +

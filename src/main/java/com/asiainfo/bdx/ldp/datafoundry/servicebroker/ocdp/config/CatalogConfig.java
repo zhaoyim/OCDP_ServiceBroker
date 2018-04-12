@@ -127,7 +127,9 @@ public class CatalogConfig {
 		ClusterConfig clusterConfig = (ClusterConfig) this.context.getBean("clusterConfig");
 		etcdClient etcdClient = clusterConfig.getEtcdClient();
 		List<ServiceDefinition> sds = new ArrayList<>();
-		for (String id : OCDPAdminServiceMapper.getOCDPServiceIds()) {
+		OCDPAdminServiceMapper mapper = (OCDPAdminServiceMapper) this.context.getBean("OCDPAdminServiceMapper");
+
+		for (String id : mapper.getOCDPServiceIds()) {
 			if (etcdClient.read("/servicebroker/ocdp/catalog/" + id) == null) {
 				continue;
 			}
@@ -140,7 +142,7 @@ public class CatalogConfig {
 			String tags = etcdClient.readToString("/servicebroker/ocdp/catalog/" + id + "/tags");
 			String metadata = etcdClient.readToString("/servicebroker/ocdp/catalog/" + id + "/metadata");
 			metadata = new String(metadata.getBytes(Charset.forName("ISO-8859-1")), Charset.forName("UTF-8"));
-			String planId = OCDPAdminServiceMapper.getOCDPServicePlan(id);
+			String planId = mapper.getOCDPServicePlan(id);
 			String planName = etcdClient
 					.readToString("/servicebroker/ocdp/catalog/" + id + "/plan/" + planId + "/name");
 			String planDescription = etcdClient

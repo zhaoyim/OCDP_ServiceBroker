@@ -10,7 +10,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
-import org.springframework.context.annotation.Configuration;
+import org.springframework.stereotype.Component;
 
 import com.asiainfo.bdx.ldp.datafoundry.servicebroker.ocdp.client.etcdClient;
 import com.asiainfo.bdx.ldp.datafoundry.servicebroker.ocdp.config.ClusterConfig;
@@ -23,27 +23,22 @@ import com.justinsb.etcd.EtcdResult;
 /**
  * Created by baikai on 5/19/16.
  */
-@Configuration
+@Component
 public class OCDPAdminServiceMapper {
 	private static final Logger LOG = LoggerFactory.getLogger(OCDPAdminServiceMapper.class);
 	@Autowired
-	private static ApplicationContext context;
-	private static List<String> OCDP_SERVICE_DEFINITION_IDS = new ArrayList<String>();
-	private static Map<String, String> OCDP_SERVICE_PLAN_MAP = new HashMap<String, String>();
-	private static Map<String, String> OCDP_SERVICE_NAME_MAP = new HashMap<String, String>();
-	private static Map<String, String> OCDP_SERVICE_RESOURCE_MAP = new HashMap<String, String>();
-	private static Map<String, String> OCDP_ADMIN_SERVICE_MAP = new HashMap<String, String>();
+	private ApplicationContext context;
+	private  List<String> OCDP_SERVICE_DEFINITION_IDS = new ArrayList<String>();
+	private  Map<String, String> OCDP_SERVICE_PLAN_MAP = new HashMap<String, String>();
+	private  Map<String, String> OCDP_SERVICE_NAME_MAP = new HashMap<String, String>();
+	private  Map<String, String> OCDP_SERVICE_RESOURCE_MAP = new HashMap<String, String>();
+	private  Map<String, String> OCDP_ADMIN_SERVICE_MAP = new HashMap<String, String>();
 
-	static {
-		try {
-			initMappers();
-		} catch (Throwable e) {
-			LOG.error("Error while init class: ", e);
-			throw new RuntimeException("Error while init class: ", e);
-		}
+	public OCDPAdminServiceMapper() {
+		initMappers();
 	}
 	
-	private static void initMappers() {
+	private void initMappers() {
 		ClusterConfig clusterConfig = (ClusterConfig) context.getBean("clusterConfig");
 		etcdClient etcdClient = clusterConfig.getEtcdClient();
 		List<EtcdNode> catalog = etcdClient.read("/servicebroker/ocdp/catalog").node.nodes;
@@ -105,7 +100,7 @@ public class OCDPAdminServiceMapper {
 		}
 	}
 
-	private static String getType(etcdClient etcdClient, String serviceid) {
+	private String getType(etcdClient etcdClient, String serviceid) {
 		EtcdResult node = etcdClient.read(serviceid);
 		List<EtcdNode> subnodes = node.node.nodes;
 		for(EtcdNode subnode : subnodes) {
@@ -124,7 +119,7 @@ public class OCDPAdminServiceMapper {
 		throw new RuntimeException("Metadata not defined in service: " + serviceid);
 	}
 
-	private static String getPlanID(etcdClient etcdClient, String serviceid) {
+	private String getPlanID(etcdClient etcdClient, String serviceid) {
 		EtcdResult node = etcdClient.read(serviceid);
 		List<EtcdNode> nodes = node.node.nodes;
 		for(EtcdNode subnode : nodes) {
@@ -148,55 +143,35 @@ public class OCDPAdminServiceMapper {
 		}
 	};
 
-	public static void setOCDPServiceIds(List<String> oCDP_SERVICE_DEFINITION_IDS) {
-		OCDP_SERVICE_DEFINITION_IDS = oCDP_SERVICE_DEFINITION_IDS;
-	}
-
-	public static List<String> getOCDPServiceIds() {
+	public List<String> getOCDPServiceIds() {
 		return OCDP_SERVICE_DEFINITION_IDS;
 	}
 
-	public static Map<String, String> getOCDP_ADMIN_SERVICE_MAP() {
+	public  Map<String, String> getOCDP_ADMIN_SERVICE_MAP() {
 		return OCDP_ADMIN_SERVICE_MAP;
 	}
 
-	public static void setOCDP_ADMIN_SERVICE_MAP(Map<String, String> oCDP_ADMIN_SERVICE_MAP) {
-		OCDP_ADMIN_SERVICE_MAP = oCDP_ADMIN_SERVICE_MAP;
-	}
-
-	public static Map<String, String> getOCDP_SERVICE_NAME_MAP() {
+	public  Map<String, String> getOCDP_SERVICE_NAME_MAP() {
 		return OCDP_SERVICE_NAME_MAP;
 	}
 
-	public static void setOCDP_SERVICE_NAME_MAP(Map<String, String> oCDP_SERVICE_NAME_MAP) {
-		OCDP_SERVICE_NAME_MAP = oCDP_SERVICE_NAME_MAP;
-	}
-
-	public static Map<String, String> getOCDP_SERVICE_PLAN_MAP() {
+	public  Map<String, String> getOCDP_SERVICE_PLAN_MAP() {
 		return OCDP_SERVICE_PLAN_MAP;
 	}
 
-	public static void setOCDP_SERVICE_PLAN_MAP(Map<String, String> oCDP_SERVICE_PLAN_MAP) {
-		OCDP_SERVICE_PLAN_MAP = oCDP_SERVICE_PLAN_MAP;
-	}
-
-	public static Map<String, String> getOCDP_SERVICE_RESOURCE_MAP() {
+	public  Map<String, String> getOCDP_SERVICE_RESOURCE_MAP() {
 		return OCDP_SERVICE_RESOURCE_MAP;
 	}
 
-	public static void setOCDP_SERVICE_RESOURCE_MAP(Map<String, String> oCDP_SERVICE_RESOURCE_MAP) {
-		OCDP_SERVICE_RESOURCE_MAP = oCDP_SERVICE_RESOURCE_MAP;
-	}
-
-	public static String getOCDPAdminService(String serviceDefinitionId) {
+	public  String getOCDPAdminService(String serviceDefinitionId) {
 		return OCDP_ADMIN_SERVICE_MAP.get(serviceDefinitionId);
 	}
 
-	public static String getOCDPServiceName(String serviceDefinitionId) {
+	public  String getOCDPServiceName(String serviceDefinitionId) {
 		return OCDP_SERVICE_NAME_MAP.get(serviceDefinitionId);
 	}
 
-	public static String getOCDPServicePlan(String serviceDefinitionId) {
+	public String getOCDPServicePlan(String serviceDefinitionId) {
 		return OCDP_SERVICE_PLAN_MAP.get(serviceDefinitionId);
 	}
 
@@ -204,7 +179,7 @@ public class OCDPAdminServiceMapper {
 		return OCDP_SERVICE_QUOTA_MAP.keySet();
 	}
 
-	public static String getOCDPResourceType(String serviceDefinitionId) {
+	public String getOCDPResourceType(String serviceDefinitionId) {
 		return OCDP_SERVICE_RESOURCE_MAP.get(serviceDefinitionId);
 	}
 

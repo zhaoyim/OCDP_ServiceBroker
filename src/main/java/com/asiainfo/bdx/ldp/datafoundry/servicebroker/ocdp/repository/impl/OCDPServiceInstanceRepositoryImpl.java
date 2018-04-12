@@ -5,6 +5,7 @@ import com.asiainfo.bdx.ldp.datafoundry.servicebroker.ocdp.client.etcdClient;
 import com.asiainfo.bdx.ldp.datafoundry.servicebroker.ocdp.utils.OCDPAdminServiceMapper;
 import com.asiainfo.bdx.ldp.datafoundry.servicebroker.ocdp.utils.OCDPConstants;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Service;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -25,7 +26,8 @@ import java.util.Map;
 public class OCDPServiceInstanceRepositoryImpl implements OCDPServiceInstanceRepository {
 
     private Logger logger = LoggerFactory.getLogger(OCDPServiceInstanceRepositoryImpl.class);
-
+	@Autowired
+	private ApplicationContext context;
     private etcdClient etcdClient;
 
     @Autowired
@@ -36,6 +38,7 @@ public class OCDPServiceInstanceRepositoryImpl implements OCDPServiceInstanceRep
     @Override
     public ServiceInstance findOne(String serviceInstanceId) {
         logger.info("Try to find one OCDPServiceInstance: " + serviceInstanceId + " in repository.");
+		OCDPAdminServiceMapper mapper = (OCDPAdminServiceMapper) this.context.getBean("OCDPAdminServiceMapper");
 
         if(etcdClient.read("/servicebroker/ocdp/instance/" + serviceInstanceId) == null){
             return null;
@@ -43,7 +46,7 @@ public class OCDPServiceInstanceRepositoryImpl implements OCDPServiceInstanceRep
         String orgGuid = etcdClient.readToString("/servicebroker/ocdp/instance/" + serviceInstanceId + "/organizationGuid");
         String spaceGuid = etcdClient.readToString("/servicebroker/ocdp/instance/" + serviceInstanceId + "/spaceGuid");
         String serviceDefinitionId = etcdClient.readToString("/servicebroker/ocdp/instance/" + serviceInstanceId + "/id");
-        String resourceType = OCDPAdminServiceMapper.getOCDPResourceType(serviceDefinitionId);
+        String resourceType = mapper.getOCDPResourceType(serviceDefinitionId);
         String planId = etcdClient.readToString("/servicebroker/ocdp/instance/" + serviceInstanceId + "/planId");
         String dashboardUrl = etcdClient.readToString("/servicebroker/ocdp/instance/" + serviceInstanceId + "/dashboardUrl");
         ServiceInstance instance = new ServiceInstance(serviceInstanceId, serviceDefinitionId, planId, orgGuid, spaceGuid,
@@ -79,9 +82,10 @@ public class OCDPServiceInstanceRepositoryImpl implements OCDPServiceInstanceRep
 
     @Override
     public void save(ServiceInstance instance) {
+		OCDPAdminServiceMapper mapper = (OCDPAdminServiceMapper) this.context.getBean("OCDPAdminServiceMapper");
         String serviceInstanceId = instance.getServiceInstanceId();
         String serviceDefinitionId = instance.getServiceDefinitionId();
-        String resourceType = OCDPAdminServiceMapper.getOCDPResourceType(serviceDefinitionId);
+        String resourceType = mapper.getOCDPResourceType(serviceDefinitionId);
         Map<String, Object> credentials = instance.getServiceInstanceCredentials();
         etcdClient.write("/servicebroker/ocdp/instance/" + serviceInstanceId + "/organizationGuid",
                 instance.getOrganizationGuid());
