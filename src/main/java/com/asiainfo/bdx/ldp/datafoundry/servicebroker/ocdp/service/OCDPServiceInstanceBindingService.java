@@ -173,6 +173,7 @@ public class OCDPServiceInstanceBindingService implements ServiceInstanceBinding
 	}
 
 	private void validate(CreateServiceInstanceBindingRequest request, ServiceInstance instance) {
+		OCDPAdminServiceMapper mapper = (OCDPAdminServiceMapper) this.context.getBean("OCDPAdminServiceMapper");
 		String serviceDefinitionId = request.getServiceDefinitionId();
 		String bindingId = request.getBindingId();
 		String serviceInstanceId = request.getServiceInstanceId();
@@ -188,7 +189,7 @@ public class OCDPServiceInstanceBindingService implements ServiceInstanceBinding
 			logger.error("Binding [{}] already exist!", bindingId);
 			throw new ServiceInstanceBindingExistsException(serviceInstanceId, bindingId);
 		}
-		if (!planId.equals(OCDPAdminServiceMapper.getOCDPServicePlan(serviceDefinitionId))) {
+		if (!planId.equals(mapper.getOCDPServicePlan(serviceDefinitionId))) {
 			logger.error("Unknown plan id: " + planId);
 			throw new ServiceBrokerInvalidParametersException("Unknown plan id: " + planId);
 		}
@@ -235,7 +236,9 @@ public class OCDPServiceInstanceBindingService implements ServiceInstanceBinding
 	}
 
 	private OCDPAdminService getOCDPAdminService(String serviceDefinitionId) {
-		return (OCDPAdminService) this.context.getBean(OCDPAdminServiceMapper.getOCDPAdminService(serviceDefinitionId));
+		OCDPAdminServiceMapper mapper = (OCDPAdminServiceMapper) this.context.getBean("OCDPAdminServiceMapper");
+
+		return (OCDPAdminService) this.context.getBean(mapper.getOCDPAdminService(serviceDefinitionId));
 	}
 
 	private void removeUserFromServiceInstance(OCDPAdminService ocdp, ServiceInstance instance, String userName) {
@@ -292,7 +295,8 @@ public class OCDPServiceInstanceBindingService implements ServiceInstanceBinding
 		String serviceInstanceId = instance.getServiceInstanceId();
 		String serviceInstancePolicyId = (String) instance.getServiceInstanceCredentials().get("rangerPolicyId");
 		String serviceDefinitionId = instance.getServiceDefinitionId();
-		String resourceType = OCDPAdminServiceMapper.getOCDPResourceType(serviceDefinitionId);
+		OCDPAdminServiceMapper mapper = (OCDPAdminServiceMapper) this.context.getBean("OCDPAdminServiceMapper");
+		String resourceType = mapper.getOCDPResourceType(serviceDefinitionId);
 		String serviceInstanceResource = (String) instance.getServiceInstanceCredentials().get(resourceType);
 		if (serviceInstancePolicyId == null || serviceInstancePolicyId.length() == 0) {
 			// Create new ranger policy for service instance and update policy to service
@@ -386,7 +390,8 @@ public class OCDPServiceInstanceBindingService implements ServiceInstanceBinding
 		// String policyName =
 		// OCDPAdminServiceMapper.getOCDPServiceName(serviceDefinitionId) + "_" +
 		// serviceInstanceResource;
-		String policyName = OCDPAdminServiceMapper.getOCDPServiceName(serviceDefinitionId) + "_" + serviceInstanceId;
+		OCDPAdminServiceMapper mapper = (OCDPAdminServiceMapper) this.context.getBean("OCDPAdminServiceMapper");
+		String policyName = mapper.getOCDPServiceName(serviceDefinitionId) + "_" + serviceInstanceId;
 		int i = 0;
 		List<String> userList = Arrays.asList(new String[] {user});
 		while (i++ <= 40) {

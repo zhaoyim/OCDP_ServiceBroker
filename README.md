@@ -12,7 +12,8 @@ Configure connectivity properties (e.g. LDAP, kerberos, Hadoop ...) in system en
 
      export BROKER_USERNAME=<broker username>
      export BROKER_PASSWORD=<broker password>
-
+     export BROKER_ID=<broker id>
+     
      export ETCD_HOST=<etcd host>
      export ETCD_PORT=<etcd port>
      export ETCD_USER=<etcd user>

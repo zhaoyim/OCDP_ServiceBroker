@@ -73,10 +73,11 @@ public class OCDPServiceInstanceService implements ServiceInstanceService {
 
             ServiceInstance instance = repository.findOne(serviceInstanceId);
             // Check service instance and planid
+    		OCDPAdminServiceMapper mapper = (OCDPAdminServiceMapper) this.context.getBean("OCDPAdminServiceMapper");
             if (instance != null) {
                 logger.warn("Service instance with the given ID already exists: " + serviceInstanceId + ".");
                 throw new ServiceInstanceExistsException(serviceInstanceId, serviceDefinitionId);
-            }else if(! planId.equals(OCDPAdminServiceMapper.getOCDPServicePlan(serviceDefinitionId))){
+            }else if(! planId.equals(mapper.getOCDPServicePlan(serviceDefinitionId))){
                 throw new ServiceBrokerInvalidParametersException("Unknown plan id: " + planId);
             }
          try {

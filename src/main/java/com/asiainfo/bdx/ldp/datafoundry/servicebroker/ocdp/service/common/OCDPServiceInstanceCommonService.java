@@ -76,7 +76,8 @@ public class OCDPServiceInstanceCommonService {
 
         // 2) Generate service instance credential info
         Map<String, Object> credentials = ocdp.generateCredentialsInfo(resource);
-        String serviceResourceType = OCDPAdminServiceMapper.getOCDPResourceType(serviceDefinitionId);
+		OCDPAdminServiceMapper mapper = (OCDPAdminServiceMapper) this.context.getBean("OCDPAdminServiceMapper");
+        String serviceResourceType = mapper.getOCDPResourceType(serviceDefinitionId);
         // For spark/mr instance provision, need append queue name into credentials,
         // because function generateCredentialsInfo not append it
 //        if(! credentials.containsKey(serviceResourceType))
@@ -109,7 +110,8 @@ public class OCDPServiceInstanceCommonService {
         OCDPAdminService ocdp = getOCDPAdminService(serviceDefinitionId);
         String serviceInstanceId = request.getServiceInstanceId();
         Map<String, Object> Credential = instance.getServiceInstanceCredentials();
-        String serviceResourceType = OCDPAdminServiceMapper.getOCDPResourceType(serviceDefinitionId);
+		OCDPAdminServiceMapper mapper = (OCDPAdminServiceMapper) this.context.getBean("OCDPAdminServiceMapper");
+        String serviceResourceType = mapper.getOCDPResourceType(serviceDefinitionId);
         String serviceInstanceResource = (String)Credential.get(serviceResourceType);
         String serviceInstancePolicyId = (String)Credential.get("rangerPolicyId");
         // 1) Remove resource from ranger policy if it exists
@@ -161,8 +163,9 @@ public class OCDPServiceInstanceCommonService {
     }
 
     private OCDPAdminService getOCDPAdminService(String serviceDefinitionId){
+		OCDPAdminServiceMapper mapper = (OCDPAdminServiceMapper) this.context.getBean("OCDPAdminServiceMapper");
         return  (OCDPAdminService) this.context.getBean(
-                OCDPAdminServiceMapper.getOCDPAdminService(serviceDefinitionId)
+        		mapper.getOCDPAdminService(serviceDefinitionId)
         );
     }
 

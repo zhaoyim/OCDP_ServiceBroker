@@ -191,7 +191,8 @@ public class YarnCommonService {
         String serviceDefinitionId = instance.getServiceDefinitionId();
         String planId = instance.getPlanId();
         Map<String, String> quota = getQuotaFromPlan(serviceDefinitionId, planId, cuzQuota);
-        String resourceType = OCDPAdminServiceMapper.getOCDPResourceType(serviceDefinitionId);
+		OCDPAdminServiceMapper mapper = (OCDPAdminServiceMapper) this.context.getBean("OCDPAdminServiceMapper");
+        String resourceType = mapper.getOCDPResourceType(serviceDefinitionId);
         String queueName = (String)instance.getServiceInstanceCredentials().get(resourceType);
         if(resourceType.equals(OCDPConstants.HIVE_RESOURCE_TYPE)){
         	queueName = queueName.split(":")[1];

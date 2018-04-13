@@ -288,7 +288,8 @@ public class HBaseAdminService implements OCDPAdminService{
         String serviceDefinitionId = instance.getServiceDefinitionId();
         String planId = instance.getPlanId();
         Map<String, String> quota = getQuotaFromPlan(serviceDefinitionId, planId, cuzQuota);
-        String resourceType = OCDPAdminServiceMapper.getOCDPResourceType(serviceDefinitionId);
+		OCDPAdminServiceMapper mapper = (OCDPAdminServiceMapper) this.context.getBean("OCDPAdminServiceMapper");
+        String resourceType = mapper.getOCDPResourceType(serviceDefinitionId);
         String ns = (String)instance.getServiceInstanceCredentials().get(resourceType);
         try{
         	if (krb_enabled) {

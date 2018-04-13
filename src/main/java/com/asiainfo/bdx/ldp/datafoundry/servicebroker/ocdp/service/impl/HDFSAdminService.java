@@ -282,7 +282,8 @@ public class HDFSAdminService implements OCDPAdminService{
         String serviceDefinitionId = instance.getServiceDefinitionId();
         String planId = instance.getPlanId();
         Map<String, String> quota = getQuotaFromPlan(serviceDefinitionId, planId, cuzQuota);
-        String resourceType = OCDPAdminServiceMapper.getOCDPResourceType(serviceDefinitionId);
+		OCDPAdminServiceMapper mapper = (OCDPAdminServiceMapper) this.context.getBean("OCDPAdminServiceMapper");
+        String resourceType = mapper.getOCDPResourceType(serviceDefinitionId);
         String path = (String)instance.getServiceInstanceCredentials().get(resourceType);
         try{
         	// Construct hive database path for hive case
