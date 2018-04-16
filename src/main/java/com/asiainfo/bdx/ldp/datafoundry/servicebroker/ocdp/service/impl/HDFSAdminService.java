@@ -59,8 +59,6 @@ public class HDFSAdminService implements OCDPAdminService{
 
     private String hdfsRPCUrl;
 
-    private String webHdfsUrl;
-
     private static final String HDFS_NAME_SPACE_QUOTA = "1000";
 
     private static final String HDFS_STORAGE_SPACE_QUOTA = "1000000000";
@@ -91,7 +89,6 @@ public class HDFSAdminService implements OCDPAdminService{
         }
         else {
             this.hdfsRPCUrl = "hdfs://" + this.clusterConfig.getHdfsNameNode() + ":" + this.clusterConfig.getHdfsRpcPort();
-
         }
         
         this.krb_enabled = this.clusterConfig.krbEnabled();
@@ -103,9 +100,6 @@ public class HDFSAdminService implements OCDPAdminService{
             conf.set("hdfs.keytab.file", this.clusterConfig.getHdfsUserKeytab());
             System.setProperty("java.security.krb5.conf", this.clusterConfig.getKrb5FilePath());
 		}
-
-        this.webHdfsUrl = "http://" + this.clusterConfig.getHdfsNameNode() + ":" + this.clusterConfig.getHdfsPort() + "/webhdfs/v1";
-        
     }
 
 
@@ -260,16 +254,37 @@ public class HDFSAdminService implements OCDPAdminService{
 
     @Override
     public Map<String, Object> generateCredentialsInfo(String resourceName){
-        return new HashMap<String, Object>(){
-            {
-                put("uri", webHdfsUrl + resourceName);
-//                put("uri", webHdfsUrl + "/servicebroker/" + resourceName);
-                put("host", clusterConfig.getHdfsNameNode());
-                put("port", clusterConfig.getHdfsPort());
-//                put(OCDPConstants.HDFS_RESOURCE_TYPE, "/servicebroker/" + resourceName);
-                put(OCDPConstants.HDFS_RESOURCE_TYPE, resourceName);
-            }
-        };
+        if (clusterConfig.getHdfsNameservices() == null){
+            // non-HA
+            return new HashMap<String, Object>(){
+                {
+                    put("uri",
+                            "http://" + clusterConfig.getHdfsNameNode() + ":" + clusterConfig.getHdfsPort() + "/webhdfs/v1");
+                    put("host", clusterConfig.getHdfsNameNode());
+                    put("port", clusterConfig.getHdfsPort());
+                    put(OCDPConstants.HDFS_RESOURCE_TYPE, resourceName);
+                }
+            };
+        } else {
+            // HA
+            String hdfsNameNode1 = clusterConfig.getHdfs_nameNode1();
+            String hdfsNameNode2 = clusterConfig.getHdfs_nameNode2();
+            String hdfsPort = clusterConfig.getHdfsPort();
+            return new HashMap<String, Object>(){
+                {
+                    put("uri1",
+                            "http://" + hdfsNameNode1 + ":" + hdfsPort + "/webhdfs/v1");
+                    put("uri2",
+                            "http://" + hdfsNameNode2 + ":" + hdfsPort + "/webhdfs/v1");
+                    put("nameservice", clusterConfig.getHdfsNameservices());
+                    put("namenode1", hdfsNameNode1);
+                    put("namenode2", hdfsNameNode2);
+                    put("namenode1 address", clusterConfig.getHdfs_nameNode1_addr());
+                    put("namenode2 address", clusterConfig.getHdfs_nameNode2_addr());
+                    put(OCDPConstants.HDFS_RESOURCE_TYPE, resourceName);
+                }
+            };
+        }
     }
 
     @Override
