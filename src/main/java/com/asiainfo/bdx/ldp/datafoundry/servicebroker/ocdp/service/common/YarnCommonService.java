@@ -79,7 +79,7 @@ public class YarnCommonService {
         logger.info("Name of new queue: " + queuePath);
         ambClient.updateCapacitySchedulerConfig(this.capacityCalculator.getProperties(),clusterConfig.getClusterName());
         ambClient.refreshYarnQueue(clusterConfig.getYarnRMHost());
-        logger.info("Queue capacity refreshing...");
+        logger.info("Queue capacity refreshed to: " + this.capacityCalculator.getProperties());
         return queuePath;
     }
 
