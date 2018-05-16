@@ -1,5 +1,7 @@
 package com.asiainfo.bdx.ldp.datafoundry.servicebroker.ocdp.service.common;
 
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
@@ -29,162 +31,171 @@ import com.google.gson.GsonBuilder;
 @Service
 public class HiveCommonService {
 
-    private Logger logger = LoggerFactory.getLogger(HiveCommonService.class);
+	private Logger logger = LoggerFactory.getLogger(HiveCommonService.class);
 
-    static final Gson gson = new GsonBuilder().create();
+	static final Gson gson = new GsonBuilder().create();
 
-    private static String driverName = "org.apache.hive.jdbc.HiveDriver";
+	private static String driverName = "org.apache.hive.jdbc.HiveDriver";
 
-    private static final List<String> ACCESSES = Lists.newArrayList("select", "update", "create",
-            "drop", "alter", "index", "lock", "all");
+	private static final List<String> ACCESSES = Lists.newArrayList("select", "update", "create", "drop", "alter",
+			"index", "lock", "all");
 
-    @Autowired
-    private ApplicationContext context;
+	@Autowired
+	private ApplicationContext context;
 
-    private ClusterConfig clusterConfig;
+	private ClusterConfig clusterConfig;
 
-    private rangerClient rc;
+	private rangerClient rc;
 
-    private Configuration conf;
+	private Configuration conf;
 
-    private Connection conn;
+	private Connection conn;
 
-    private String hiveJDBCUrl;
-    
-    private boolean krb_enabled;
+	private String hiveJDBCUrl;
 
+	private boolean krb_enabled;
 
-    @Autowired
-    public HiveCommonService(ClusterConfig clusterConfig){
-        this.clusterConfig = clusterConfig;
+	@Autowired
+	public HiveCommonService(ClusterConfig clusterConfig) {
+		this.clusterConfig = clusterConfig;
 
-        this.rc = clusterConfig.getRangerClient();
-        
-        this.krb_enabled = this.clusterConfig.krbEnabled();
-        logger.info("Kerberos enabled: " + this.krb_enabled);
-        
-        this.conf = new Configuration();
-        
-        this.hiveJDBCUrl = "jdbc:hive2://" + this.clusterConfig.getHiveHost() + ":" + this.clusterConfig.getHivePort() +
-                "/default;user=" + this.clusterConfig.getHiveSuperUser() + ";password=" + this.clusterConfig.getHiveSuperUserKeytab();
-        
-        if (krb_enabled) {
-            conf.set("hadoop.security.authentication", "Kerberos");
-            System.setProperty("java.security.krb5.conf", clusterConfig.getKrb5FilePath());
-            this.hiveJDBCUrl = "jdbc:hive2://" + this.clusterConfig.getHiveHost() + ":" + this.clusterConfig.getHivePort() +
-                    "/default;principal=" + this.clusterConfig.getHiveSuperUser();
+		this.rc = clusterConfig.getRangerClient();
+
+		this.krb_enabled = this.clusterConfig.krbEnabled();
+		logger.info("Kerberos enabled: " + this.krb_enabled);
+
+		this.conf = new Configuration();
+
+		this.hiveJDBCUrl = "jdbc:hive2://" + this.clusterConfig.getHiveHost() + ":" + this.clusterConfig.getHivePort()
+				+ "/default;user=" + this.clusterConfig.getHiveSuperUser() + passwordString();
+
+		if (krb_enabled) {
+			conf.set("hadoop.security.authentication", "Kerberos");
+			System.setProperty("java.security.krb5.conf", clusterConfig.getKrb5FilePath());
+			this.hiveJDBCUrl = "jdbc:hive2://" + this.clusterConfig.getHiveHost() + ":"
+					+ this.clusterConfig.getHivePort() + "/default;principal=" + this.clusterConfig.getHiveSuperUser();
 		}
-    }
+	}
 
-    public String createDatabase(String databaseName) throws Exception{
-        try{
-        	if (krb_enabled) {
-        		BrokerUtil.authentication(
-                        this.conf, this.clusterConfig.getHiveSuperUser(), this.clusterConfig.getHiveSuperUserKeytab());
-			}
-            
-            Class.forName(driverName);
-            this.conn = DriverManager.getConnection(this.hiveJDBCUrl);
-            Statement stmt = conn.createStatement();
-            stmt.execute("create database " + databaseName);
-        }catch (ClassNotFoundException e){
-            logger.error("Hive JDBC driver not found in classpath.");
-            e.printStackTrace();
-            throw e;
-        }
-        catch(SQLException e){
-            logger.error("Hive database create fail due to: " + e.getLocalizedMessage());
-            e.printStackTrace();
-            throw e;
-        }finally {
-            conn.close();
-            logger.info("Hive Database " + databaseName + " has been created.");
-        }
-        return databaseName;
-    }
-    
-    public String assignPermissionToDatabase(String policyName, final String dbName, List<String> userList, String groupName,
-                                             List<String> permissions){
-        logger.info("Assigning select/update/create/drop/alter/index/lock/all permission to hive database.");
-        String policyId = null;
-        String serviceName = clusterConfig.getClusterName()+"_hive";
-        ArrayList<String> dbList = Lists.newArrayList(dbName);
-        ArrayList<String> tbList = Lists.newArrayList("*");
-        ArrayList<String> cList = Lists.newArrayList("*");
-        ArrayList<String> groupList = Lists.newArrayList("*");
-       // ArrayList<String> userList = new ArrayList<String>(){{add(userName);}};
-       // ArrayList<String> types = new ArrayList<String>(){{add("select"); add("update");
-       //     add("create"); add("drop"); add("alter"); add("index"); add("lock"); add("all");}};
-        ArrayList<String> conditions = Lists.newArrayList();
-        RangerV2Policy rp = new RangerV2Policy(
-                policyName,"","This is Hive Policy",serviceName,true,true);
-        rp.addResources(OCDPConstants.HIVE_RANGER_RESOURCE_TYPE, dbList, false);
-        rp.addResources("table", tbList, false);
-        rp.addResources("column", cList, false);
-        if (permissions == null){
-            rp.addPolicyItems(userList,groupList,conditions,false,ACCESSES);
-        } else {
-            rp.addPolicyItems(userList,groupList,conditions,false,permissions);
-        }
-        String newPolicyString = rc.createV2Policy(serviceName, rp);
-        if (newPolicyString != null){
-            RangerV2Policy newPolicyObj = gson.fromJson(newPolicyString, RangerV2Policy.class);
-            policyId = newPolicyObj.getPolicyId();
-            logger.info("Assign permissions [{}] of user [{}] to hive database [{}] successful with policyid [{}].",
-                    permissions, userList.toString(), dbName, policyId);
-            return policyId;
-        }
-        logger.error("Assign permissions of user [{}] to hive database [{}] failed!", userList.toString(), dbName);
-        return policyId;
-    }
+	private String passwordString() {
+		try {
+			String encoded = URLEncoder.encode(this.clusterConfig.getHiveSuperUserKeytab().trim(), "UTF-8");
+			return ";password=" + encoded;
+		} catch (UnsupportedEncodingException e) {
+			e.printStackTrace();
+			throw new RuntimeException(e);
+		}
+	}
 
-    public boolean appendResourceToDatabasePermission(String policyId, String databaseName){
-        return rc.appendResourceToV2Policy(policyId, databaseName, OCDPConstants.HIVE_RANGER_RESOURCE_TYPE);
-    }
-
-    public boolean appendUsersToDatabasePermission(
-            String policyId, String groupName, List<String> users, List<String> permissions) {
-        return rc.appendUsersToV2Policy(policyId, groupName, users, permissions);
-    }
-
-    public void deleteDatabase(String dbName) throws Exception{
-        try{
-        	if (krb_enabled) {
-                BrokerUtil.authentication(
-                        this.conf, this.clusterConfig.getHiveSuperUser(), this.clusterConfig.getHiveSuperUserKeytab());
+	public String createDatabase(String databaseName) throws Exception {
+		try {
+			if (krb_enabled) {
+				BrokerUtil.authentication(this.conf, this.clusterConfig.getHiveSuperUser(),
+						this.clusterConfig.getHiveSuperUserKeytab());
 			}
 
-            Class.forName(driverName);
-            this.conn = DriverManager.getConnection(this.hiveJDBCUrl);
-            Statement stmt = conn.createStatement();
-            stmt.execute("drop database if exists " + dbName + " cascade");
-        }catch (ClassNotFoundException e){
-            logger.error("Hive JDBC driver not found in classpath.");
-            e.printStackTrace();
-            throw e;
-        }catch (SQLException e){
-            logger.error("Hive database drop fail due to: " + e.getLocalizedMessage());
-            e.printStackTrace();
-            throw e;
-        }finally {
-            conn.close();
-        }
-    }
+			Class.forName(driverName);
+			this.conn = DriverManager.getConnection(this.hiveJDBCUrl);
+			Statement stmt = conn.createStatement();
+			stmt.execute("create database " + databaseName);
+		} catch (ClassNotFoundException e) {
+			logger.error("Hive JDBC driver not found in classpath.");
+			e.printStackTrace();
+			throw e;
+		} catch (SQLException e) {
+			logger.error("Hive database create fail due to: " + e.getLocalizedMessage());
+			e.printStackTrace();
+			throw e;
+		} finally {
+			conn.close();
+			logger.info("Hive Database " + databaseName + " has been created.");
+		}
+		return databaseName;
+	}
 
-    public boolean unassignPermissionFromDatabase(String policyId){
-        return rc.removeV2Policy(policyId);
-    }
+	public String assignPermissionToDatabase(String policyName, final String dbName, List<String> userList,
+			String groupName, List<String> permissions) {
+		logger.info("Assigning select/update/create/drop/alter/index/lock/all permission to hive database.");
+		String policyId = null;
+		String serviceName = clusterConfig.getClusterName() + "_hive";
+		ArrayList<String> dbList = Lists.newArrayList(dbName);
+		ArrayList<String> tbList = Lists.newArrayList("*");
+		ArrayList<String> cList = Lists.newArrayList("*");
+		ArrayList<String> groupList = Lists.newArrayList("*");
+		// ArrayList<String> userList = new ArrayList<String>(){{add(userName);}};
+		// ArrayList<String> types = new ArrayList<String>(){{add("select");
+		// add("update");
+		// add("create"); add("drop"); add("alter"); add("index"); add("lock");
+		// add("all");}};
+		ArrayList<String> conditions = Lists.newArrayList();
+		RangerV2Policy rp = new RangerV2Policy(policyName, "", "This is Hive Policy", serviceName, true, true);
+		rp.addResources(OCDPConstants.HIVE_RANGER_RESOURCE_TYPE, dbList, false);
+		rp.addResources("table", tbList, false);
+		rp.addResources("column", cList, false);
+		if (permissions == null) {
+			rp.addPolicyItems(userList, groupList, conditions, false, ACCESSES);
+		} else {
+			rp.addPolicyItems(userList, groupList, conditions, false, permissions);
+		}
+		String newPolicyString = rc.createV2Policy(serviceName, rp);
+		if (newPolicyString != null) {
+			RangerV2Policy newPolicyObj = gson.fromJson(newPolicyString, RangerV2Policy.class);
+			policyId = newPolicyObj.getPolicyId();
+			logger.info("Assign permissions [{}] of user [{}] to hive database [{}] successful with policyid [{}].",
+					permissions, userList.toString(), dbName, policyId);
+			return policyId;
+		}
+		logger.error("Assign permissions of user [{}] to hive database [{}] failed!", userList.toString(), dbName);
+		return policyId;
+	}
 
-    public boolean removeResourceFromDatabasePermission(String policyId, String databaseName){
-        return rc.removeResourceFromV2Policy(policyId, databaseName, OCDPConstants.HIVE_RANGER_RESOURCE_TYPE);
-    }
+	public boolean appendResourceToDatabasePermission(String policyId, String databaseName) {
+		return rc.appendResourceToV2Policy(policyId, databaseName, OCDPConstants.HIVE_RANGER_RESOURCE_TYPE);
+	}
 
-    public boolean removeUserFromDatabasePermission(String policyId, String userName){
-        return rc.removeUserFromV2Policy(policyId, userName);
-    }
+	public boolean appendUsersToDatabasePermission(String policyId, String groupName, List<String> users,
+			List<String> permissions) {
+		return rc.appendUsersToV2Policy(policyId, groupName, users, permissions);
+	}
 
-    public  List<String> getResourceFromDatabasePolicy(String policyId){
-        return rc.getResourcsFromV2Policy(policyId, OCDPConstants.HIVE_RANGER_RESOURCE_TYPE);
-    }
+	public void deleteDatabase(String dbName) throws Exception {
+		try {
+			if (krb_enabled) {
+				BrokerUtil.authentication(this.conf, this.clusterConfig.getHiveSuperUser(),
+						this.clusterConfig.getHiveSuperUserKeytab());
+			}
+
+			Class.forName(driverName);
+			this.conn = DriverManager.getConnection(this.hiveJDBCUrl);
+			Statement stmt = conn.createStatement();
+			stmt.execute("drop database if exists " + dbName + " cascade");
+		} catch (ClassNotFoundException e) {
+			logger.error("Hive JDBC driver not found in classpath.");
+			e.printStackTrace();
+			throw e;
+		} catch (SQLException e) {
+			logger.error("Hive database drop fail due to: " + e.getLocalizedMessage());
+			e.printStackTrace();
+			throw e;
+		} finally {
+			conn.close();
+		}
+	}
+
+	public boolean unassignPermissionFromDatabase(String policyId) {
+		return rc.removeV2Policy(policyId);
+	}
+
+	public boolean removeResourceFromDatabasePermission(String policyId, String databaseName) {
+		return rc.removeResourceFromV2Policy(policyId, databaseName, OCDPConstants.HIVE_RANGER_RESOURCE_TYPE);
+	}
+
+	public boolean removeUserFromDatabasePermission(String policyId, String userName) {
+		return rc.removeUserFromV2Policy(policyId, userName);
+	}
+
+	public List<String> getResourceFromDatabasePolicy(String policyId) {
+		return rc.getResourcsFromV2Policy(policyId, OCDPConstants.HIVE_RANGER_RESOURCE_TYPE);
+	}
 
 }
