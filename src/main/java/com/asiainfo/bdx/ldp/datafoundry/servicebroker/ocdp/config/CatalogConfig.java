@@ -114,7 +114,7 @@ public class CatalogConfig {
 				}
 			}
 			if (quotaKey.equals(OCDPConstants.HDFS_STORAGE_QUOTA)) {
-				quotas.put(quotaKey, Long.toString(Long.parseLong(quota) * 1000000000));
+				quotas.put(quotaKey, Long.toString(Long.valueOf(quota) * 1024 * 1024 * 1024));
 			} else {
 				quotas.put(quotaKey, quota);
 			}
