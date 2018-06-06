@@ -91,7 +91,7 @@ public class rangerClient {
             }
             response.close();
         }catch (IOException e){
-            e.printStackTrace();
+            logger.error("doGetPolicy() hit IOException: " , e);
         }
         return policyDef;
     }
@@ -143,7 +143,7 @@ public class rangerClient {
             status = (response.getStatusLine().getStatusCode() == 204);
             response.close();
         }catch (IOException e){
-            e.printStackTrace();
+            logger.error("doRemovePolicy() hit IOException: " , e);
         }
         return status;
     }
@@ -172,7 +172,7 @@ public class rangerClient {
             response.close();
         }catch (IOException e){
         	logger.error("Update policy failed: " + policyID, e);
-            e.printStackTrace();
+            //e.printStackTrace();
         }
         return status;
     }

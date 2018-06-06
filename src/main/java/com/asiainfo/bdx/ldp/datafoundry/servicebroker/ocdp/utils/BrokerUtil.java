@@ -7,6 +7,8 @@ import org.apache.hadoop.conf.Configuration;
 import org.springframework.ldap.core.LdapTemplate;
 import org.springframework.ldap.support.LdapNameBuilder;
 import org.springframework.ldap.core.AttributesMapper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.naming.directory.Attributes;
 import javax.naming.directory.BasicAttribute;
@@ -22,6 +24,8 @@ import java.io.IOException;
  */
 public class BrokerUtil {
 
+    private static final Logger logger = LoggerFactory.getLogger(BrokerUtil.class);
+
     private final static String uidNumberBase = "1500";
 
     public static void authentication(Configuration conf, String userPrincipal, String keyTabFilePath){
@@ -29,7 +33,7 @@ public class BrokerUtil {
         try{
             UserGroupInformation.loginUserFromKeytab(userPrincipal, keyTabFilePath);
         }catch (IOException e){
-            e.printStackTrace();
+            logger.error("authentication() hit IOException: ", e);
         }
     }
 

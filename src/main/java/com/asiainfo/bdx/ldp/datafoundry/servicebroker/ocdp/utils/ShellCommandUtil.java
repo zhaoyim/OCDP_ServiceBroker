@@ -6,7 +6,12 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.Map;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 public class ShellCommandUtil {
+
+    private static final Logger logger = LoggerFactory.getLogger(ShellCommandUtil.class);
 
     /** Set to true when run on Linux platforms */
     public static final boolean LINUX
@@ -29,9 +34,9 @@ public class ShellCommandUtil {
                 result = runCommand(new String[]{"stat", "-c", "%a", path}).getStdout();
             } catch (IOException e) {
                 // Improbable
-                e.printStackTrace();
+                logger.error("getUnixFilePermissions() hit IOException: ", e);
             } catch (InterruptedException e) {
-                e.printStackTrace();
+                logger.error("getUnixFilePermissions() hit InterruptedException: ", e);
             }
         } else {
             System.out.println(String.format("Not performing stat -s \"%%a\" command on file %s " +
@@ -52,9 +57,9 @@ public class ShellCommandUtil {
                 runCommand(new String[]{"chmod", mode, path});
             } catch (IOException e) {
                 // Improbable
-                e.printStackTrace();
+                logger.error("setUnixFilePermissions() hit IOException: ", e);
             } catch (InterruptedException e) {
-                e.printStackTrace();
+                logger.error("setUnixFilePermissions() hit InterruptedException: ", e);
             }
         } else {
             System.out.println(String.format("Not performing chmod %s command for file %s " +

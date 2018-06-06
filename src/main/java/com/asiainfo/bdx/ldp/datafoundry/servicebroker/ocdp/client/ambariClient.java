@@ -221,7 +221,7 @@ public class ambariClient {
 			finalStr = (String) thirdLevel.get("default");
 
 		} catch (Exception e) {
-			e.printStackTrace();
+			logger.error("getVersionTagFromJson() hit Exception: " , e);
 		}
 		return finalStr;
 
@@ -241,7 +241,7 @@ public class ambariClient {
 			response.close();
 		} catch (IOException e) {
 			logger.error("Error while execute HTTP request: " + request.getURI(), e);
-			e.printStackTrace();
+			//e.printStackTrace();
 		}
 		return responseDef;
 	}

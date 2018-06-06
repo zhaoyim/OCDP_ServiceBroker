@@ -73,7 +73,7 @@ public class YarnCommonService {
                 throw new OCDPServiceException("Not Enough Queue Capacity to apply!");
             queuePath = "root."+queue_suffix;
         }catch (Exception e){
-            e.printStackTrace();
+            logger.error("createQueue() hit Exception: ", e);
             throw e;
         }
         logger.info("Name of new queue: " + queuePath);
@@ -141,7 +141,7 @@ public class YarnCommonService {
             ambClient.refreshYarnQueue(clusterConfig.getYarnRMHost());
             logger.info("Refreshing yarn queues...");
         }catch (Exception e){
-            e.printStackTrace();
+            logger.error("deleteQueue() hit Exception: ", e);
         }
     }
 
