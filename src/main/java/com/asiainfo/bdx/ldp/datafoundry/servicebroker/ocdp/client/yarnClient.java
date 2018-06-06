@@ -98,7 +98,7 @@ public class yarnClient{
             LinkedTreeMap<?,?> clusterMetrics = (LinkedTreeMap<?, ?>) response.get("clusterMetrics");
             value = String.valueOf(clusterMetrics.get(key));
         }catch (Exception e){
-            e.printStackTrace();
+            logger.error("getMetrics() hit Exception: " , e);
         }
         return value;
     }

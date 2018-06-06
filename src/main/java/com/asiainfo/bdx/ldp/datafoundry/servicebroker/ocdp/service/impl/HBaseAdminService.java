@@ -107,10 +107,10 @@ public class HBaseAdminService implements OCDPAdminService{
 			}
 		} catch (NumberFormatException e) {
 			logger.error("HBase set namespace qps quota " + type + " fail due to: " + e.getLocalizedMessage());
-			e.printStackTrace();
+			//e.printStackTrace();
 		} catch (IllegalArgumentException e) {
 			logger.error("HBase set namespace qps quota " + type + " fail due to: " + e.getLocalizedMessage());
-			e.printStackTrace();
+			//e.printStackTrace();
 		}
 		return settings;
 	}
@@ -160,7 +160,7 @@ public class HBaseAdminService implements OCDPAdminService{
 			admin.close();
 		} catch (IOException e) {
 			logger.error("HBase namespace create fail due to: " + e.getLocalizedMessage());
-			e.printStackTrace();
+			//e.printStackTrace();
 			throw e;
 		} finally {
 			this.connection.close();
@@ -236,7 +236,7 @@ public class HBaseAdminService implements OCDPAdminService{
             logger.info("Delete HBase namespace successful.");
         }catch (IOException e){
             logger.error("HBase namespace delete fail due to: " + e.getLocalizedMessage());
-            e.printStackTrace();
+            //e.printStackTrace();
             throw e;
         } finally {
             this.connection.close();
@@ -323,7 +323,7 @@ public class HBaseAdminService implements OCDPAdminService{
 
             admin.close();
         } catch (IOException e){
-            e.printStackTrace();
+            logger.error("resizeResourceQuota() hit IOException: ", e);
             throw e;
         } finally {
             connection.close();

@@ -138,7 +138,7 @@ public class HDFSAdminService implements OCDPAdminService{
             }
         }catch (Exception e){
             logger.error("Set HDFS folder quota fails due to: " + e.getLocalizedMessage());
-            e.printStackTrace();
+            //e.printStackTrace();
             throw e;
         } finally {
             this.dfs.close();
@@ -163,7 +163,7 @@ public class HDFSAdminService implements OCDPAdminService{
             this.dfs.setQuota(new Path(pathName), Long.parseLong(nameSpaceQuota), Long.parseLong(storageSpaceQuota));
         }catch (Exception e){
             logger.error("Set HDFS folder quota fails due to: " + e.getLocalizedMessage());
-            e.printStackTrace();
+            //e.printStackTrace();
             throw e;
         } finally {
             this.dfs.close();
@@ -223,7 +223,7 @@ public class HDFSAdminService implements OCDPAdminService{
             logger.info("Delete hdfs folder successful.");
         }catch (Exception e){
             logger.error("HDFS folder delete fail due to: " + e.getLocalizedMessage());
-            e.printStackTrace();
+            //e.printStackTrace();
             throw e;
         } finally {
             this.dfs.close();
@@ -310,7 +310,7 @@ public class HDFSAdminService implements OCDPAdminService{
 
             setQuota(path, quota.get(OCDPConstants.HDFS_NAMESPACE_QUOTA), quota.get(OCDPConstants.HDFS_STORAGE_QUOTA));
         } catch (IOException e){
-            e.printStackTrace();
+            logger.error("resizeResourceQuota() hit IOException: ", e);
             throw e;
         }
     }
