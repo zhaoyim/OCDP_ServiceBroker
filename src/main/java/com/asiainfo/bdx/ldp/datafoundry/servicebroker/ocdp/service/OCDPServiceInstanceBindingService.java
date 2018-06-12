@@ -230,7 +230,7 @@ public class OCDPServiceInstanceBindingService implements ServiceInstanceBinding
 			// 2) Delete service instance binding info from repository/etcd
 			bindingRepository.delete(serviceInstanceId, bindingId);
 		} catch (Exception e) {
-			e.printStackTrace();
+			logger.error("deleteServiceInstanceBinding() hit Exception: ", e);
 			throw e;
 		}
 	}
@@ -262,7 +262,7 @@ public class OCDPServiceInstanceBindingService implements ServiceInstanceBinding
 				logger.info("Successfully removed user " + userName + " from policy " + serviceInstancePolicyId);
 			}
 		} catch (Exception e) {
-			e.printStackTrace();
+			logger.error("removeUserFromServiceInstance() hit Exception: ", e);
 			throw e;
 		}
 	}
@@ -354,7 +354,7 @@ public class OCDPServiceInstanceBindingService implements ServiceInstanceBinding
 				try {
 					Thread.sleep(3000);
 				} catch (InterruptedException e) {
-					e.printStackTrace();
+					logger.error("updateUsersToPolicy() hit InterruptedException: ", e);
 				}
 			} else {
 				logger.info("Successfully append user [{}] to ranger policy [{}] with privileges [{}].", user, serviceInstancePolicyId, accesses);
@@ -404,7 +404,7 @@ public class OCDPServiceInstanceBindingService implements ServiceInstanceBinding
 				try {
 					Thread.sleep(3000);
 				} catch (InterruptedException e) {
-					e.printStackTrace();
+					logger.error("createPolicyForResources() hit InterruptedException: ", e);
 				}
 			} else {
 				logger.info("Successfully created ranger policy [{}] of policyID [{}] for user [{}] with privileges [{}] to resources [{}]",policyName, policyId, user, accesses, serviceInstanceResource);

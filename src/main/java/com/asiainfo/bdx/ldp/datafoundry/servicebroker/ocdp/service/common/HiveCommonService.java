@@ -82,7 +82,7 @@ public class HiveCommonService {
 			String encoded = URLEncoder.encode(this.clusterConfig.getHiveSuperUserKeytab().trim(), "UTF-8");
 			return ";password=" + encoded;
 		} catch (UnsupportedEncodingException e) {
-			e.printStackTrace();
+			logger.error("passwordString() hit UnsupportedEncodingException: ", e);
 			throw new RuntimeException(e);
 		}
 	}
@@ -100,11 +100,11 @@ public class HiveCommonService {
 			stmt.execute("create database " + databaseName);
 		} catch (ClassNotFoundException e) {
 			logger.error("Hive JDBC driver not found in classpath.");
-			e.printStackTrace();
+			//e.printStackTrace();
 			throw e;
 		} catch (SQLException e) {
 			logger.error("Hive database create fail due to: " + e.getLocalizedMessage());
-			e.printStackTrace();
+			//e.printStackTrace();
 			throw e;
 		} finally {
 			conn.close();
@@ -171,11 +171,11 @@ public class HiveCommonService {
 			stmt.execute("drop database if exists " + dbName + " cascade");
 		} catch (ClassNotFoundException e) {
 			logger.error("Hive JDBC driver not found in classpath.");
-			e.printStackTrace();
+			//e.printStackTrace();
 			throw e;
 		} catch (SQLException e) {
 			logger.error("Hive database drop fail due to: " + e.getLocalizedMessage());
-			e.printStackTrace();
+			//e.printStackTrace();
 			throw e;
 		} finally {
 			conn.close();
