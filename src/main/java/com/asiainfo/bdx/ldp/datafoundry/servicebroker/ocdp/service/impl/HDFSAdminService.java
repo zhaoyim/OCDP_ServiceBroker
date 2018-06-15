@@ -259,7 +259,7 @@ public class HDFSAdminService implements OCDPAdminService{
             return new HashMap<String, Object>(){
                 {
                     put("uri",
-                            "http://" + clusterConfig.getHdfsNameNode() + ":" + clusterConfig.getHdfsPort() + "/webhdfs/v1/");
+                            "http://" + clusterConfig.getHdfsNameNode() + ":" + clusterConfig.getHdfsPort() + "/webhdfs/v1");
                     put("host", clusterConfig.getHdfsNameNode());
                     put("port", clusterConfig.getHdfsPort());
                     put(OCDPConstants.HDFS_RESOURCE_TYPE, resourceName);
@@ -273,9 +273,9 @@ public class HDFSAdminService implements OCDPAdminService{
             return new HashMap<String, Object>(){
                 {
                     put("uri1",
-                            "http://" + hdfsNameNode1 + ":" + hdfsPort + "/webhdfs/v1/");
+                            "http://" + hdfsNameNode1 + ":" + hdfsPort + "/webhdfs/v1");
                     put("uri2",
-                            "http://" + hdfsNameNode2 + ":" + hdfsPort + "/webhdfs/v1/");
+                            "http://" + hdfsNameNode2 + ":" + hdfsPort + "/webhdfs/v1");
                     put("nameservice", clusterConfig.getHdfsNameservices());
                     put("namenode1", hdfsNameNode1);
                     put("namenode2", hdfsNameNode2);
