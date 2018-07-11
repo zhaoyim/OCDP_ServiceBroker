@@ -38,7 +38,7 @@ curl http://$etcdUsername:$etcdUserpwd@$etcdHost:$etcdPort/v2/keys/dp-brokers/$b
 
 curl http://$etcdUsername:$etcdUserpwd@$etcdHost:$etcdPort/v2/keys/dp-brokers/$brokerid/servicebroker/ocdp/catalog/ae67d4ba-5c4e-4937-a68b-5b47cfe356d8/plan/72150b09-1025-4533-8bae-0e04ef68ac13/name -XPUT -d value='shared'
 
-curl http://$etcdUsername:$etcdUserpwd@$etcdHost:$etcdPort/v2/keys/dp-brokers/$brokerid/servicebroker/ocdp/catalog/ae67d4ba-5c4e-4937-a68b-5b47cfe356d8/plan/72150b09-1025-4533-8bae-0e04ef68ac13/metadata -XPUT -d value='{"costs":[{"amount":{"usd":0.0},"unit":"MONTHLY"}],"bullets":["Name Space Quota:1000", "Storage Space Quota (GB):20"], "customize":{"nameSpaceQuota": {"default":1000,"max":100000,"price":10,"unit":"","step":10,"desc":"HDFS目录允许创建的最大文件数目"},"storageSpaceQuota":{"default":1024,"max":102400,"price":10,"unit":"GB","step":10,"desc":"HDFS目录的最大存储容量"}}}'
+curl http://$etcdUsername:$etcdUserpwd@$etcdHost:$etcdPort/v2/keys/dp-brokers/$brokerid/servicebroker/ocdp/catalog/ae67d4ba-5c4e-4937-a68b-5b47cfe356d8/plan/72150b09-1025-4533-8bae-0e04ef68ac13/metadata -XPUT -d value='{"costs":[{"amount":{"usd":0.0},"unit":"MONTHLY"}],"bullets":["Name Space Quota:1000", "Storage Space Quota (GB):20"], "customize":{"nameSpaceQuota": {"default":1000,"max":100000,"price":10,"unit":"","step":10,"suggestion": "10/20/30","desc":"HDFS目录允许创建的最大文件数目"},"storageSpaceQuota":{"default":1024,"max":102400,"price":10,"unit":"GB","step":10,"suggestion": "10/20/30","desc":"HDFS目录的最大存储容量"}}}'
 
 # hbase
 curl http://$etcdUsername:$etcdUserpwd@$etcdHost:$etcdPort/v2/keys/dp-brokers/$brokerid/servicebroker/ocdp/catalog/d9845ade-9410-4c7f-8689-4e032c1a8450 -XPUT -d dir=true
@@ -65,7 +65,7 @@ curl http://$etcdUsername:$etcdUserpwd@$etcdHost:$etcdPort/v2/keys/dp-brokers/$b
 
 curl http://$etcdUsername:$etcdUserpwd@$etcdHost:$etcdPort/v2/keys/dp-brokers/$brokerid/servicebroker/ocdp/catalog/d9845ade-9410-4c7f-8689-4e032c1a8450/plan/f658e391-b7d6-4b72-9e4c-c754e4943ae1/name -XPUT -d value='shared' 
 
-curl http://$etcdUsername:$etcdUserpwd@$etcdHost:$etcdPort/v2/keys/dp-brokers/$brokerid/servicebroker/ocdp/catalog/d9845ade-9410-4c7f-8689-4e032c1a8450/plan/f658e391-b7d6-4b72-9e4c-c754e4943ae1/metadata -XPUT -d value='{"costs":[{"amount":{"usd":0.0},"unit":"MONTHLY"}],"bullets":["HBase Maximun Tables:10", "HBase Maximun Regions:10"], "customize":{"maximumTablesQuota":{"default":10,"max":100,"price":10,"unit":"","step":10,"desc":"HBase命名空间允许的最大的表数目"}, "maximumRegionsQuota":{"default":100,"max":1000,"price":10,"unit":"","step":10,"desc":"HBase命名空间允许的最大的region数目"}}}'
+curl http://$etcdUsername:$etcdUserpwd@$etcdHost:$etcdPort/v2/keys/dp-brokers/$brokerid/servicebroker/ocdp/catalog/d9845ade-9410-4c7f-8689-4e032c1a8450/plan/f658e391-b7d6-4b72-9e4c-c754e4943ae1/metadata -XPUT -d value='{"costs":[{"amount":{"usd":0.0},"unit":"MONTHLY"}],"bullets":["HBase Maximun Tables:10", "HBase Maximun Regions:10"], "customize":{"maximumTablesQuota":{"default":10,"max":100,"price":10,"unit":"","step":10,"suggestion": "10/20/30","desc":"HBase命名空间允许的最大的表数目"}, "maximumRegionsQuota":{"default":100,"max":1000,"price":10,"unit":"","step":10,"suggestion": "10/20/30","desc":"HBase命名空间允许的最大的region数目"}}}'
 
 #hive
 curl http://$etcdUsername:$etcdUserpwd@$etcdHost:$etcdPort/v2/keys/dp-brokers/$brokerid/servicebroker/ocdp/catalog/2ef26018-003d-4b2b-b786-0481d4ee9fa3 -XPUT -d dir=true
@@ -92,7 +92,7 @@ curl http://$etcdUsername:$etcdUserpwd@$etcdHost:$etcdPort/v2/keys/dp-brokers/$b
 
 curl http://$etcdUsername:$etcdUserpwd@$etcdHost:$etcdPort/v2/keys/dp-brokers/$brokerid/servicebroker/ocdp/catalog/2ef26018-003d-4b2b-b786-0481d4ee9fa3/plan/aa7e364f-fdbf-4187-b60a-218b6fa398ed/name -XPUT -d value='shared' 
 
-curl http://$etcdUsername:$etcdUserpwd@$etcdHost:$etcdPort/v2/keys/dp-brokers/$brokerid/servicebroker/ocdp/catalog/2ef26018-003d-4b2b-b786-0481d4ee9fa3/plan/aa7e364f-fdbf-4187-b60a-218b6fa398ed/metadata -XPUT -d value='{"costs":[{"amount":{"usd":0.0},"unit":"MONTHLY"}],"bullets":["Storage Space Quota (GB):20"], "customize":{"storageSpaceQuota": {"default":1024,"max":102400,"price":10,"unit":"GB","step":10,"desc":"Hive数据库的最大存储容量"}}}'
+curl http://$etcdUsername:$etcdUserpwd@$etcdHost:$etcdPort/v2/keys/dp-brokers/$brokerid/servicebroker/ocdp/catalog/2ef26018-003d-4b2b-b786-0481d4ee9fa3/plan/aa7e364f-fdbf-4187-b60a-218b6fa398ed/metadata -XPUT -d value='{"costs":[{"amount":{"usd":0.0},"unit":"MONTHLY"}],"bullets":["Storage Space Quota (GB):20"], "customize":{"storageSpaceQuota": {"default":1024,"max":102400,"price":10,"unit":"GB","step":10,"suggestion": "10/20/30","desc":"Hive数据库的最大存储容量"}}}'
 
 #mr2
 curl http://$etcdUsername:$etcdUserpwd@$etcdHost:$etcdPort/v2/keys/dp-brokers/$brokerid/servicebroker/ocdp/catalog/ae0f2324-27a8-415b-9c7f-64ab6cd88d40 -XPUT -d dir=true
@@ -119,7 +119,7 @@ curl http://$etcdUsername:$etcdUserpwd@$etcdHost:$etcdPort/v2/keys/dp-brokers/$b
 
 curl http://$etcdUsername:$etcdUserpwd@$etcdHost:$etcdPort/v2/keys/dp-brokers/$brokerid/servicebroker/ocdp/catalog/ae0f2324-27a8-415b-9c7f-64ab6cd88d40/plan/6524c793-0ea5-4456-9a60-ca70271decdc/name -XPUT -d value='shared'
 
-curl http://$etcdUsername:$etcdUserpwd@$etcdHost:$etcdPort/v2/keys/dp-brokers/$brokerid/servicebroker/ocdp/catalog/ae0f2324-27a8-415b-9c7f-64ab6cd88d40/plan/6524c793-0ea5-4456-9a60-ca70271decdc/metadata -XPUT -d value='{"costs":[{"amount":{"usd":0.0},"unit":"MONTHLY"}],"bullets":["Yarn Queue Quota (GB):4"], "customize":{"yarnQueueQuota":{"default":10,"max":100,"price":10,"unit":"GB","step":10,"desc":"Yarn队列的最大容量"}}}'
+curl http://$etcdUsername:$etcdUserpwd@$etcdHost:$etcdPort/v2/keys/dp-brokers/$brokerid/servicebroker/ocdp/catalog/ae0f2324-27a8-415b-9c7f-64ab6cd88d40/plan/6524c793-0ea5-4456-9a60-ca70271decdc/metadata -XPUT -d value='{"costs":[{"amount":{"usd":0.0},"unit":"MONTHLY"}],"bullets":["Yarn Queue Quota (GB):4"], "customize":{"yarnQueueQuota":{"default":10,"max":100,"price":10,"unit":"GB","step":10,"suggestion": "10/20/30","desc":"Yarn队列的最大容量"}}}'
 
 #spark
 curl http://$etcdUsername:$etcdUserpwd@$etcdHost:$etcdPort/v2/keys/dp-brokers/$brokerid/servicebroker/ocdp/catalog/d3b9a485-f038-4605-9b9b-29792f5c61d1 -XPUT -d dir=true
@@ -146,7 +146,7 @@ curl http://$etcdUsername:$etcdUserpwd@$etcdHost:$etcdPort/v2/keys/dp-brokers/$b
 
 curl http://$etcdUsername:$etcdUserpwd@$etcdHost:$etcdPort/v2/keys/dp-brokers/$brokerid/servicebroker/ocdp/catalog/d3b9a485-f038-4605-9b9b-29792f5c61d1/plan/5c3d471d-f94a-4bb8-b340-f783f3c15ba1/name -XPUT -d value='shared'
 
-curl http://$etcdUsername:$etcdUserpwd@$etcdHost:$etcdPort/v2/keys/dp-brokers/$brokerid/servicebroker/ocdp/catalog/d3b9a485-f038-4605-9b9b-29792f5c61d1/plan/5c3d471d-f94a-4bb8-b340-f783f3c15ba1/metadata -XPUT -d value='{"costs":[{"amount":{"usd":0.0},"unit":"MONTHLY"}],"bullets":["Yarn Queue Quota (GB):4"],"customize":{"yarnQueueQuota":{"default":10,"max":100,"price":10,"unit":"GB","step":10,"desc":"Yarn队列的最大容量"}}}'
+curl http://$etcdUsername:$etcdUserpwd@$etcdHost:$etcdPort/v2/keys/dp-brokers/$brokerid/servicebroker/ocdp/catalog/d3b9a485-f038-4605-9b9b-29792f5c61d1/plan/5c3d471d-f94a-4bb8-b340-f783f3c15ba1/metadata -XPUT -d value='{"costs":[{"amount":{"usd":0.0},"unit":"MONTHLY"}],"bullets":["Yarn Queue Quota (GB):4"],"customize":{"yarnQueueQuota":{"default":10,"max":100,"price":10,"unit":"GB","step":10,"suggestion": "10/20/30","desc":"Yarn队列的最大容量"}}}'
 
 #kafka
 curl http://$etcdUsername:$etcdUserpwd@$etcdHost:$etcdPort/v2/keys/dp-brokers/$brokerid/servicebroker/ocdp/catalog/7b738c78-d412-422b-ac3e-43a9fc72a4a7 -XPUT -d dir=true
@@ -173,4 +173,4 @@ curl http://$etcdUsername:$etcdUserpwd@$etcdHost:$etcdPort/v2/keys/dp-brokers/$b
 
 curl http://$etcdUsername:$etcdUserpwd@$etcdHost:$etcdPort/v2/keys/dp-brokers/$brokerid/servicebroker/ocdp/catalog/7b738c78-d412-422b-ac3e-43a9fc72a4a7/plan/68ee85c2-5b1a-4f51-89e9-5b111c251f0d/name -XPUT -d value='shared'
 
-curl http://$etcdUsername:$etcdUserpwd@$etcdHost:$etcdPort/v2/keys/dp-brokers/$brokerid/servicebroker/ocdp/catalog/7b738c78-d412-422b-ac3e-43a9fc72a4a7/plan/68ee85c2-5b1a-4f51-89e9-5b111c251f0d/metadata -XPUT -d value='{"costs":[{"amount":{"usd":0.0},"unit":"MONTHLY"}],"bullets":["topicQuota:1", "partitionSize:1024", "topicTTL:604800000"],"customize":{"topicTTL":{"default":604800000,"max":-1,"price":10,"unit":"ms","step":10,"desc":"Topic TTL."},"topicQuota":{"default": 1,"max": -1,"price": 10,"unit": "","step": 10,"desc": "Number of partitions in a topic."},"partitionSize": {"default": 1024,"max": -1,"price": 10,"unit": "GB","step": 10,"desc": "Storage(Bytes) of one partition in a topic."}}}'
+curl http://$etcdUsername:$etcdUserpwd@$etcdHost:$etcdPort/v2/keys/dp-brokers/$brokerid/servicebroker/ocdp/catalog/7b738c78-d412-422b-ac3e-43a9fc72a4a7/plan/68ee85c2-5b1a-4f51-89e9-5b111c251f0d/metadata -XPUT -d value='{"costs":[{"amount":{"usd":0.0},"unit":"MONTHLY"}],"bullets":["topicQuota:1", "partitionSize:1024", "topicTTL:604800000"],"customize":{"topicTTL":{"default":604800000,"max":-1,"price":10,"unit":"ms","step":10,"suggestion": "10/20/30","desc":"Topic TTL."},"topicQuota":{"default": 1,"max": -1,"price": 10,"unit": "","step": 10,"suggestion": "10/20/30","desc": "Number of partitions in a topic."},"partitionSize": {"default": 1024,"max": -1,"price": 10,"unit": "GB","step": 10,"suggestion": "10/20/30","desc": "Storage(Bytes) of one partition in a topic."}}}'
