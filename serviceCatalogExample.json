@@ -18,6 +18,7 @@
               "price": 10,
               "unit": "",
               "step": 10,
+              "suggestion": "10/20/30",
               "desc": "HDFS目录允许创建的最大文件数目"
             },
             "storageSpaceQuota": {
@@ -26,6 +27,7 @@
               "price": 10,
               "unit": "GB",
               "step": 10,
+              "suggestion": "10/20/30",
               "desc": "HDFS目录的最大存储容量"
             }
           }
@@ -61,6 +63,7 @@
               "price": 10,
               "unit": "",
               "step": 10,
+              "suggestion": "10/20/30",
               "desc": "HBase命名空间允许的最大的表数目"
             },
             "maximumRegionsQuota": {
@@ -69,6 +72,7 @@
               "price": 10,
               "unit": "",
               "step": 10,
+              "suggestion": "10/20/30",
               "desc": "HBase命名空间允许的最大region数目"
             }
           }
@@ -103,6 +107,7 @@
               "price": 10,
               "unit": "GB",
               "step": 10,
+              "suggestion": "10/20/30",
               "desc": "Hive数据库的最大存储容量"
             }
           }
@@ -137,6 +142,7 @@
               "price": 10,
               "unit": "GB",
               "step": 10,
+              "suggestion": "10/20/30",
               "desc": "运行MapReduce作业的Yarn队列的最大容量"
             }
           }
@@ -171,6 +177,7 @@
               "price": 10,
               "unit": "GB",
               "step": 10,
+              "suggestion": "10/20/30",
               "desc": "运行Spark作业的Yarn队列的最大容量"
             }
           }
@@ -205,6 +212,7 @@
 	          "price": 10,
 	          "unit": "ms",
 	          "step": 10,
+	          "suggestion": "10/20/30",
 	          "desc": "Topic TTL."
 	        },
 	        "topicQuota": {
@@ -213,6 +221,7 @@
 	          "price": 10,
 	          "unit": "",
 	          "step": 10,
+	          "suggestion": "10/20/30",
 	          "desc": "Number of partitions in a topic."
 	        },
 	        "partitionSize": {
@@ -221,6 +230,7 @@
 	          "price": 10,
 	          "unit": "GB",
 	          "step": 10,
+	          "suggestion": "10/20/30",
 	          "desc": "Storage(GB) of one partition in a topic."
 	        }
 	      }
