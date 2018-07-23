@@ -66,6 +66,9 @@ public class YarnAdminService implements OCDPAdminService {
         for (String userName : userList) {
             hdfsFolderForJobExec.add("/user/" + userName);
             createHdfsPath("/user/" + userName);
+            //support for log aggregation
+            hdfsFolderForJobExec.add("/app-logs/" + userName);
+            createHdfsPath("/app-logs/" + userName);
         }
         String hdfsPolicyId = this.hdfsAdminService.createPolicyForResources(
                 policyName, hdfsFolderForJobExec, userList, groupName, null);
