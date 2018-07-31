@@ -22,6 +22,7 @@ import com.justinsb.etcd.EtcdResult;
 /**
  * Created by baikai on 5/19/16.
  */
+@DependsOn(value = "springUtils")
 @Component("OCDPAdminServiceMapper")
 public class OCDPAdminServiceMapper {
 	private static final Logger LOG = LoggerFactory.getLogger(OCDPAdminServiceMapper.class);
@@ -35,7 +36,6 @@ public class OCDPAdminServiceMapper {
 		initMappers();
 	}
 	
-	@DependsOn(value = "springUtils")
 	private void initMappers() {
 		ClusterConfig clusterConfig = (ClusterConfig) SpringUtils.getContext().getBean("clusterConfig");
 		etcdClient etcdClient = clusterConfig.getEtcdClient();
