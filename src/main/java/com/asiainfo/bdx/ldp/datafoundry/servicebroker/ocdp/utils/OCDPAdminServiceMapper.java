@@ -8,6 +8,7 @@ import java.util.Set;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.context.annotation.DependsOn;
 import org.springframework.stereotype.Component;
 
 import com.asiainfo.bdx.ldp.datafoundry.servicebroker.ocdp.client.etcdClient;
@@ -34,6 +35,7 @@ public class OCDPAdminServiceMapper {
 		initMappers();
 	}
 	
+	@DependsOn(value = "springUtils")
 	private void initMappers() {
 		ClusterConfig clusterConfig = (ClusterConfig) SpringUtils.getContext().getBean("clusterConfig");
 		etcdClient etcdClient = clusterConfig.getEtcdClient();
