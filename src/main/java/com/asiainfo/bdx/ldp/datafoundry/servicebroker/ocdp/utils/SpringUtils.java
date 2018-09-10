@@ -6,7 +6,7 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.stereotype.Component;
 
-@Component
+@Component(value = "springUtils")
 public class SpringUtils implements ApplicationContextAware {
     private static ApplicationContext applicationContext;
 

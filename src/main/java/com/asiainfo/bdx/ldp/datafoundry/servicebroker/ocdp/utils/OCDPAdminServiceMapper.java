@@ -8,6 +8,7 @@ import java.util.Set;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.context.annotation.DependsOn;
 import org.springframework.stereotype.Component;
 
 import com.asiainfo.bdx.ldp.datafoundry.servicebroker.ocdp.client.etcdClient;
@@ -21,6 +22,7 @@ import com.justinsb.etcd.EtcdResult;
 /**
  * Created by baikai on 5/19/16.
  */
+@DependsOn(value = "springUtils")
 @Component("OCDPAdminServiceMapper")
 public class OCDPAdminServiceMapper {
 	private static final Logger LOG = LoggerFactory.getLogger(OCDPAdminServiceMapper.class);
