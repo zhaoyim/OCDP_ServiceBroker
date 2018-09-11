@@ -4,6 +4,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
+import org.springframework.context.support.PropertySourcesPlaceholderConfigurer;
 import org.springframework.ldap.core.LdapTemplate;
 import org.springframework.ldap.core.support.LdapContextSource;
 
@@ -16,7 +17,6 @@ import com.google.common.base.Strings;
 @Configuration
 @PropertySource(value = {"file:/etc/conf/myprops.properties"})
 public class ClusterConfig2 {
-	
 	@Override
 	public String toString() {
 		return "ClusterConfig2 [etcd_host=" + etcd_host + ", etcd_port=" + etcd_port + ", etcd_user=" + etcd_user
@@ -43,6 +43,11 @@ public class ClusterConfig2 {
 				+ ", kafka_hosts=" + kafka_hosts + ", kafka_port=" + kafka_port + ", kafka_rep=" + kafka_rep
 				+ ", krb_enable=" + krb_enable + ", brokerId=" + brokerId + "]";
 	}
+	
+	@Bean
+    public static PropertySourcesPlaceholderConfigurer propertySourcesPlaceholderConfigurer() {
+        return new PropertySourcesPlaceholderConfigurer();
+    }
 
 	@Value("${ETCD_HOST}")
 	private String etcd_host;
