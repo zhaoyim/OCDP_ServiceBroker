@@ -38,6 +38,27 @@ public class CatalogConfig {
 
 	@Bean
 	public Catalog catalog() {
+		new Thread(new Runnable() {
+			
+			@Override
+			public void run() {
+				Thread.currentThread().setName("TEST-CONFIGMAP");
+				try {
+					while (true) {
+						System.out.println(">>> Thread [TEST-CONFIGMAP] begin...");
+						ClusterConfig2 props = (ClusterConfig2) context.getBean("clusterConfig2");
+						logger.info(">>> file content: " + props.toString());
+						try {
+							Thread.sleep(60000l);
+						} catch (InterruptedException e) {
+							e.printStackTrace();
+						}
+					}
+				} catch (Exception e) {
+					logger.error("Exception while running [TEST-CONFIGMAP] thread: ", e);
+				}
+			}
+		}).start();
 		return new Catalog(this.getServiceDefinitions());
 	}
 
