@@ -7,7 +7,6 @@ import org.springframework.scheduling.annotation.EnableAsync;
 
 @SpringBootApplication
 @EnableAsync
-@PropertySource(value = {"file:/etc/conf/myprops.properties"})
 public class Application {
 
 	public static void main(String[] args) {

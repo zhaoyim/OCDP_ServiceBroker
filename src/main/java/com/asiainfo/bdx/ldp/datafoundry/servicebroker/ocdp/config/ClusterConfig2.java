@@ -3,6 +3,7 @@ package com.asiainfo.bdx.ldp.datafoundry.servicebroker.ocdp.config;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.PropertySource;
 import org.springframework.ldap.core.LdapTemplate;
 import org.springframework.ldap.core.support.LdapContextSource;
 
@@ -13,6 +14,7 @@ import com.asiainfo.bdx.ldp.datafoundry.servicebroker.ocdp.client.yarnClient;
 import com.google.common.base.Strings;
 
 @Configuration
+@PropertySource(value = {"file:/etc/conf/myprops.properties"})
 public class ClusterConfig2 {
 	
 	@Override
