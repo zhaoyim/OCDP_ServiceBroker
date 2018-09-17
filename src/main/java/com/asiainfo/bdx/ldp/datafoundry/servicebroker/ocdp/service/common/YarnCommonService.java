@@ -1,5 +1,16 @@
 package com.asiainfo.bdx.ldp.datafoundry.servicebroker.ocdp.service.common;
 
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationContext;
+import org.springframework.stereotype.Service;
+
 import com.asiainfo.bdx.ldp.datafoundry.servicebroker.ocdp.client.ambariClient;
 import com.asiainfo.bdx.ldp.datafoundry.servicebroker.ocdp.client.rangerClient;
 import com.asiainfo.bdx.ldp.datafoundry.servicebroker.ocdp.client.yarnClient;
@@ -15,16 +26,6 @@ import com.asiainfo.bdx.ldp.datafoundry.servicebroker.ocdp.utils.YarnCapacityCal
 import com.google.common.collect.Lists;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.ApplicationContext;
-import org.springframework.stereotype.Service;
-
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
 
 /**
  * Created by baikai on 8/5/16.
