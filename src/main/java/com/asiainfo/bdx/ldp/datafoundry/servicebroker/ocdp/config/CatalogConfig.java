@@ -124,7 +124,7 @@ public class CatalogConfig {
 
 	private Catalog getServiceCatalog() {
 		Catalog catalog = null;
-		ClusterConfig clusterConfig = (ClusterConfig) this.context.getBean("clusterConfig2");
+		ClusterConfig clusterConfig = (ClusterConfig) this.context.getBean("clusterConfig");
 		etcdClient etcdClient = clusterConfig.getEtcdClient();
 		List<ServiceDefinition> sds = new ArrayList<>();
 		OCDPAdminServiceMapper mapper = (OCDPAdminServiceMapper) this.context.getBean("OCDPAdminServiceMapper");
