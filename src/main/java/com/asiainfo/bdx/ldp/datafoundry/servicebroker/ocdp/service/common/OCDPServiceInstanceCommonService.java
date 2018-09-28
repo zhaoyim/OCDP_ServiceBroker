@@ -176,9 +176,9 @@ public class OCDPServiceInstanceCommonService {
             serviceInstanceResource = ocdp.provisionResources(
                     serviceDefinitionId, planId, serviceInstanceId, params);
         }catch (Exception e){
-            logger.error("OCDP resource provision fail due to: " + e.getLocalizedMessage());
+            logger.error("OCDP resource provision fail due to: " + e);
             //e.printStackTrace();
-            throw new OCDPServiceException("OCDP ressource provision fails due to: " + e.getLocalizedMessage());
+            throw new OCDPServiceException("OCDP ressource provision fails due to: " +  e);
         }
         return serviceInstanceResource;
     }
@@ -187,9 +187,9 @@ public class OCDPServiceInstanceCommonService {
         try{
             ocdp.deprovisionResources(serviceInstanceResource);
         }catch (Exception e){
-            logger.error("OCDP resource deprovision fail due to: " + e.getLocalizedMessage());
+            logger.error("OCDP resource deprovision fail due to: " + e);
             //e.printStackTrace();
-            throw new OCDPServiceException("OCDP resource deprovision fail due to: " + e.getLocalizedMessage());
+            throw new OCDPServiceException("OCDP resource deprovision fail due to: " + e);
         }
     }
 }
