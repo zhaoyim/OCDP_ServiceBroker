@@ -8,88 +8,72 @@ This project uses the Spring Cloud - Cloud Foundry Service Broker to implement O
 ## Getting Started
 
 ### 1 Configure connection properties
-Configure connectivity properties (e.g. LDAP, kerberos, Hadoop ...) in system environment variables:
+Configure properties (e.g. LDAP, kerberos, Hadoop ...) in configuration file myprops.properties and move it to /etc/configurations/myprops.properties:
 
-     export BROKER_USERNAME=<broker username>
-     export BROKER_PASSWORD=<broker password>
-     export BROKER_ID=<broker id>
-     
-     export ETCD_HOST=<etcd host>
-     export ETCD_PORT=<etcd port>
-     export ETCD_USER=<etcd user>
-     export ETCD_PWD=<etcd password>
-
-     export LDAP_URL=<LDAP server URL>
-     export LDAP_USER_DN=<root userdn>
-     export LDAP_PASSWORD=<password>
-     export LDAP_BASE=<base dn>
-     export LDAP_GROUP=<LDAP group name>
-     export LDAP_GROUP_ID=<LDP group ID>
-
-     export KRB_KDC_HOST=<KDC hostname>
-     export KRB_USER_PRINCIPAL=<admin user principal>
-     export KRB_KEYTAB_LOCATION=<admin user keytab file path>
-     export KRB_ADMIN_PASSWORD=<admin user password>>
-     export KRB_REALM=<kerberos realm>
-     export KRB_KRB5FILEPATH=<krb5.conf file path>
-     
-     export CLUSTER_NAME=<Hadoop cluster name>
-     export KRB_ENABLE=<true if kerberos enabled in cluster, false otherwise>
-
-     export RANGER_URL=<Ranger server URL>
-     export RANGER_ADMIN_USER=<Ranger admin user name>
-     export RANGER_ADMIN_PASSWORD=<Ranger admin user password>
-
-     export HDFS_NAME_NODE=<HDFS name node host>
-     export HDFS_RPC_PORT=<HDFS RPC port>
-     export HDFS_SUPER_USER=<HDFS super user principal>
-     export HDFS_USER_KEYTAB=<HDFS super user keytab path>
-     export HDFS_RPC_PORT=<HDFS RPC Port>
-     export HDFS_PORT=<Web HDFS Port>
-
-     export HBASE_MASTER_URL=<HBase master UI>
-     export HBASE_MASTER=<HBase master>
-     export HBASE_REST_PORT=<HBase rest port>
-     export HBASE_MASTER_PRINCIPAL=<HBase super user principal>
-     export HBASE_MASTER_USER_KEYTAB=<HBase super user keytab path>
-     export HBASE_ZOOKEEPER_QUORUM=<Zookeeper hosts list>
-     export HBASE_ZOOKEEPER_CLIENT_PORT=<Zookeeper port>
-     export HBASE_ZOOKEEPER_ZNODE_PARENT=<Zookeeper zNode parent>
-
-     export HIVE_HOST=<HiveServer2 hostname/ip>
-     export HIVE_PORT=<HiveServer2 port>
-     export HIVE_SUPER_USER=<Hive admin user>
-     export HIVE_SUPER_USER_KEYTAB=<Hive admin user keytab>
-
-     export AMBARI_HOST=<Amabari server URL>
-     export AMBARI_ADMIN_USER=<Ambari admin username>
-     export AMBARI_ADMIN_PWD=<Ambari admin password>
-
-     export YARN_RESOURCEMANAGER_HOST=<Yarn Resource Manager host>
-     export YARN_RESOURCEMANAGER_PORT=<Yarn Resource Manager Port>
-     export YARN_RESOURCEMANAGER_URL=<Yarn Resource Manager URL>
-
-     export MR_HISTORY_URL=<MapReduce History server URL>
-
-     export SPARK_HISTORY_URL=<Spark History server URL>
-     
-     export OC_ZK_CONNECTION=<Zookeeper host and port>
-     export KAFKA_JAAS_PATH=<KafkaJaas conf file path>
-     export KAFKA_HOSTS=<Kafka hosts>
-     export KAFKA_PORT=<Kafka port>
-     export KAFKA_REP_FACTOR=<Integer of Kafka Replication Factor>
-
-If NameNode and ResourceManager HA enabled, you need to configure following environment variables.
-
-    export HDFS_NAMESERVICES=<dfs.nameservices in custom hdfs-site if HA enabled>
-    export HDFS_NAMENODE1_ADDR=<dfs.namenode.rpc-address in custom hdfs-site if HA enabled>
-    export HDFS_NAMENODE2_ADDR=<dfs.namenode.rpc-address in custom hdfs-site if HA enabled>
-    export HDFS_NAMENODE1=<dfs.ha.namenodes in custom hdfs-site if HA enabled(e.g. nn1)>
-    export HDFS_NAMENODE2=<dfs.ha.namenodes in custom hdfs-site if HA enabled(e.g. nn2)>
-    export YARN_RESOURCEMANAGER_URL2=<Yarn Standby Resource Manager URL>
-
-
-
+	BROKER_USERNAME=admin
+	BROKER_PASSWORD=admin
+	BROKER_ID=ethanscluster
+	ETCD_HOST=10.1.236.146
+	ETCD_PORT=2379
+	ETCD_USER=admin
+	ETCD_PWD=admin
+	LDAP_URL=ldap://10.1.236.146:389
+	LDAP_USER_DN=cn=root,dc=asiainfo,dc=com
+	LDAP_PASSWORD=ldap@#123
+	LDAP_BASE=dc=asiainfo,dc=com
+	LDAP_GROUP=root
+	LDAP_GROUP_ID=600
+	KRB_KDC_HOST=10.1.236.146
+	KRB_USER_PRINCIPAL=admin/admin@ASIAINFO.COM
+	KRB_KEYTAB_LOCATION=
+	KRB_ADMIN_PASSWORD=123456
+	KRB_REALM=ASIAINFO.COM
+	KRB_KRB5FILEPATH=/etc/krb5.conf
+	CLUSTER_NAME=ethanscluster
+	RANGER_URL=http://10.1.236.19:6080
+	RANGER_ADMIN_USER=admin
+	RANGER_ADMIN_PASSWORD=admin
+	HDFS_NAME_NODE=10.1.236.19
+	HDFS_RPC_PORT=8020
+	HDFS_SUPER_USER=nn/10.1.236.19@ASIAINFO.COM
+	HDFS_USER_KEYTAB=/etc/secrets/nn.service.keytab
+	HDFS_PORT=50070
+	HDFS_NAMESERVICES=ethanscluster
+	HDFS_NAMENODE1_ADDR=10.1.236.19:8020
+	HDFS_NAMENODE2_ADDR=10.1.236.19:8020
+	HDFS_NAMENODE1=nn1
+	HDFS_NAMENODE2=nn2
+	HBASE_MASTER_URL=http://10.1.236.19:16010
+	HBASE_MASTER=10.1.236.19
+	HBASE_REST_PORT=16010
+	HBASE_MASTER_PRINCIPAL=hbase/10.1.236.19@ASIAINFO.COM
+	HBASE_MASTER_USER_KEYTAB=/etc/secrets/hbase.service.keytab
+	HBASE_ZOOKEEPER_QUORUM=10.1.236.19,10.1.236.20,10.1.236.21
+	HBASE_ZOOKEEPER_CLIENT_PORT=2181
+	HBASE_ZOOKEEPER_ZNODE_PARENT=/hbase-unsecure
+	HIVE_HOST=10.1.236.19
+	HIVE_PORT=10000
+	HIVE_SUPER_USER=hive/10.1.236.19@ASIAINFO.COM
+	HIVE_SUPER_USER_KEYTAB=/etc/secrets/hive.service.keytab
+	AMBARI_HOST=http://10.1.236.19:8080
+	AMBARI_ADMIN_USER=admin
+	AMBARI_ADMIN_PWD=admin
+	YARN_RESOURCEMANAGER_HOST=10.1.236.19
+	YARN_RESOURCEMANAGER_PORT=8088
+	YARN_RESOURCEMANAGER_URL=http://10.1.236.19:8088
+	YARN_RESOURCEMANAGER_URL2=http://10.1.236.19:8088
+	YARN_SUPER_USER=rm/10.1.236.19@ASIAINFO.COM
+	YARN_SUPER_USER_KEYTAB=/etc/secrets/rm.service.keytab
+	OC_ZK_CONNECTION=10.1.236.19:2181,10.1.236.20:2181,10.1.236.21:2181
+	KAFKA_JAAS_PATH=/etc/secrets/kafka_jaas.conf
+	KAFKA_HOSTS=10.1.236.19
+	KAFKA_PORT=6667
+	KAFKA_REP_FACTOR=2
+	KRB_ENABLE=false
+	MR_HISTORY_URL= 
+	SPARK_THRIFT_SERVER= 
+	SPARK_THRIFT_PORT= 
+	SPARK_HISTORY_URL= 
 
 ### 2 Run OCDP service broker in VM:
 Build OCDP service broker by gradle command:
