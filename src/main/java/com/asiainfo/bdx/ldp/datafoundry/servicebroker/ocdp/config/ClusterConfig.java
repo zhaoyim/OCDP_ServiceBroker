@@ -15,7 +15,7 @@ import com.asiainfo.bdx.ldp.datafoundry.servicebroker.ocdp.client.yarnClient;
 import com.google.common.base.Strings;
 
 @Configuration
-@PropertySource(value = {"file:/etc/configurations/myprops.properties"})
+@PropertySource(value = {"file:E:\\gitlab\\OCDP_ServiceBroker\\src\\main\\resources\\myprops.properties"})
 public class ClusterConfig {
 	@Override
 	public String toString() {
@@ -161,6 +161,10 @@ public class ClusterConfig {
 	private boolean krb_enable = true;
 	@Value("${BROKER_ID}")
 	private String brokerId;
+	@Value("${BROKER_USERNAME}")
+	private String brokerUser;
+	@Value("${BROKER_PASSWORD}")
+	private String brokerPassword;
 	@Value("${MR_HISTORY_URL}")
 	private String mr_history_url;
 	@Value("${SPARK_THRIFT_SERVER}")
@@ -172,6 +176,14 @@ public class ClusterConfig {
 
 	public boolean krbEnabled() {
 		return krb_enable;
+	}
+
+	public String getBrokerUser() {
+		return brokerUser;
+	}
+
+	public String getBrokerPassword() {
+		return brokerPassword;
 	}
 
 	public String getEtcdHost() {
@@ -322,6 +334,10 @@ public class ClusterConfig {
 		return hbase_master;
 	}
 
+	public String getBrokerId() {
+		return brokerId;
+	}
+
 	public String getHbaseRestPort() {
 		return hbase_restPort;
 	}
@@ -368,8 +384,8 @@ public class ClusterConfig {
 
 	public etcdClient getEtcdClient() {
 		if (Strings.isNullOrEmpty(brokerId)) {
-			System.out.println("ERROR: BROKER_ID is null in Env.");
-			throw new RuntimeException("BROKER_ID can not be null in Env.");
+			System.out.println("ERROR: BROKER_ID is null in configurations.");
+			throw new RuntimeException("BROKER_ID can not be null in configurations.");
 		}
 		return new etcdClient(etcd_host, etcd_port, etcd_user, etcd_pwd, brokerId);
 	}

@@ -8,16 +8,11 @@ import java.util.Set;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.cloud.servicebroker.model.ServiceDefinition;
 import org.springframework.context.annotation.DependsOn;
 import org.springframework.stereotype.Component;
 
-import com.asiainfo.bdx.ldp.datafoundry.servicebroker.ocdp.client.etcdClient;
-import com.asiainfo.bdx.ldp.datafoundry.servicebroker.ocdp.config.ClusterConfig;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
-import com.justinsb.etcd.EtcdNode;
-import com.justinsb.etcd.EtcdResult;
+import com.asiainfo.bdx.ldp.datafoundry.servicebroker.ocdp.config.CatalogConfig;
 
 /**
  * Created by baikai on 5/19/16.
@@ -37,20 +32,19 @@ public class OCDPAdminServiceMapper {
 	}
 	
 	private void initMappers() {
-		ClusterConfig clusterConfig = (ClusterConfig) SpringUtils.getContext().getBean("clusterConfig");
-		etcdClient etcdClient = clusterConfig.getEtcdClient();
-		List<EtcdNode> catalog = etcdClient.read("/servicebroker/ocdp/catalog").node.nodes;
-		if (catalog == null || catalog.isEmpty()) {
-			LOG.error("No service found in catalog: " + etcdClient.PATH_PREFIX + "/servicebroker/ocdp/catalog");
+		CatalogConfig catalog = (CatalogConfig) SpringUtils.getContext().getBean("catalogConfig");
+		List<ServiceDefinition> svcs = catalog.catalog().getServiceDefinitions();
+		if (svcs == null || svcs.isEmpty()) {
+			LOG.error("No service found in catalog: " + catalog);
 			throw new RuntimeException(
-					"No service found in catalog: " + etcdClient.PATH_PREFIX + "/servicebroker/ocdp/catalog");
+					"No service found in catalog: " + catalog);
 		}
-		catalog.forEach(service -> {
-			String longid = service.key;
+		svcs.forEach(service -> {
+			String longid = service.getId();
 			String id = longid.substring(longid.lastIndexOf("/") + 1);
 			OCDP_SERVICE_DEFINITION_IDS.add(id);
-			OCDP_SERVICE_PLAN_MAP.put(id, getPlanID(etcdClient, "/servicebroker/ocdp/catalog/"+id));
-			String serviceType = getType(etcdClient, "/servicebroker/ocdp/catalog/"+id);
+			OCDP_SERVICE_PLAN_MAP.put(id, service.getPlans().iterator().next().getId());
+			String serviceType = service.getMetadata().get("type").toString();
 			switch (serviceType) {
 			case "hdfs":
 				OCDP_SERVICE_NAME_MAP.put(id, "hdfs");
@@ -93,42 +87,16 @@ public class OCDPAdminServiceMapper {
 			}
 		});
 		if (LOG.isDebugEnabled()) {
-			LOG.debug("Services have been loaded from catalog '{}': [{}]",
-					etcdClient.PATH_PREFIX + "/servicebroker/ocdp/catalog", OCDP_SERVICE_DEFINITION_IDS);
+			LOG.debug("Services have been loaded from catalog: [{}]", OCDP_SERVICE_DEFINITION_IDS);
 		}
 	}
 
-	private String getType(etcdClient etcdClient, String serviceid) {
-		EtcdResult node = etcdClient.read(serviceid);
-		List<EtcdNode> subnodes = node.node.nodes;
-		for(EtcdNode subnode : subnodes) {
-			if (subnode.key.endsWith("metadata")) {
-				JsonElement json = new JsonParser().parse(subnode.value);
-				JsonObject obj = json.getAsJsonObject();
-				String type = obj.get("type").getAsString();
-				if (type == null || type.isEmpty()) {
-					LOG.error("Service type not defined: " + serviceid);
-					throw new RuntimeException("Service type not defined: " + serviceid);
-				}
-				return type;
-			}
-		}
-		LOG.error("Metadata not defined in service: " + serviceid);
-		throw new RuntimeException("Metadata not defined in service: " + serviceid);
-	}
-
-	private String getPlanID(etcdClient etcdClient, String serviceid) {
-		EtcdResult node = etcdClient.read(serviceid);
-		List<EtcdNode> nodes = node.node.nodes;
-		for(EtcdNode subnode : nodes) {
-			if (subnode.key.endsWith("plan")) {
-				EtcdResult plan = etcdClient.read(serviceid + "/plan");
-				String longPlan = plan.node.nodes.get(0).key;
-				return longPlan.substring(longPlan.lastIndexOf("/") + 1);
-			}
-		}
-		LOG.error("No plan defined in service: " + serviceid);
-		throw new RuntimeException("No plan defined in service: " + serviceid);
+	@Override
+	public String toString() {
+		return "OCDPAdminServiceMapper [OCDP_SERVICE_DEFINITION_IDS=" + OCDP_SERVICE_DEFINITION_IDS
+				+ ", OCDP_SERVICE_PLAN_MAP=" + OCDP_SERVICE_PLAN_MAP + ", OCDP_SERVICE_NAME_MAP="
+				+ OCDP_SERVICE_NAME_MAP + ", OCDP_SERVICE_RESOURCE_MAP=" + OCDP_SERVICE_RESOURCE_MAP
+				+ ", OCDP_ADMIN_SERVICE_MAP=" + OCDP_ADMIN_SERVICE_MAP + "]";
 	}
 
 	private static final Map<String, String> OCDP_SERVICE_QUOTA_MAP = new HashMap<String, String>() {

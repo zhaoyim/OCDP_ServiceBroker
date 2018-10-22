@@ -1,13 +1,12 @@
 package com.asiainfo.bdx.ldp.datafoundry.servicebroker.ocdp.config;
 
-import org.springframework.core.env.Environment;
-import org.springframework.context.annotation.Configuration;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
-import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
-import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
+import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
+import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 
 @Configuration
 @EnableWebSecurity
@@ -15,7 +14,7 @@ import org.springframework.security.config.annotation.authentication.builders.Au
 public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
     @Autowired
-    private Environment environment;
+    private ClusterConfig config;
 
     @Override
     protected void configure(HttpSecurity http) throws Exception {
@@ -30,8 +29,8 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
     @Autowired
     public void configureGlobal(AuthenticationManagerBuilder auth) throws Exception {
-        String username = environment.getProperty("BROKER_USERNAME");
-        String password = environment.getProperty("BROKER_PASSWORD");
+        String username = config.getBrokerUser();
+        String password = config.getBrokerPassword();
         auth.inMemoryAuthentication()
                 .withUser(username).password(password).roles("USER");
     }
