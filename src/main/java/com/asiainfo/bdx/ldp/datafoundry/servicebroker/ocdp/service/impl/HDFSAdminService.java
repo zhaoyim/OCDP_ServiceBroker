@@ -137,7 +137,7 @@ public class HDFSAdminService implements OCDPAdminService{
                 logger.info("HDFS folder exists, not need to create again.");
             }
         }catch (Exception e){
-            logger.error("Set HDFS folder quota fails due to: " + e.getLocalizedMessage());
+            logger.error("Create HDFS folder fails due to: ", e);
             //e.printStackTrace();
             throw e;
         } finally {
@@ -162,7 +162,7 @@ public class HDFSAdminService implements OCDPAdminService{
             }
             this.dfs.setQuota(new Path(pathName), Long.parseLong(nameSpaceQuota), Long.parseLong(storageSpaceQuota));
         }catch (Exception e){
-            logger.error("Set HDFS folder quota fails due to: " + e.getLocalizedMessage());
+            logger.error("Set HDFS folder quota fails due to: ",  e);
             //e.printStackTrace();
             throw e;
         } finally {

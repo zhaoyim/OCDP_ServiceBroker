@@ -1,9 +1,10 @@
 package com.asiainfo.bdx.ldp.datafoundry.servicebroker.ocdp.config;
 
-import org.springframework.context.EnvironmentAware;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.core.env.Environment;
+import org.springframework.context.annotation.PropertySource;
+import org.springframework.context.support.PropertySourcesPlaceholderConfigurer;
 import org.springframework.ldap.core.LdapTemplate;
 import org.springframework.ldap.core.support.LdapContextSource;
 
@@ -13,205 +14,161 @@ import com.asiainfo.bdx.ldp.datafoundry.servicebroker.ocdp.client.rangerClient;
 import com.asiainfo.bdx.ldp.datafoundry.servicebroker.ocdp.client.yarnClient;
 import com.google.common.base.Strings;
 
-/**
- * Created by baikai on 5/28/16.
- */
 @Configuration
-public class ClusterConfig implements EnvironmentAware {
-
-	// Etcd connectivity properties
-	private String etcd_host;
-
-	private String etcd_port;
-
-	private String etcd_user;
-
-	private String etcd_pwd;
-
-	// LDAP connectivity properties
-	private String ldap_url;
-
-	private String ldap_userDN;
-
-	private String ldap_password;
-
-	private String ldap_base;
-
-	private String ldap_group;
-
-	private String ldap_group_id;
-
-	// Kerberos connectivity properties
-	private String krb_kdcHost;
-
-	private String krb_userPrincipal;
-
-	private String krb_keytabLocation;
-
-	private String krb_adminPwd;
-
-	private String krb_realm;
-
-	private String krb_krb5FilePath;
-
-	// Hadoop cluster name
-	private String cluster_name;
-
-	// Hadoop Ranger connectivity properties
-	private String ranger_url;
-
-	private String ranger_user;
-
-	private String ranger_pwd;
-
-	// Hadoop HDFS connectivity properties
-	private String hdfs_nameNode;
-
-	private String hdfs_rpcPort;
-
-	private String hdfs_port;
-
-	private String hdfs_superUser;
-
-	private String hdfs_userKeytab;
-
-	private String hdfs_nameservices;
-
-	private String hdfs_nameNode1;
-
-	private String hdfs_nameNode2;
-
-	private String hdfs_nameNode1_addr;
-
-	private String hdfs_nameNode2_addr;
-
-	// Hadoop HBase connectivity properties
-	private String hbase_masterUrl;
-
-	private String hbase_masterPrincipal;
-
-	private String hbase_masterUserKeytab;
-
-	private String hbase_zookeeper_quorum;
-
-	private String hbase_zookeeper_clientPort;
-
-	private String hbase_zookeeper_znodeParent;
-
-	private String hbase_master;
-
-	private String hbase_restPort;
-
-	// Hadoop Hive connectivity properties
-	private String hive_host;
-
-	private String hive_port;
-
-	private String hive_superUser;
-
-	private String hive_superUserKeytab;
-
-	// Hadoop Ambari connectivity properties
-	private String ambari_host;
-
-	private String ambari_adminUser;
-
-	private String ambari_adminPwd;
-
-	// Hadoop Yarn Resource Manager properties
-	private String yarn_rm_host;
-
-	private String yarn_rm_port;
-
-	private String yarn_rm_url;
-	private String yarn_rm_url2;
-
-	// Hadoop MapReduce History server
-	private String mr_history_url;
-
-	// Hadoop Spark History server
-	private String spark_thrift_server;
-	private String spark_thrift_port;
-	private String spark_history_url;
-
-	private String zk_connection; // eg: ochadoop111.jcloud.local:2181
-
-	private String kafka_jaas_path;
-
-	private String kafka_hosts;
-
-	private String kafka_port;
-
-	private String kafka_rep;
-
-	private boolean krb_enable = true;
-
-	private String brokerId;
-
+@PropertySource(value = {"file:/etc/configurations/myprops.properties"})
+public class ClusterConfig {
 	@Override
-	public void setEnvironment(Environment env) {
-		this.brokerId = env.getProperty("BROKER_ID");
-		this.etcd_host = env.getProperty("ETCD_HOST");
-		this.etcd_port = env.getProperty("ETCD_PORT");
-		this.etcd_user = env.getProperty("ETCD_USER");
-		this.etcd_pwd = env.getProperty("ETCD_PWD");
-		this.ldap_url = env.getProperty("LDAP_URL");
-		this.ldap_userDN = env.getProperty("LDAP_USER_DN");
-		this.ldap_password = env.getProperty("LDAP_PASSWORD");
-		this.ldap_base = env.getProperty("LDAP_BASE");
-		this.ldap_group = env.getProperty("LDAP_GROUP");
-		this.ldap_group_id = env.getProperty("LDAP_GROUP_ID");
-		this.krb_kdcHost = env.getProperty("KRB_KDC_HOST");
-		this.krb_userPrincipal = env.getProperty("KRB_USER_PRINCIPAL");
-		this.krb_keytabLocation = env.getProperty("KRB_KEYTAB_LOCATION");
-		this.krb_adminPwd = env.getProperty("KRB_ADMIN_PASSWORD");
-		this.krb_realm = env.getProperty("KRB_REALM");
-		this.krb_krb5FilePath = env.getProperty("KRB_KRB5FILEPATH");
-		this.cluster_name = env.getProperty("CLUSTER_NAME");
-		this.ranger_url = env.getProperty("RANGER_URL");
-		this.ranger_user = env.getProperty("RANGER_ADMIN_USER");
-		this.ranger_pwd = env.getProperty("RANGER_ADMIN_PASSWORD");
-		this.hdfs_nameNode = env.getProperty("HDFS_NAME_NODE");
-		this.hdfs_rpcPort = env.getProperty("HDFS_RPC_PORT");
-		this.hdfs_port = env.getProperty("HDFS_PORT");
-		this.hdfs_superUser = env.getProperty("HDFS_SUPER_USER");
-		this.hdfs_userKeytab = env.getProperty("HDFS_USER_KEYTAB");
-		this.hdfs_nameservices = env.getProperty("HDFS_NAMESERVICES");
-		this.hdfs_nameNode1 = env.getProperty("HDFS_NAMENODE1");
-		this.hdfs_nameNode2 = env.getProperty("HDFS_NAMENODE2");
-		this.hdfs_nameNode1_addr = env.getProperty("HDFS_NAMENODE1_ADDR");
-		this.hdfs_nameNode2_addr = env.getProperty("HDFS_NAMENODE2_ADDR");
-
-		this.hbase_masterUrl = env.getProperty("HBASE_MASTER_URL");
-		this.hbase_masterPrincipal = env.getProperty("HBASE_MASTER_PRINCIPAL");
-		this.hbase_masterUserKeytab = env.getProperty("HBASE_MASTER_USER_KEYTAB");
-		this.hbase_zookeeper_quorum = env.getProperty("HBASE_ZOOKEEPER_QUORUM");
-		this.hbase_zookeeper_clientPort = env.getProperty("HBASE_ZOOKEEPER_CLIENT_PORT");
-		this.hbase_zookeeper_znodeParent = env.getProperty("HBASE_ZOOKEEPER_ZNODE_PARENT");
-		this.hbase_master = env.getProperty("HBASE_MASTER");
-		this.hbase_restPort = env.getProperty("HBASE_REST_PORT");
-		this.hive_host = env.getProperty("HIVE_HOST");
-		this.hive_port = env.getProperty("HIVE_PORT");
-		this.hive_superUser = env.getProperty("HIVE_SUPER_USER");
-		this.hive_superUserKeytab = env.getProperty("HIVE_SUPER_USER_KEYTAB");
-		this.ambari_host = env.getProperty("AMBARI_HOST");
-		this.ambari_adminUser = env.getProperty("AMBARI_ADMIN_USER");
-		this.ambari_adminPwd = env.getProperty("AMBARI_ADMIN_PWD");
-		this.yarn_rm_host = env.getProperty("YARN_RESOURCEMANAGER_HOST");
-		this.yarn_rm_port = env.getProperty("YARN_RESOURCEMANAGER_PORT");
-		this.yarn_rm_url = env.getProperty("YARN_RESOURCEMANAGER_URL");
-		this.yarn_rm_url2 = env.getProperty("YARN_RESOURCEMANAGER_URL2");
-		this.mr_history_url = env.getProperty("MR_HISTORY_URL");
-		this.spark_history_url = env.getProperty("SPARK_HISTORY_URL");
-		this.spark_thrift_server = env.getProperty("SPARK_THRIFT_SERVER");
-		this.spark_thrift_port = env.getProperty("SPARK_THRIFT_PORT");
-		this.zk_connection = env.getProperty("OC_ZK_CONNECTION");
-		this.kafka_jaas_path = env.getProperty("KAFKA_JAAS_PATH");
-		this.kafka_hosts = env.getProperty("KAFKA_HOSTS");
-		this.kafka_port = env.getProperty("KAFKA_PORT");
-		this.kafka_rep = env.getProperty("KAFKA_REP_FACTOR");
-		this.krb_enable = Boolean.valueOf(env.getProperty("KRB_ENABLE").trim());
+	public String toString() {
+		return "ClusterConfig2 [etcd_host=" + etcd_host + ", etcd_port=" + etcd_port + ", etcd_user=" + etcd_user
+				+ ", etcd_pwd=" + etcd_pwd + ", ldap_url=" + ldap_url + ", ldap_userDN=" + ldap_userDN
+				+ ", ldap_password=" + ldap_password + ", ldap_base=" + ldap_base + ", ldap_group=" + ldap_group
+				+ ", ldap_group_id=" + ldap_group_id + ", krb_kdcHost=" + krb_kdcHost + ", krb_userPrincipal="
+				+ krb_userPrincipal + ", krb_keytabLocation=" + krb_keytabLocation + ", krb_adminPwd=" + krb_adminPwd
+				+ ", krb_realm=" + krb_realm + ", krb_krb5FilePath=" + krb_krb5FilePath + ", cluster_name="
+				+ cluster_name + ", ranger_url=" + ranger_url + ", ranger_user=" + ranger_user + ", ranger_pwd="
+				+ ranger_pwd + ", hdfs_nameNode=" + hdfs_nameNode + ", hdfs_rpcPort=" + hdfs_rpcPort + ", hdfs_port="
+				+ hdfs_port + ", hdfs_superUser=" + hdfs_superUser + ", hdfs_userKeytab=" + hdfs_userKeytab
+				+ ", hdfs_nameservices=" + hdfs_nameservices + ", hdfs_nameNode1=" + hdfs_nameNode1
+				+ ", hdfs_nameNode2=" + hdfs_nameNode2 + ", hdfs_nameNode1_addr=" + hdfs_nameNode1_addr
+				+ ", hdfs_nameNode2_addr=" + hdfs_nameNode2_addr + ", hbase_masterUrl=" + hbase_masterUrl
+				+ ", hbase_masterPrincipal=" + hbase_masterPrincipal + ", hbase_masterUserKeytab="
+				+ hbase_masterUserKeytab + ", hbase_zookeeper_quorum=" + hbase_zookeeper_quorum
+				+ ", hbase_zookeeper_clientPort=" + hbase_zookeeper_clientPort + ", hbase_zookeeper_znodeParent="
+				+ hbase_zookeeper_znodeParent + ", hbase_master=" + hbase_master + ", hbase_restPort=" + hbase_restPort
+				+ ", hive_host=" + hive_host + ", hive_port=" + hive_port + ", hive_superUser=" + hive_superUser
+				+ ", hive_superUserKeytab=" + hive_superUserKeytab + ", ambari_host=" + ambari_host
+				+ ", ambari_adminUser=" + ambari_adminUser + ", ambari_adminPwd=" + ambari_adminPwd + ", yarn_rm_host="
+				+ yarn_rm_host + ", yarn_rm_port=" + yarn_rm_port + ", yarn_rm_url=" + yarn_rm_url + ", yarn_rm_url2="
+				+ yarn_rm_url2 + ", zk_connection=" + zk_connection + ", kafka_jaas_path=" + kafka_jaas_path
+				+ ", kafka_hosts=" + kafka_hosts + ", kafka_port=" + kafka_port + ", kafka_rep=" + kafka_rep
+				+ ", krb_enable=" + krb_enable + ", brokerId=" + brokerId + "]";
 	}
+	
+	@Bean
+    public static PropertySourcesPlaceholderConfigurer propertySourcesPlaceholderConfigurer() {
+        return new PropertySourcesPlaceholderConfigurer();
+    }
+	
+	@Value("${ETCD_HOST}")
+	private String etcd_host;
+	@Value("${ETCD_PORT}")
+	private String etcd_port;
+	@Value("${ETCD_USER}")
+	private String etcd_user;
+	@Value("${ETCD_PWD}")
+	private String etcd_pwd;
+	@Value("${LDAP_URL}")
+	private String ldap_url;
+	@Value("${LDAP_USER_DN}")
+	private String ldap_userDN;
+	@Value("${LDAP_PASSWORD}")
+	private String ldap_password;
+	@Value("${LDAP_BASE}")
+	private String ldap_base;
+	@Value("${LDAP_GROUP}")
+	private String ldap_group;
+	@Value("${LDAP_GROUP_ID}")
+	private String ldap_group_id;
+	@Value("${KRB_KDC_HOST}")
+	private String krb_kdcHost;
+	@Value("${KRB_USER_PRINCIPAL}")
+	private String krb_userPrincipal;
+	@Value("${KRB_KEYTAB_LOCATION}")
+	private String krb_keytabLocation;
+	@Value("${KRB_ADMIN_PASSWORD}")
+	private String krb_adminPwd;
+	@Value("${KRB_REALM}")
+	private String krb_realm;
+	@Value("${KRB_KRB5FILEPATH}")
+	private String krb_krb5FilePath;
+	@Value("${CLUSTER_NAME}")
+	private String cluster_name;
+	@Value("${RANGER_URL}")
+	private String ranger_url;
+	@Value("${RANGER_ADMIN_USER}")
+	private String ranger_user;
+	@Value("${RANGER_ADMIN_PASSWORD}")
+	private String ranger_pwd;
+	@Value("${HDFS_NAME_NODE}")
+	private String hdfs_nameNode;
+	@Value("${HDFS_RPC_PORT}")
+	private String hdfs_rpcPort;
+	@Value("${HDFS_PORT}")
+	private String hdfs_port;
+	@Value("${HDFS_SUPER_USER}")
+	private String hdfs_superUser;
+	@Value("${HDFS_USER_KEYTAB}")
+	private String hdfs_userKeytab;
+	@Value("${HDFS_NAMESERVICES}")
+	private String hdfs_nameservices;
+	@Value("${HDFS_NAMENODE1_ADDR}")
+	private String hdfs_nameNode1;
+	@Value("${HDFS_NAMENODE2_ADDR}")
+	private String hdfs_nameNode2;
+	@Value("${HDFS_NAMENODE1}")
+	private String hdfs_nameNode1_addr;
+	@Value("${HDFS_NAMENODE2}")
+	private String hdfs_nameNode2_addr;
+	@Value("${HBASE_MASTER_URL}")
+	private String hbase_masterUrl;
+	@Value("${HBASE_MASTER_PRINCIPAL}")
+	private String hbase_masterPrincipal;
+	@Value("${HBASE_MASTER_USER_KEYTAB}")
+	private String hbase_masterUserKeytab;
+	@Value("${HBASE_ZOOKEEPER_QUORUM}")
+	private String hbase_zookeeper_quorum;
+	@Value("${HBASE_ZOOKEEPER_CLIENT_PORT}")
+	private String hbase_zookeeper_clientPort;
+	@Value("${HBASE_ZOOKEEPER_ZNODE_PARENT}")
+	private String hbase_zookeeper_znodeParent;
+	@Value("${HBASE_MASTER}")
+	private String hbase_master;
+	@Value("${HBASE_REST_PORT}")
+	private String hbase_restPort;
+	@Value("${HIVE_HOST}")
+	private String hive_host;
+	@Value("${HIVE_PORT}")
+	private String hive_port;
+	@Value("${HIVE_SUPER_USER}")
+	private String hive_superUser;
+	@Value("$HIVE_SUPER_USER_KEYTAB{}")
+	private String hive_superUserKeytab;
+	@Value("${AMBARI_HOST}")
+	private String ambari_host;
+	@Value("${AMBARI_ADMIN_USER}")
+	private String ambari_adminUser;
+	@Value("${AMBARI_ADMIN_PWD}")
+	private String ambari_adminPwd;
+	@Value("${YARN_RESOURCEMANAGER_HOST}")
+	private String yarn_rm_host;
+	@Value("${YARN_RESOURCEMANAGER_PORT}")
+	private String yarn_rm_port;
+	@Value("${YARN_RESOURCEMANAGER_URL}")
+	private String yarn_rm_url;
+	@Value("${YARN_RESOURCEMANAGER_URL2}")
+	private String yarn_rm_url2;
+	@Value("${OC_ZK_CONNECTION}")
+	private String zk_connection; // eg: ochadoop111.jcloud.local:2181
+	@Value("${KAFKA_JAAS_PATH}")
+	private String kafka_jaas_path;
+	@Value("${KAFKA_HOSTS}")
+	private String kafka_hosts;
+	@Value("${KAFKA_PORT}")
+	private String kafka_port;
+	@Value("${KAFKA_REP_FACTOR}")
+	private String kafka_rep;
+	@Value("${KRB_ENABLE}")
+	private boolean krb_enable = true;
+	@Value("${BROKER_ID}")
+	private String brokerId;
+	@Value("${MR_HISTORY_URL}")
+	private String mr_history_url;
+	@Value("${SPARK_THRIFT_SERVER}")
+	private String spark_thrift_server;
+	@Value("${SPARK_THRIFT_PORT}")
+	private String spark_thrift_port;
+	@Value("${SPARK_HISTORY_URL}")
+	private String spark_history_url;
 
 	public boolean krbEnabled() {
 		return krb_enable;
@@ -409,22 +366,6 @@ public class ClusterConfig implements EnvironmentAware {
 		return yarn_rm_url;
 	}
 
-	public String getMRHistoryURL() {
-		return mr_history_url;
-	}
-
-	public String getSparkThriftServer() {
-		return spark_thrift_server;
-	}
-
-	public String getSparkThriftPort() {
-		return spark_thrift_port;
-	}
-
-	public String getSparkHistoryURL() {
-		return spark_history_url;
-	}
-
 	public etcdClient getEtcdClient() {
 		if (Strings.isNullOrEmpty(brokerId)) {
 			System.out.println("ERROR: BROKER_ID is null in Env.");
@@ -484,6 +425,14 @@ public class ClusterConfig implements EnvironmentAware {
 
 	public String getKafka_rep() {
 		return kafka_rep;
+	}
+
+	public String getSparkThriftServer() {
+		return spark_thrift_server;
+	}
+
+	public String getSparkThriftPort() {
+		return spark_thrift_port;
 	}
 
 }
