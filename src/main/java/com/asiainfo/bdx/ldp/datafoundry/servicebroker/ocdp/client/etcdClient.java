@@ -1,13 +1,11 @@
 package com.asiainfo.bdx.ldp.datafoundry.servicebroker.ocdp.client;
 
 import java.net.URI;
-import java.util.List;
 
 import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
 import com.justinsb.etcd.EtcdClient;
 import com.justinsb.etcd.EtcdClientException;
-import com.justinsb.etcd.EtcdNode;
 import com.justinsb.etcd.EtcdResult;
 
 /**
@@ -28,24 +26,11 @@ public class etcdClient {
 		this.innerClient = new EtcdClient(
 				URI.create("http://" + etcd_user + ":" + etcd_password + "@" + etcd_host + ":" + etcd_port));
 		PATH_PREFIX = "/dp-brokers/" + brokerId;
-		check();
 	}
-
-	private void check() {
-		if (noChildren(PATH_PREFIX)) {
-			System.out.println("ERROR: Broker path not found in ETCD: " + PATH_PREFIX);
-			throw new RuntimeException("Broker path not found in ETCD: " + PATH_PREFIX);
-		}
-	}
-
-	private boolean noChildren(String pATH_PREFIX2) {
-		List<EtcdNode> children = null;
-		try {
-			children = innerClient.listDirectory(PATH_PREFIX);
-		} catch (EtcdClientException e) {
-			e.printStackTrace();
-		}
-		return (children == null || children.isEmpty());
+	
+	public static void main(String[] args) {
+		new etcdClient("10.1.236.146", "2379", "admin", "admin", "ethanscluster");
+		System.out.println(">>> end of main");
 	}
 
 	private String assemblePath(String suffix) {
