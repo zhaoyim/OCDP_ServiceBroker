@@ -355,7 +355,7 @@ public class KafkaClient {
 				map = createZkClientAndConnection(ZK_CONNECTION, Integer.valueOf(SESSION_TIMEOUT), Integer.valueOf(CONN_TIMEOUT));
 				LOG.info("OC_ZK_CONNECTION set to : {}", ZK_CONNECTION);
 				LOG.info("OC_ZK_CONN_TIMEOUT_MS = {}, OC_ZK_SESSTION_TIMEOUT_MS = {}", CONN_TIMEOUT, SESSION_TIMEOUT);
-			} catch (Throwable e) {
+			} catch (Exception e) {
 				LOG.error("Class init error:", e);
 				throw new RuntimeException(e);
 			}
