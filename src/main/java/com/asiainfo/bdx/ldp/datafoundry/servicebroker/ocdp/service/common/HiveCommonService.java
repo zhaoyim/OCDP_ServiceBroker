@@ -88,6 +88,7 @@ public class HiveCommonService {
 	}
 
 	public String createDatabase(String databaseName) throws Exception {
+		Statement stmt = null;
 		try {
 			if (krb_enabled) {
 				BrokerUtil.authentication(this.conf, this.clusterConfig.getHiveSuperUser(),
@@ -96,7 +97,7 @@ public class HiveCommonService {
 
 			Class.forName(driverName);
 			this.conn = DriverManager.getConnection(this.hiveJDBCUrl);
-			Statement stmt = conn.createStatement();
+			stmt = conn.createStatement();
 			stmt.execute("create database " + databaseName);
 		} catch (ClassNotFoundException e) {
 			logger.error("Hive JDBC driver not found in classpath.");
@@ -107,7 +108,9 @@ public class HiveCommonService {
 			//e.printStackTrace();
 			throw e;
 		} finally {
-			conn.close();
+			if (stmt != null) {
+				stmt.close();
+			}
 			logger.info("Hive Database " + databaseName + " has been created.");
 		}
 		return databaseName;
