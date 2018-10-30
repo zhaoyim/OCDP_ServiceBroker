@@ -15,6 +15,4 @@ COPY datafoundry-ocdp-service-broker.jar app.jar
 
 COPY start.sh start.sh 
 
-#ENTRYPOINT ["java", "-jar", "./app.jar"]
-
 ENTRYPOINT ["/bin/bash", "-c", "sh ./start.sh"]
