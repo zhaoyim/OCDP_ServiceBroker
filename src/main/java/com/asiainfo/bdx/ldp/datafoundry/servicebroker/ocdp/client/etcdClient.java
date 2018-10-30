@@ -28,11 +28,6 @@ public class etcdClient {
 		PATH_PREFIX = "/dp-brokers/" + brokerId;
 	}
 	
-	public static void main(String[] args) {
-		new etcdClient("10.1.236.146", "2379", "admin", "admin", "ethanscluster");
-		System.out.println(">>> end of main");
-	}
-
 	private String assemblePath(String suffix) {
 		if (!suffix.startsWith("/")) {
 			System.out.println("ERROR: Path not start with '/': " + suffix);
