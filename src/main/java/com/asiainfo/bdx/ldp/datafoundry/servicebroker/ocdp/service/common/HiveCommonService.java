@@ -162,6 +162,7 @@ public class HiveCommonService {
 	}
 
 	public void deleteDatabase(String dbName) throws Exception {
+		Statement stmt = null;
 		try {
 			if (krb_enabled) {
 				BrokerUtil.authentication(this.conf, this.clusterConfig.getHiveSuperUser(),
@@ -170,17 +171,18 @@ public class HiveCommonService {
 
 			Class.forName(driverName);
 			this.conn = DriverManager.getConnection(this.hiveJDBCUrl);
-			Statement stmt = conn.createStatement();
+			stmt = conn.createStatement();
 			stmt.execute("drop database if exists " + dbName + " cascade");
 		} catch (ClassNotFoundException e) {
 			logger.error("Hive JDBC driver not found in classpath.");
-			//e.printStackTrace();
 			throw e;
 		} catch (SQLException e) {
 			logger.error("Hive database drop fail due to: " + e.getLocalizedMessage());
-			//e.printStackTrace();
 			throw e;
 		} finally {
+			if (stmt != null) {
+				stmt.close();
+			}
 			conn.close();
 		}
 	}
