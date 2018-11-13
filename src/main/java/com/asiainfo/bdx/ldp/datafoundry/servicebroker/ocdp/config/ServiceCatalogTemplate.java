@@ -97,14 +97,14 @@ public class ServiceCatalogTemplate {
 				try {
 					br.close();
 				} catch (IOException e) {
-					e.printStackTrace();
+					LOG.error("Exception while close FileReader: ", e);
 				}
 			}
 			if (reader != null) {
 				try {
 					reader.close();
 				} catch (IOException e) {
-					e.printStackTrace();
+					LOG.error("Exception while close FileReader: ", e);
 				}
 			}
 		}
