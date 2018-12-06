@@ -6,6 +6,7 @@ import java.nio.charset.Charset;
 
 import org.apache.hadoop.hbase.util.Pair;
 import org.apache.http.ParseException;
+import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpEntityEnclosingRequestBase;
 import org.apache.http.client.methods.HttpPost;
@@ -45,11 +46,11 @@ public class KMSClient {
 	private ClusterConfig config;
 
 	/**
-	 * Apply for keytab of specified user
+	 * Create keytab for specified user
 	 * 
 	 * @return principal and download link of corresponding keytab
 	 */
-	public Pair<String, String> applyKeytab(String username) {
+	public Pair<String, String> createKeytab(String username) {
 		String url = baseURI + "/v1/api/kerberos/keytab/" + username;
 		CloseableHttpClient httpclient = HttpClients.custom().build();
 		try {
@@ -96,11 +97,15 @@ public class KMSClient {
 	private HttpPost getHTttpPost(String url) {
 		HttpPost httpPost = new HttpPost(url);
 		httpPost.addHeader(CONTENT_TYPE, CONTENT_TYPE_VALUE);
+		RequestConfig rc = RequestConfig.custom().setConnectTimeout(5000).setConnectionRequestTimeout(5000)
+				.setSocketTimeout(10000).build();
+		httpPost.setConfig(rc);
 		return httpPost;
 	}
 
 	private Pair<String, String> getPrincipalAndUrl(CloseableHttpResponse response) throws ParseException, IOException {
 		String rspEntity = EntityUtils.toString(response.getEntity(), Charset.forName(UTF_8));
+		LOG.debug("KMS response entity: " + rspEntity);
 		JsonParser parser = new JsonParser();
 		JsonElement json = parser.parse(rspEntity);
 		String principal = json.getAsJsonObject().getAsJsonPrimitive(KMSRequestTemplate.CreatKeytab.KEY_PRINCIPAL)
