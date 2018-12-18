@@ -15,35 +15,8 @@ import com.asiainfo.bdx.ldp.datafoundry.servicebroker.ocdp.client.yarnClient;
 import com.google.common.base.Strings;
 
 @Configuration
-@PropertySource(value = {"file:E:\\gitlab\\OCDP_ServiceBroker\\src\\main\\resources\\myprops.properties"})
-public class ClusterConfig {
-	@Override
-	public String toString() {
-		return "ClusterConfig2 [etcd_host=" + etcd_host + ", etcd_port=" + etcd_port + ", etcd_user=" + etcd_user
-				+ ", etcd_pwd=" + etcd_pwd + ", ldap_url=" + ldap_url + ", ldap_userDN=" + ldap_userDN
-				+ ", ldap_password=" + ldap_password + ", ldap_base=" + ldap_base + ", ldap_group=" + ldap_group
-				+ ", ldap_group_id=" + ldap_group_id + ", krb_kdcHost=" + krb_kdcHost + ", krb_userPrincipal="
-				+ krb_userPrincipal + ", krb_keytabLocation=" + krb_keytabLocation + ", krb_adminPwd=" + krb_adminPwd
-				+ ", krb_realm=" + krb_realm + ", krb_krb5FilePath=" + krb_krb5FilePath + ", cluster_name="
-				+ cluster_name + ", ranger_url=" + ranger_url + ", ranger_user=" + ranger_user + ", ranger_pwd="
-				+ ranger_pwd + ", hdfs_nameNode=" + hdfs_nameNode + ", hdfs_rpcPort=" + hdfs_rpcPort + ", hdfs_port="
-				+ hdfs_port + ", hdfs_superUser=" + hdfs_superUser + ", hdfs_userKeytab=" + hdfs_userKeytab
-				+ ", hdfs_nameservices=" + hdfs_nameservices + ", hdfs_nameNode1=" + hdfs_nameNode1
-				+ ", hdfs_nameNode2=" + hdfs_nameNode2 + ", hdfs_nameNode1_addr=" + hdfs_nameNode1_addr
-				+ ", hdfs_nameNode2_addr=" + hdfs_nameNode2_addr + ", hbase_masterUrl=" + hbase_masterUrl
-				+ ", hbase_masterPrincipal=" + hbase_masterPrincipal + ", hbase_masterUserKeytab="
-				+ hbase_masterUserKeytab + ", hbase_zookeeper_quorum=" + hbase_zookeeper_quorum
-				+ ", hbase_zookeeper_clientPort=" + hbase_zookeeper_clientPort + ", hbase_zookeeper_znodeParent="
-				+ hbase_zookeeper_znodeParent + ", hbase_master=" + hbase_master + ", hbase_restPort=" + hbase_restPort
-				+ ", hive_host=" + hive_host + ", hive_port=" + hive_port + ", hive_superUser=" + hive_superUser
-				+ ", hive_superUserKeytab=" + hive_superUserKeytab + ", ambari_host=" + ambari_host
-				+ ", ambari_adminUser=" + ambari_adminUser + ", ambari_adminPwd=" + ambari_adminPwd + ", yarn_rm_host="
-				+ yarn_rm_host + ", yarn_rm_port=" + yarn_rm_port + ", yarn_rm_url=" + yarn_rm_url + ", yarn_rm_url2="
-				+ yarn_rm_url2 + ", zk_connection=" + zk_connection + ", kafka_jaas_path=" + kafka_jaas_path
-				+ ", kafka_hosts=" + kafka_hosts + ", kafka_port=" + kafka_port + ", kafka_rep=" + kafka_rep
-				+ ", krb_enable=" + krb_enable + ", brokerId=" + brokerId + "]";
-	}
-	
+@PropertySource(value = {"file:/etc/configurations/myprops.properties"})
+public class ClusterConfig {	
 	@Bean
     public static PropertySourcesPlaceholderConfigurer propertySourcesPlaceholderConfigurer() {
         return new PropertySourcesPlaceholderConfigurer();
@@ -173,6 +146,30 @@ public class ClusterConfig {
 	private String spark_thrift_port;
 	@Value("${SPARK_HISTORY_URL}")
 	private String spark_history_url;
+	@Value("${KMS_IP}")
+	private String kms_ip;
+	@Value("${KMS_PORT}")
+	private String kms_port;
+	@Value("${KMS_ADMIN_NAME}")
+	private String kms_admin_name;
+	@Value("${KMS_ADMIN_PASSWORD}")
+	private String kms_admin_password;
+	
+	public String getKms_ip() {
+		return kms_ip;
+	}
+
+	public String getKms_port() {
+		return kms_port;
+	}
+
+	public String getKms_admin_name() {
+		return kms_admin_name;
+	}
+
+	public String getKms_admin_password() {
+		return kms_admin_password;
+	}
 
 	public boolean krbEnabled() {
 		return krb_enable;
@@ -449,6 +446,37 @@ public class ClusterConfig {
 
 	public String getSparkThriftPort() {
 		return spark_thrift_port;
+	}
+
+	@Override
+	public String toString() {
+		return "ClusterConfig [etcd_host=" + etcd_host + ", etcd_port=" + etcd_port + ", etcd_user=" + etcd_user
+				+ ", etcd_pwd=" + etcd_pwd + ", ldap_url=" + ldap_url + ", ldap_userDN=" + ldap_userDN
+				+ ", ldap_password=" + ldap_password + ", ldap_base=" + ldap_base + ", ldap_group=" + ldap_group
+				+ ", ldap_group_id=" + ldap_group_id + ", krb_kdcHost=" + krb_kdcHost + ", krb_userPrincipal="
+				+ krb_userPrincipal + ", krb_keytabLocation=" + krb_keytabLocation + ", krb_adminPwd=" + krb_adminPwd
+				+ ", krb_realm=" + krb_realm + ", krb_krb5FilePath=" + krb_krb5FilePath + ", cluster_name="
+				+ cluster_name + ", ranger_url=" + ranger_url + ", ranger_user=" + ranger_user + ", ranger_pwd="
+				+ ranger_pwd + ", hdfs_nameNode=" + hdfs_nameNode + ", hdfs_rpcPort=" + hdfs_rpcPort + ", hdfs_port="
+				+ hdfs_port + ", hdfs_superUser=" + hdfs_superUser + ", hdfs_userKeytab=" + hdfs_userKeytab
+				+ ", hdfs_nameservices=" + hdfs_nameservices + ", hdfs_nameNode1=" + hdfs_nameNode1
+				+ ", hdfs_nameNode2=" + hdfs_nameNode2 + ", hdfs_nameNode1_addr=" + hdfs_nameNode1_addr
+				+ ", hdfs_nameNode2_addr=" + hdfs_nameNode2_addr + ", hbase_masterUrl=" + hbase_masterUrl
+				+ ", hbase_masterPrincipal=" + hbase_masterPrincipal + ", hbase_masterUserKeytab="
+				+ hbase_masterUserKeytab + ", hbase_zookeeper_quorum=" + hbase_zookeeper_quorum
+				+ ", hbase_zookeeper_clientPort=" + hbase_zookeeper_clientPort + ", hbase_zookeeper_znodeParent="
+				+ hbase_zookeeper_znodeParent + ", hbase_master=" + hbase_master + ", hbase_restPort=" + hbase_restPort
+				+ ", hive_host=" + hive_host + ", hive_port=" + hive_port + ", hive_superUser=" + hive_superUser
+				+ ", hive_superUserKeytab=" + hive_superUserKeytab + ", ambari_host=" + ambari_host
+				+ ", ambari_adminUser=" + ambari_adminUser + ", ambari_adminPwd=" + ambari_adminPwd + ", yarn_rm_host="
+				+ yarn_rm_host + ", yarn_rm_port=" + yarn_rm_port + ", yarn_rm_url=" + yarn_rm_url + ", yarn_rm_url2="
+				+ yarn_rm_url2 + ", zk_connection=" + zk_connection + ", kafka_jaas_path=" + kafka_jaas_path
+				+ ", kafka_hosts=" + kafka_hosts + ", kafka_port=" + kafka_port + ", kafka_rep=" + kafka_rep
+				+ ", krb_enable=" + krb_enable + ", brokerId=" + brokerId + ", brokerUser=" + brokerUser
+				+ ", brokerPassword=" + brokerPassword + ", mr_history_url=" + mr_history_url + ", spark_thrift_server="
+				+ spark_thrift_server + ", spark_thrift_port=" + spark_thrift_port + ", spark_history_url="
+				+ spark_history_url + ", kms_ip=" + kms_ip + ", kms_port=" + kms_port + ", kms_admin_name="
+				+ kms_admin_name + ", kms_admin_password=" + kms_admin_password + "]";
 	}
 
 }
