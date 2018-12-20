@@ -19,7 +19,6 @@ import com.asiainfo.bdx.ldp.datafoundry.servicebroker.ocdp.client.rangerClient;
 import com.asiainfo.bdx.ldp.datafoundry.servicebroker.ocdp.config.CatalogConfig;
 import com.asiainfo.bdx.ldp.datafoundry.servicebroker.ocdp.config.ClusterConfig;
 import com.asiainfo.bdx.ldp.datafoundry.servicebroker.ocdp.exception.OCKafkaException;
-import com.asiainfo.bdx.ldp.datafoundry.servicebroker.ocdp.model.CustomizeQuotaItem;
 import com.asiainfo.bdx.ldp.datafoundry.servicebroker.ocdp.model.RangerV2Policy;
 import com.asiainfo.bdx.ldp.datafoundry.servicebroker.ocdp.model.ServiceInstance;
 import com.asiainfo.bdx.ldp.datafoundry.servicebroker.ocdp.service.OCDPAdminService;
@@ -43,6 +42,10 @@ public class KafkaAdminService implements OCDPAdminService{
 	
 	private rangerClient ranger;
 	
+	private static final String PLAN_DEFAULT = "default";
+	
+	private static final String PLAN_MAX = "max";
+
 	@SuppressWarnings("serial")
 	private Map<String, String> parameterMapping = new HashMap<String, String>(){{
 		put(Constants.PAR_QUOTA, Constants.CONFIG_PAR_SIZE);
@@ -243,14 +246,15 @@ public class KafkaAdminService implements OCDPAdminService{
 	 * @param planQuota
 	 * @param cuzQuota 
 	 */
+	@SuppressWarnings("unchecked")
 	private void checkQuota(Map<String, Object> quota, Map<String, Object> planQuota, Map<String, Object> cuzQuota) {
-		CustomizeQuotaItem plan_topicQuota = (CustomizeQuotaItem)planQuota.get(Constants.TOPIC_QUOTA);
-		CustomizeQuotaItem plan_topicTTL = (CustomizeQuotaItem)planQuota.get(Constants.TOPIC_TTL);
-		CustomizeQuotaItem plan_parQuota = (CustomizeQuotaItem)planQuota.get(Constants.PAR_QUOTA);
+		Map<String, Integer> plan_topicQuota = (Map<String, Integer>)planQuota.get(Constants.TOPIC_QUOTA);
+		Map<String, Integer> plan_topicTTL = (Map<String, Integer>)planQuota.get(Constants.TOPIC_TTL);
+		Map<String, Integer> plan_parQuota = (Map<String, Integer>)planQuota.get(Constants.PAR_QUOTA);
 		if (cuzQuota == null || cuzQuota.isEmpty()) {
-			quota.put(Constants.TOPIC_QUOTA, plan_topicQuota.getDefault());
-			quota.put(Constants.TOPIC_TTL, plan_topicTTL.getDefault());
-			quota.put(Constants.PAR_QUOTA, plan_parQuota.getDefault());
+			quota.put(Constants.TOPIC_QUOTA, plan_topicQuota.get(PLAN_DEFAULT));
+			quota.put(Constants.TOPIC_TTL, plan_topicTTL.get(PLAN_DEFAULT));
+			quota.put(Constants.PAR_QUOTA, plan_parQuota.get(PLAN_DEFAULT));
 			return;
 		}
 		quota.put(Constants.TOPIC_QUOTA, validate(plan_topicQuota, cuzQuota.get(Constants.TOPIC_QUOTA)));
@@ -265,16 +269,16 @@ public class KafkaAdminService implements OCDPAdminService{
 	 * @param cuzValue
 	 * @return
 	 */
-	private String validate(CustomizeQuotaItem planItem, Object cuzValue) {
+	private String validate(Map<String, Integer> planItem, Object cuzValue) {
 		if (cuzValue == null) {
-			LOG.warn("Kafka quota not set, default value [{}] will be used.", planItem.getDefault());
-			return String.valueOf(planItem.getDefault());
+			LOG.warn("Kafka quota not set, default value [{}] will be used.", planItem.get(PLAN_DEFAULT));
+			return String.valueOf(planItem.get(PLAN_DEFAULT));
 		}
-		long planMax = planItem.getMax();
-		long cuzLong = Long.valueOf(String.valueOf(cuzValue));
-		LOG.info("Kafka quota values(custom/maximum/default): [{}]/[{}]/[{}]", cuzLong, planMax, planItem.getDefault());
+		Integer planMax = planItem.get(PLAN_MAX);
+		Integer cuzLong = Integer.valueOf(String.valueOf(cuzValue));
+		LOG.info("Kafka quota values(custom/maximum/default): [{}]/[{}]/[{}]", cuzLong, planMax, planItem.get(PLAN_DEFAULT));
 		if (planMax > 0) {
-			return cuzLong > planMax ? String.valueOf(planItem.getDefault()) : String.valueOf(cuzLong);
+			return cuzLong > planMax ? String.valueOf(planItem.get(PLAN_DEFAULT)) : String.valueOf(cuzLong);
 		} else {
 			// when theres no maximum limit, return custom value
 			return String.valueOf(cuzLong);

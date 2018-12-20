@@ -149,13 +149,13 @@ public class YarnAdminService implements OCDPAdminService {
     }
 
     @Override
-    public Map<String, Object> generateCredentialsInfo(String serviceInstanceId){
+    public Map<String, Object> generateCredentialsInfo(String resource){
         return new HashMap<String, Object>(){
             {
                 put("uri", clusterConfig.getYarnRMUrl());
                 put("host", clusterConfig.getYarnRMHost());
                 put("port", clusterConfig.getYarnRMPort());
-//                put(OCDPConstants.SPARK_RESOURCE_TYPE, "root."+serviceInstanceId);
+                put(OCDPConstants.SPARK_RESOURCE_TYPE, resource);
             }
         };
     }
