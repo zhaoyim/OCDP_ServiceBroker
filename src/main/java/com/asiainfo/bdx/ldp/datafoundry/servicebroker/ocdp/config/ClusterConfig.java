@@ -154,7 +154,13 @@ public class ClusterConfig {
 	private String kms_admin_name;
 	@Value("${KMS_ADMIN_PASSWORD}")
 	private String kms_admin_password;
+	@Value("${HADOOP_USER_NAME}")
+	private String hadoop_user_name;
 	
+	public String getHadoop_user_name() {
+		return hadoop_user_name;
+	}
+
 	public String getKms_ip() {
 		return kms_ip;
 	}
@@ -476,7 +482,8 @@ public class ClusterConfig {
 				+ ", brokerPassword=" + brokerPassword + ", mr_history_url=" + mr_history_url + ", spark_thrift_server="
 				+ spark_thrift_server + ", spark_thrift_port=" + spark_thrift_port + ", spark_history_url="
 				+ spark_history_url + ", kms_ip=" + kms_ip + ", kms_port=" + kms_port + ", kms_admin_name="
-				+ kms_admin_name + ", kms_admin_password=" + kms_admin_password + "]";
+				+ kms_admin_name + ", kms_admin_password=" + kms_admin_password + ", hadoop_user_name="
+				+ hadoop_user_name + "]";
 	}
 
 }
