@@ -1,7 +1,7 @@
 {"serviceDefinitions":[
   {"id":"ae67d4ba-5c4e-4937-a68b-5b47cfe356d8",
     "name":"Hdfs_${clustername}",
-    "description":"A Hadoop hdfs service broker implementation",
+    "description":"Hadoop分布式文件系统",
     "bindable":true,
     "plan_updateable":false,
     "plans":[
@@ -46,7 +46,7 @@
     },"requires":[],"dashboard_client":null},
   {"id":"d9845ade-9410-4c7f-8689-4e032c1a8450",
     "name":"Hbase_${clustername}",
-    "description":"A Hadoop hbase service broker implementation",
+    "description":"非关系型分布式数据库",
     "bindable":true,
     "plan_updateable":false,
     "plans":[
@@ -90,7 +90,7 @@
     "requires":[],"dashboard_client":null},
   {"id":"2ef26018-003d-4b2b-b786-0481d4ee9fa3",
     "name":"Hive_${clustername}",
-    "description":"A Hadoop hive service broker implementation",
+    "description":"建立在Hadoop架构之上的数据仓库",
     "bindable":true,
     "plan_updateable":false,
     "plans":[
@@ -125,7 +125,7 @@
     "requires":[],"dashboard_client":null},
   {"id":"ae0f2324-27a8-415b-9c7f-64ab6cd88d40",
     "name":"Mapreduce_${clustername}",
-    "description":"A Hadoop mapreduce service broker implementation",
+    "description":"建立在Hadoop架构之上的分布式计算框架",
     "bindable":true,
     "plan_updateable":false,
     "plans":[
@@ -160,7 +160,7 @@
     "requires":[],"dashboard_client":null},
   {"id":"d3b9a485-f038-4605-9b9b-29792f5c61d1",
     "name":"Spark_${clustername}",
-    "description":"A Spark service broker implementation",
+    "description":"建立在Hadoop架构之上的分布式计算框架",
     "bindable":true,
     "plan_updateable":false,
     "plans":[
@@ -195,7 +195,7 @@
     "requires":[],"dashboard_client":null},
   {"id":"7b738c78-d412-422b-ac3e-43a9fc72a4a7",
 	"name":"Kafka_${clustername}",
-	"description":"A Kafka service broker implementation",
+	"description":"分布式事务日志架构的大规模发布订阅消息队列",
 	"bindable":true,
 	"plan_updateable":false,
 	"plans":[
