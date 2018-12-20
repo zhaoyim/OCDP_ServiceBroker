@@ -54,6 +54,7 @@ public class KafkaAdminService implements OCDPAdminService{
 
     @Autowired
     public KafkaAdminService(ClusterConfig clusterConfig){
+    	LOG.info("ClusterConfig: " + clusterConfig);
         this.sys_env = clusterConfig;
         this.ranger = clusterConfig.getRangerClient();
         String rep = clusterConfig.getKafka_rep();

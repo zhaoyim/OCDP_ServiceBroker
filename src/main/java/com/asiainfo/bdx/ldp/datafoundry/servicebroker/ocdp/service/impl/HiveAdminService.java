@@ -40,6 +40,7 @@ public class HiveAdminService implements OCDPAdminService {
 	@Autowired
 	public HiveAdminService(ClusterConfig clusterConfig, HiveCommonService hiveCommonService,
 			HDFSAdminService hdfsAdminService) {
+    	logger.info("ClusterConfig: " + clusterConfig);
 		this.clusterConfig = clusterConfig;
 		this.hiveCommonService = hiveCommonService;
 		this.hdfsAdminService = hdfsAdminService;

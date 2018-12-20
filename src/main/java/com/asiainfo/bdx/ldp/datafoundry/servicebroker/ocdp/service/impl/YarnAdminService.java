@@ -35,6 +35,7 @@ public class YarnAdminService implements OCDPAdminService {
     @Autowired
     public YarnAdminService(ClusterConfig clusterConfig,
                             YarnCommonService yarnCommonService, HDFSAdminService hdfsAdminService){
+    	logger.info("ClusterConfig: " + clusterConfig);
         this.clusterConfig = clusterConfig;
         this.yarnCommonService = yarnCommonService;
         this.hdfsAdminService = hdfsAdminService;
