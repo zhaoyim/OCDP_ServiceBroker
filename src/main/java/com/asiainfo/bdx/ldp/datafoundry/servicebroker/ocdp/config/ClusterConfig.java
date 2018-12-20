@@ -15,7 +15,7 @@ import com.asiainfo.bdx.ldp.datafoundry.servicebroker.ocdp.client.yarnClient;
 import com.google.common.base.Strings;
 
 @Configuration
-@PropertySource(value = {"file:C:\\Users\\Ethan\\Desktop\\myprops.properties"})
+@PropertySource(value = {"file:/etc/configurations/myprops.properties"})
 public class ClusterConfig {	
 	@Bean
     public static PropertySourcesPlaceholderConfigurer propertySourcesPlaceholderConfigurer() {
