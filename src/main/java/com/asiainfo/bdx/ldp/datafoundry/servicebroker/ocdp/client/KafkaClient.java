@@ -7,8 +7,12 @@ import org.I0Itec.zkclient.ZkClient;
 import org.I0Itec.zkclient.ZkConnection;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.context.annotation.DependsOn;
+import org.springframework.stereotype.Component;
 
+import com.asiainfo.bdx.ldp.datafoundry.servicebroker.ocdp.config.ClusterConfig;
 import com.asiainfo.bdx.ldp.datafoundry.servicebroker.ocdp.exception.OCKafkaException;
+import com.asiainfo.bdx.ldp.datafoundry.servicebroker.ocdp.utils.SpringUtils;
 import com.google.common.base.Strings;
 
 import kafka.admin.AdminUtils;
@@ -25,6 +29,8 @@ import scala.collection.mutable.StringBuilder;
  * @author EthanWang
  *
  */
+@DependsOn(value = "springUtils")
+@Component
 public class KafkaClient {
 	private static final Logger LOG = LoggerFactory.getLogger(KafkaClient.class);
 	private static KafkaClient instance;
@@ -43,8 +49,9 @@ public class KafkaClient {
 		}
 		if (instance.isSecure) {
 			// ensure jaas file path correct.
-			System.setProperty("java.security.auth.login.config", getEnv("KAFKA_JAAS_PATH"));
-            System.setProperty("java.security.krb5.conf", getEnv("KRB_KRB5FILEPATH"));
+			ClusterConfig config = (ClusterConfig) SpringUtils.getContext().getBean("clusterConfig");
+			System.setProperty("java.security.auth.login.config", config.getKafka_jaas_path());
+            System.setProperty("java.security.krb5.conf", config.getKrb5FilePath());
 		}
 		return instance;
 	}
@@ -223,36 +230,15 @@ public class KafkaClient {
 		LOG.info("Topic [{}] has been deleted.", topicName);
 	}
 	
-	/**
-	 * @param n
-	 * @param d default value
-	 * @return
-	 */
-	private static String getEnv(String n, String d)
-	{
-		String v = System.getenv(n);
-		return v != null ? v.trim() : d;
-	}
-	
-	private static String getEnv(String n)
-	{
-		String v = System.getenv(n.trim());
-		if (v == null || v.isEmpty()) {
-			LOG.error("Environment parameter is null: " + n);
-			throw new RuntimeException("Environment parameter is null: " + n);
-		}
-		return v;
-	}
-	
 	private KafkaClient()
 	{
-//		isSecure = JaasUtils.isZkSecurityEnabled();
-		isSecure = Boolean.valueOf(getEnv("KRB_ENABLE", "true"));
+		ClusterConfig config = (ClusterConfig) SpringUtils.getContext().getBean("clusterConfig");
+		isSecure = Boolean.valueOf(config.krbEnabled());
         LOG.info("Kerberos enabled: " + isSecure);
         if (isSecure) {
-            System.setProperty("java.security.krb5.conf", getEnv("KRB_KRB5FILEPATH"));
-    		System.setProperty("java.security.auth.login.config", getEnv("KAFKA_JAAS_PATH"));
-    		LOG.info("Krb conf and Jaas files been set to {}, {}", getEnv("KRB_KRB5FILEPATH"), getEnv("KAFKA_JAAS_PATH"));
+            System.setProperty("java.security.krb5.conf", config.getKrb5FilePath());
+    		System.setProperty("java.security.auth.login.config", config.getKafka_jaas_path());
+    		LOG.info("Krb conf and Jaas files been set to {}, {}", config.getKrb5FilePath(), config.getKafka_jaas_path());
 		}
 		zkClient = new ZKClient(isSecure);
 	}
@@ -345,9 +331,10 @@ public class KafkaClient {
 		static
 		{
 			try {
-				CONN_TIMEOUT = getEnv("OC_ZK_CONN_TIMEOUT_MS", "30000");
-				SESSION_TIMEOUT = getEnv("OC_ZK_SESSTION_TIMEOUT_MS", "30000");
-				ZK_CONNECTION = getEnv("OC_ZK_CONNECTION", null);
+				CONN_TIMEOUT = "30000";
+				SESSION_TIMEOUT = "30000";
+				ClusterConfig config = (ClusterConfig) SpringUtils.getContext().getBean("clusterConfig");
+				ZK_CONNECTION = config.getZk_connection();
 				if (ZK_CONNECTION == null || ZK_CONNECTION.isEmpty()) {
 					LOG.error("OC_ZK_CONNECTION not configured in system environment.");
 					throw new RuntimeException("OC_ZK_CONNECTION not configured in system environment.");

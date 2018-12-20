@@ -1,7 +1,7 @@
 {"serviceDefinitions":[
   {"id":"ae67d4ba-5c4e-4937-a68b-5b47cfe356d8",
     "name":"Hdfs_${clustername}",
-    "description":"Hadoop分布式文件系统",
+    "description":"Hadoop分布式文件系统 ",
     "bindable":true,
     "plan_updateable":false,
     "plans":[
