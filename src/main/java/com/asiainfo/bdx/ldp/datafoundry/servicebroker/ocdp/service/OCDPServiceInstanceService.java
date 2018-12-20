@@ -110,7 +110,8 @@ public class OCDPServiceInstanceService implements ServiceInstanceService {
             // Determine operation type: provision, delete or update
             OperationType operationType = getOperationType(serviceInstanceId);
             if (operationType == null){
-                throw new OCDPServiceException("Service instance " + serviceInstanceId + " not exist.");
+            	logger.error("Service instance not exist: " + serviceInstanceId + ", mark response as OperationState.FAILED");
+                return new GetLastServiceOperationResponse().withOperationState(OperationState.FAILED);
             }
             // Get Last operation response object from cache
             boolean is_operation_done = false;
