@@ -65,6 +65,7 @@ public class HDFSAdminService implements OCDPAdminService{
     private static final String HDFS_STORAGE_SPACE_QUOTA = "1000000000";
     
     private boolean krb_enabled;
+    private static final String HADOOPUERNAME= "HADOOP_USER_NAME";
 
     @Autowired
     public HDFSAdminService(ClusterConfig clusterConfig){
@@ -101,7 +102,9 @@ public class HDFSAdminService implements OCDPAdminService{
             conf.set("hdfs.kerberos.principal", this.clusterConfig.getHdfsSuperUser());
             conf.set("hdfs.keytab.file", this.clusterConfig.getHdfsUserKeytab());
             System.setProperty("java.security.krb5.conf", this.clusterConfig.getKrb5FilePath());
+            return;
 		}
+        System.setProperty(HADOOPUERNAME, this.clusterConfig.getHadoop_user_name());
     }
 
 
@@ -255,7 +258,7 @@ public class HDFSAdminService implements OCDPAdminService{
 
     @Override
     public Map<String, Object> generateCredentialsInfo(String resourceName){
-        if (clusterConfig.getHdfsNameservices() == null){
+        if (Strings.isNullOrEmpty(this.clusterConfig.getHdfsNameservices())){
             // non-HA
             return new HashMap<String, Object>(){
                 {
