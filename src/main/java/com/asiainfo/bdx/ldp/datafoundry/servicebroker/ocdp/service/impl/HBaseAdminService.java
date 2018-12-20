@@ -67,6 +67,7 @@ public class HBaseAdminService implements OCDPAdminService{
 
     @Autowired
     public HBaseAdminService(ClusterConfig clusterConfig){
+    	logger.info("ClusterConfig: " + clusterConfig);
         this.clusterConfig = clusterConfig;
 
         this.rc = clusterConfig.getRangerClient();

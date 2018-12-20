@@ -27,6 +27,7 @@ import com.asiainfo.bdx.ldp.datafoundry.servicebroker.ocdp.service.OCDPAdminServ
 import com.asiainfo.bdx.ldp.datafoundry.servicebroker.ocdp.utils.BrokerUtil;
 import com.asiainfo.bdx.ldp.datafoundry.servicebroker.ocdp.utils.OCDPAdminServiceMapper;
 import com.asiainfo.bdx.ldp.datafoundry.servicebroker.ocdp.utils.OCDPConstants;
+import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -64,9 +65,11 @@ public class HDFSAdminService implements OCDPAdminService{
     private static final String HDFS_STORAGE_SPACE_QUOTA = "1000000000";
     
     private boolean krb_enabled;
+    private static final String HADOOPUERNAME= "HADOOP_USER_NAME";
 
     @Autowired
     public HDFSAdminService(ClusterConfig clusterConfig){
+    	logger.info("ClusterConfig: " + clusterConfig);
         this.clusterConfig = clusterConfig;
 
         this.rc = clusterConfig.getRangerClient();
@@ -75,7 +78,7 @@ public class HDFSAdminService implements OCDPAdminService{
 
         this.conf = new Configuration();
 
-        if (this.clusterConfig.getHdfsNameservices() != null) {
+        if (!Strings.isNullOrEmpty(this.clusterConfig.getHdfsNameservices())) {
             String nameservices = this.clusterConfig.getHdfsNameservices();
             String[] namenodesAddr = {this.clusterConfig.getHdfs_nameNode1_addr(), this.clusterConfig.getHdfs_nameNode2_addr()};
             String[] namenodes = {this.clusterConfig.getHdfs_nameNode1(), this.clusterConfig.getHdfs_nameNode2()};
@@ -90,7 +93,7 @@ public class HDFSAdminService implements OCDPAdminService{
         else {
             this.hdfsRPCUrl = "hdfs://" + this.clusterConfig.getHdfsNameNode() + ":" + this.clusterConfig.getHdfsRpcPort();
         }
-        
+        logger.info("hdfs uri: " + this.hdfsRPCUrl);
         this.krb_enabled = this.clusterConfig.krbEnabled();
         logger.info("Kerberos enabled: " + this.krb_enabled);
         
@@ -99,7 +102,9 @@ public class HDFSAdminService implements OCDPAdminService{
             conf.set("hdfs.kerberos.principal", this.clusterConfig.getHdfsSuperUser());
             conf.set("hdfs.keytab.file", this.clusterConfig.getHdfsUserKeytab());
             System.setProperty("java.security.krb5.conf", this.clusterConfig.getKrb5FilePath());
+            return;
 		}
+        System.setProperty(HADOOPUERNAME, this.clusterConfig.getHadoop_user_name());
     }
 
 
@@ -138,7 +143,6 @@ public class HDFSAdminService implements OCDPAdminService{
             }
         }catch (Exception e){
             logger.error("Create HDFS folder fails due to: ", e);
-            //e.printStackTrace();
             throw e;
         } finally {
             this.dfs.close();
@@ -254,7 +258,7 @@ public class HDFSAdminService implements OCDPAdminService{
 
     @Override
     public Map<String, Object> generateCredentialsInfo(String resourceName){
-        if (clusterConfig.getHdfsNameservices() == null){
+        if (Strings.isNullOrEmpty(this.clusterConfig.getHdfsNameservices())){
             // non-HA
             return new HashMap<String, Object>(){
                 {

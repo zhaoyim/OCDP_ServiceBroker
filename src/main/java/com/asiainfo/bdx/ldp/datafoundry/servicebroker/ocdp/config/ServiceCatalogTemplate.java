@@ -1,12 +1,11 @@
 package com.asiainfo.bdx.ldp.datafoundry.servicebroker.ocdp.config;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.List;
 import java.util.regex.Pattern;
 
+import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,6 +14,7 @@ import org.springframework.stereotype.Component;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Preconditions;
+import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
@@ -30,7 +30,6 @@ import com.google.gson.JsonParser;
 @Component
 public class ServiceCatalogTemplate {
 	private static final Logger LOG = LoggerFactory.getLogger(ServiceCatalogTemplate.class);
-	private static final String FILE;
 	private static final String CLUSTER = Pattern.quote("${clustername}");
 	private JsonObject template;
 
@@ -55,56 +54,32 @@ public class ServiceCatalogTemplate {
 		}
 	}
 
-	static {
-		try {
-			String base = ServiceCatalogTemplate.class.getResource("/").getPath();
-			FILE = base + File.separator + "service-catalog-template.json";
-		} catch (Exception e) {
-			LOG.error("Exception while init class: ", e);
-			throw new RuntimeException("Exception while init class: ", e);
-		}
-	}
-
 	@Autowired
 	public ServiceCatalogTemplate(ClusterConfig clusterConfig) {
-		String jsonString = parseTemplate(FILE);
+		String jsonString = parseTemplate("service-catalog-template.json");
 		jsonString = jsonString.replaceAll(CLUSTER, clusterConfig.getClusterName());
 		template = new JsonParser().parse(jsonString).getAsJsonObject();
 	}
 
 	private static String parseTemplate(String filename) {
-		BufferedReader br = null;
-		FileReader reader = null;
+		InputStream in = null;
 		try {
-			File file = new File(filename);
-			if (!file.exists()) {
-				LOG.error("Template file not exist: " + file.getPath());
-				throw new RuntimeException("Template file not exist: " + file.getPath());
+			in = ServiceCatalogTemplate.class.getClassLoader().getResourceAsStream(filename);
+			String content = IOUtils.toString(in);
+			if (Strings.isNullOrEmpty(content)) {
+				LOG.error("Content is null: " + filename);
+				throw new RuntimeException("Content is null: " + filename);
 			}
-			reader = new FileReader(file);
-			br = new BufferedReader(reader);
-			StringBuilder sb = new StringBuilder();
-			String line = null;
-			while ((line = br.readLine()) != null) {
-				sb.append(line);
-			}
-			return sb.toString();
+			return content;
 		} catch (Exception e) {
 			LOG.error("Exception while parsing file: " + filename, e);
 			throw new RuntimeException("Exception while parsing file: " + filename, e);
 		} finally {
-			if (br != null) {
+			if (in != null) {
 				try {
-					br.close();
+					in.close();
 				} catch (IOException e) {
-					LOG.error("Exception while close FileReader: ", e);
-				}
-			}
-			if (reader != null) {
-				try {
-					reader.close();
-				} catch (IOException e) {
-					LOG.error("Exception while close FileReader: ", e);
+					LOG.error("Exception while close InputStream: ", e);
 				}
 			}
 		}
