@@ -2,6 +2,7 @@ package com.asiainfo.bdx.ldp.datafoundry.servicebroker.ocdp.config;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.charset.Charset;
 import java.util.List;
 import java.util.regex.Pattern;
 
@@ -65,7 +66,7 @@ public class ServiceCatalogTemplate {
 		InputStream in = null;
 		try {
 			in = ServiceCatalogTemplate.class.getClassLoader().getResourceAsStream(filename);
-			String content = IOUtils.toString(in);
+			String content = IOUtils.toString(in, Charset.forName("utf-8"));
 			if (Strings.isNullOrEmpty(content)) {
 				LOG.error("Content is null: " + filename);
 				throw new RuntimeException("Content is null: " + filename);
