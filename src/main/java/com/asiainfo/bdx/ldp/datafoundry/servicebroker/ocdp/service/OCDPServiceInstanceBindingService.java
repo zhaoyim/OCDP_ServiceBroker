@@ -97,7 +97,7 @@ public class OCDPServiceInstanceBindingService implements ServiceInstanceBinding
 				throw new RuntimeException("Binding of multiple users not supported! " + userList);
 			}
 			
-			String password = getPassWd(userList.get(0));
+//			String password = getPassWd(userList.get(0));
 
 			// Support for multiple users.Refer to: https://github.com/OCManager/OCDP_ServiceBroker/issues/48
 			logger.info("Assigning privileges to user:  " + userList + ", in service instance: " + request.getServiceInstanceId());
@@ -105,7 +105,7 @@ public class OCDPServiceInstanceBindingService implements ServiceInstanceBinding
 			String accessesStr = (String) params.get("accesses");
 			if (accessesStr != null && accessesStr.length() != 0) {
 				OCDPAdminService ocdp = getOCDPAdminService(request.getServiceDefinitionId());
-				addUserToServiceInstance(ocdp, instance, userList.get(0), password, trimAccesses(accessesStr));
+				addUserToServiceInstance(ocdp, instance, userList.get(0), null, trimAccesses(accessesStr));
 			} else {
 				logger.warn("Empty 'accesses' parameter in request, none privileges assigned to user: " + userList);
 			}
@@ -283,13 +283,13 @@ public class OCDPServiceInstanceBindingService implements ServiceInstanceBinding
 
 	private void addUserToServiceInstance(OCDPAdminService ocdp, ServiceInstance instance, String username,
 			String password, List<String> accesses) {
-		// check if user exist in Ldap, create user if not exist
-		checkLDAPUser(username);
+//		 check if user exist in Ldap, create user if not exist
+//		checkLDAPUser(username);
 		
-		if (krb_enabled) {
-			// check if user exist in KDC, create if not.
-			checkKerberosUser(username, password);
-		}
+//		if (krb_enabled) {
+//			 check if user exist in KDC, create if not.
+//			checkKerberosUser(username, password);
+//		}
 		
 		// 2) Create policy for service instance or append user to an exists policy
 		String serviceInstanceId = instance.getServiceInstanceId();
