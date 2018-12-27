@@ -75,13 +75,13 @@ public class ClusterConfig {
 	@Value("${HDFS_NAMESERVICES}")
 	private String hdfs_nameservices;
 	@Value("${HDFS_NAMENODE1_ADDR}")
-	private String hdfs_nameNode1;
-	@Value("${HDFS_NAMENODE2_ADDR}")
-	private String hdfs_nameNode2;
-	@Value("${HDFS_NAMENODE1}")
 	private String hdfs_nameNode1_addr;
-	@Value("${HDFS_NAMENODE2}")
+	@Value("${HDFS_NAMENODE2_ADDR}")
 	private String hdfs_nameNode2_addr;
+	@Value("${HDFS_NAMENODE1}")
+	private String hdfs_nameNode1;
+	@Value("${HDFS_NAMENODE2}")
+	private String hdfs_nameNode2;
 	@Value("${HBASE_MASTER_URL}")
 	private String hbase_masterUrl;
 	@Value("${HBASE_MASTER_PRINCIPAL}")
