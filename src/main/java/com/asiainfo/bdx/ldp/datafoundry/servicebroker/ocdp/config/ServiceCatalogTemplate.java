@@ -31,7 +31,7 @@ import com.google.gson.JsonParser;
 @Component
 public class ServiceCatalogTemplate {
 	private static final Logger LOG = LoggerFactory.getLogger(ServiceCatalogTemplate.class);
-	private static final String CLUSTER = Pattern.quote("${clustername}");
+	private static final String SVC_SUBFFIX_NAME = Pattern.quote("${svc_subffix_name}");
 	private JsonObject template;
 
 	public List<ServiceDefinition> getServices() {
@@ -58,7 +58,7 @@ public class ServiceCatalogTemplate {
 	@Autowired
 	public ServiceCatalogTemplate(ClusterConfig clusterConfig) {
 		String jsonString = parseTemplate("service-catalog-template.json");
-		jsonString = jsonString.replaceAll(CLUSTER, clusterConfig.getClusterName());
+		jsonString = jsonString.replaceAll(SVC_SUBFFIX_NAME, clusterConfig.getSvcSubffixName());
 		template = new JsonParser().parse(jsonString).getAsJsonObject();
 	}
 
