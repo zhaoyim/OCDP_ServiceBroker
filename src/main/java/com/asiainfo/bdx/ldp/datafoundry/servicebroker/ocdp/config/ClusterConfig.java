@@ -104,7 +104,7 @@ public class ClusterConfig {
 	private String hive_port;
 	@Value("${HIVE_SUPER_USER}")
 	private String hive_superUser;
-	@Value("$HIVE_SUPER_USER_KEYTAB{}")
+	@Value("${HIVE_SUPER_USER_KEYTAB}")
 	private String hive_superUserKeytab;
 	@Value("${AMBARI_HOST}")
 	private String ambari_host;
