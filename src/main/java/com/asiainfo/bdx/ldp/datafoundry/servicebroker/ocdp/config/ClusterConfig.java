@@ -104,7 +104,7 @@ public class ClusterConfig {
 	private String hive_port;
 	@Value("${HIVE_SUPER_USER}")
 	private String hive_superUser;
-	@Value("$HIVE_SUPER_USER_KEYTAB{}")
+	@Value("${HIVE_SUPER_USER_KEYTAB}")
 	private String hive_superUserKeytab;
 	@Value("${AMBARI_HOST}")
 	private String ambari_host;
@@ -156,6 +156,8 @@ public class ClusterConfig {
 	private String kms_admin_password;
 	@Value("${HADOOP_USER_NAME}")
 	private String hadoop_user_name;
+	@Value("${SVC_SUBFFIX_NAME}")
+	private String svc_subffix_name;
 	
 	public String getHadoop_user_name() {
 		return hadoop_user_name;
@@ -251,6 +253,14 @@ public class ClusterConfig {
 
 	public String getKrb5FilePath() {
 		return krb_krb5FilePath;
+	}
+
+	public String getSvcSubffixName() {
+		return svc_subffix_name;
+	}
+
+	public void setSvcSubffixName(String svc_subffix_name) {
+		this.svc_subffix_name = svc_subffix_name;
 	}
 
 	public String getClusterName() {
