@@ -15,13 +15,13 @@ import com.asiainfo.bdx.ldp.datafoundry.servicebroker.ocdp.client.yarnClient;
 import com.google.common.base.Strings;
 
 @Configuration
-@PropertySource(value = {"file:/etc/configurations/myprops.properties"})
-public class ClusterConfig {	
+@PropertySource(value = { "file:/etc/configurations/myprops.properties" })
+public class ClusterConfig {
 	@Bean
-    public static PropertySourcesPlaceholderConfigurer propertySourcesPlaceholderConfigurer() {
-        return new PropertySourcesPlaceholderConfigurer();
-    }
-	
+	public static PropertySourcesPlaceholderConfigurer propertySourcesPlaceholderConfigurer() {
+		return new PropertySourcesPlaceholderConfigurer();
+	}
+
 	@Value("${ETCD_HOST}")
 	private String etcd_host;
 	@Value("${ETCD_PORT}")
@@ -106,6 +106,8 @@ public class ClusterConfig {
 	private String hive_superUser;
 	@Value("${HIVE_SUPER_USER_KEYTAB}")
 	private String hive_superUserKeytab;
+	@Value("${HIVE_METASTORE_WAREHOUSE_DIRECTORY}")
+	private String hive_metastoreWarehouseDirectory;
 	@Value("${AMBARI_HOST}")
 	private String ambari_host;
 	@Value("${AMBARI_ADMIN_USER}")
@@ -158,7 +160,7 @@ public class ClusterConfig {
 	private String hadoop_user_name;
 	@Value("${SVC_SUBFFIX_NAME}")
 	private String svc_subffix_name;
-	
+
 	public String getHadoop_user_name() {
 		return hadoop_user_name;
 	}
@@ -371,6 +373,10 @@ public class ClusterConfig {
 		return hive_superUserKeytab;
 	}
 
+	public String getHiveMetastoreWarehouseDirectory() {
+		return hive_metastoreWarehouseDirectory;
+	}
+
 	public String getAmbari_host() {
 		return ambari_host;
 	}
@@ -483,17 +489,17 @@ public class ClusterConfig {
 				+ ", hbase_zookeeper_clientPort=" + hbase_zookeeper_clientPort + ", hbase_zookeeper_znodeParent="
 				+ hbase_zookeeper_znodeParent + ", hbase_master=" + hbase_master + ", hbase_restPort=" + hbase_restPort
 				+ ", hive_host=" + hive_host + ", hive_port=" + hive_port + ", hive_superUser=" + hive_superUser
-				+ ", hive_superUserKeytab=" + hive_superUserKeytab + ", ambari_host=" + ambari_host
-				+ ", ambari_adminUser=" + ambari_adminUser + ", ambari_adminPwd=" + ambari_adminPwd + ", yarn_rm_host="
-				+ yarn_rm_host + ", yarn_rm_port=" + yarn_rm_port + ", yarn_rm_url=" + yarn_rm_url + ", yarn_rm_url2="
-				+ yarn_rm_url2 + ", zk_connection=" + zk_connection + ", kafka_jaas_path=" + kafka_jaas_path
-				+ ", kafka_hosts=" + kafka_hosts + ", kafka_port=" + kafka_port + ", kafka_rep=" + kafka_rep
-				+ ", krb_enable=" + krb_enable + ", brokerId=" + brokerId + ", brokerUser=" + brokerUser
-				+ ", brokerPassword=" + brokerPassword + ", mr_history_url=" + mr_history_url + ", spark_thrift_server="
-				+ spark_thrift_server + ", spark_thrift_port=" + spark_thrift_port + ", spark_history_url="
-				+ spark_history_url + ", kms_ip=" + kms_ip + ", kms_port=" + kms_port + ", kms_admin_name="
-				+ kms_admin_name + ", kms_admin_password=" + kms_admin_password + ", hadoop_user_name="
-				+ hadoop_user_name + "]";
+				+ ", hive_superUserKeytab=" + hive_superUserKeytab + ", hive_metastoreWarehouseDirectory="
+				+ hive_metastoreWarehouseDirectory + ", ambari_host=" + ambari_host + ", ambari_adminUser="
+				+ ambari_adminUser + ", ambari_adminPwd=" + ambari_adminPwd + ", yarn_rm_host=" + yarn_rm_host
+				+ ", yarn_rm_port=" + yarn_rm_port + ", yarn_rm_url=" + yarn_rm_url + ", yarn_rm_url2=" + yarn_rm_url2
+				+ ", zk_connection=" + zk_connection + ", kafka_jaas_path=" + kafka_jaas_path + ", kafka_hosts="
+				+ kafka_hosts + ", kafka_port=" + kafka_port + ", kafka_rep=" + kafka_rep + ", krb_enable=" + krb_enable
+				+ ", brokerId=" + brokerId + ", brokerUser=" + brokerUser + ", brokerPassword=" + brokerPassword
+				+ ", mr_history_url=" + mr_history_url + ", spark_thrift_server=" + spark_thrift_server
+				+ ", spark_thrift_port=" + spark_thrift_port + ", spark_history_url=" + spark_history_url + ", kms_ip="
+				+ kms_ip + ", kms_port=" + kms_port + ", kms_admin_name=" + kms_admin_name + ", kms_admin_password="
+				+ kms_admin_password + ", hadoop_user_name=" + hadoop_user_name + "]";
 	}
 
 }

@@ -307,7 +307,7 @@ public class HDFSAdminService implements OCDPAdminService{
         try{
         	// Construct hive database path for hive case
 	        if(resourceType.equals(OCDPConstants.HIVE_RESOURCE_TYPE)){
-	            path = "/apps/hive/warehouse/" + path.split(":")[0] + ".db";
+	            path = clusterConfig.getHiveMetastoreWarehouseDirectory() + path.split(":")[0] + ".db";
 	            setQuota(path, "-1", quota.get(OCDPConstants.HDFS_STORAGE_QUOTA));
 	            return;
 	        }
