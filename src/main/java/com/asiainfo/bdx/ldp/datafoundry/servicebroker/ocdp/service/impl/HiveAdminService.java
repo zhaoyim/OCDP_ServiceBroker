@@ -62,7 +62,9 @@ public class HiveAdminService implements OCDPAdminService {
 	}
 
 	private void setQuota(String dbName, Map<String, String> quota) throws IOException, InterruptedException {
-		String path = "/apps/hive/warehouse/" + dbName + ".db";
+		// should be have the last /
+		// for example /apps/hive/warehouse/
+		String path = clusterConfig.getHiveMetastoreWarehouseDirectory() + dbName + ".db";
 		int loop = 0;
 		while (true) {
 			try {
@@ -95,7 +97,7 @@ public class HiveAdminService implements OCDPAdminService {
 		@SuppressWarnings("serial")
 		List<String> hdfsFolders = new ArrayList<String>() {
 			{
-				add("/apps/hive/warehouse/" + resources.get(0) + ".db");
+				add(clusterConfig.getHiveMetastoreWarehouseDirectory() + resources.get(0) + ".db");
 				add("/tmp/hive");
 				add("/ats/active");
 			}
