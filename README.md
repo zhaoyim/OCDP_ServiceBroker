@@ -55,6 +55,7 @@ Configure properties (e.g. LDAP, kerberos, Hadoop ...) in configuration file myp
 	HIVE_PORT=10000
 	HIVE_SUPER_USER=hive/10.1.236.19@ASIAINFO.COM
 	HIVE_SUPER_USER_KEYTAB=/etc/secrets/hive.service.keytab
+    HIVE_METASTORE_WAREHOUSE_DIRECTORY=/warehouse/tablespace/managed/hive/	// should be have the last /  for example /apps/hive/warehouse/
 	AMBARI_HOST=http://10.1.236.19:8080
 	AMBARI_ADMIN_USER=admin
 	AMBARI_ADMIN_PWD=admin
