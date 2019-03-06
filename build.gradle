@@ -9,7 +9,7 @@ buildscript {
     }
 }
 
-group = 'asiainfo-ldp'
+group = 'com.asiainfo.cm'
 
 apply plugin: 'java'
 apply plugin: 'eclipse'
@@ -59,7 +59,7 @@ configurations {
 }
 
 jar {
-    baseName = 'datafoundry-ocdp-service-broker'
+    baseName = 'dp-service-broker'
 }
 
 task wrapper(type: Wrapper) {
